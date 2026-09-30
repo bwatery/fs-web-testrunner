@@ -11,6 +11,7 @@ import base64
 import requests
 from typing import Dict, Any, Optional, List
 from fs_web_testrunner.config import CDP_HOST, CDP_PORT
+from fs_web_testrunner.core import offline_sandbox
 
 class LoginValidator:
     def __init__(self, cdp_port: int = CDP_PORT):
@@ -57,6 +58,20 @@ class LoginValidator:
 
             token = data_val.get("token", "")
             if not token:
+                from fs_web_testrunner.core.offline_sandbox import get_environment_status
+                if get_environment_status().get("is_mock"):
+                    return {
+                        "is_connected": True,
+                        "is_logged_in": True,
+                        "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImxvZ2luX3VzZXJfa2V5IjoiOTk5OSJ9.mock_sig",
+                        "user": {"sub": "admin", "login_user_key": "9999"},
+                        "username": "admin",
+                        "login_user_key": "9999",
+                        "roleDept": '{"15":910073}',
+                        "href": "http://localhost:8088/#/outpatient/doctor/workstation",
+                        "title": "HIS 测试工作站 (离线沙盒模式)",
+                        "is_mock": True
+                    }
                 return {
                     "is_connected": True,
                     "is_logged_in": False,
@@ -87,6 +102,20 @@ class LoginValidator:
                 "title": data_val.get("title", "")
             }
         except Exception as e:
+            from fs_web_testrunner.core.offline_sandbox import get_environment_status
+            if get_environment_status().get("is_mock"):
+                return {
+                    "is_connected": True,
+                    "is_logged_in": True,
+                    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsImxvZ2luX3VzZXJfa2V5IjoiOTk5OSJ9.mock_sig",
+                    "user": {"sub": "admin", "login_user_key": "9999"},
+                    "username": "admin",
+                    "login_user_key": "9999",
+                    "roleDept": '{"15":910073}',
+                    "href": "http://localhost:8088/#/outpatient/doctor/workstation",
+                    "title": "HIS 测试工作站 (离线沙盒模式)",
+                    "is_mock": True
+                }
             return {"is_connected": False, "error": f"连接浏览器失败: {e}"}
 
     def validate_backend_services(self, token: str, role_dept_str: str = "") -> Dict[str, Any]:

@@ -1190,7 +1190,74 @@
       border-radius: var(--g-radius-sm);
       background: var(--g-surface-variant);
       gap: 12px;
+    /* Business Rules Center Styles */
+    .rule-card {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--g-shadow-1);
+      transition: all 0.2s ease;
+      position: relative;
     }
+    .rule-card:hover {
+      box-shadow: var(--g-shadow-2);
+      border-color: var(--g-blue);
+      transform: translateY(-1px);
+    }
+    .rule-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: var(--g-radius-full);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .rule-badge-ip { background: #e8f0fe; color: #1a73e8; }
+    .rule-badge-op { background: #e6f4ea; color: #1e8e3e; }
+    .rule-badge-block { background: #fce8e6; color: #d93025; }
+    .rule-badge-warn { background: #fef7e0; color: #b06000; }
+    .rule-quote-box {
+      background: var(--g-surface-variant);
+      border-left: 3.5px solid var(--g-blue);
+      border-radius: 0 var(--g-radius-sm) var(--g-radius-sm) 0;
+      padding: 8px 12px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: var(--g-text-primary);
+    }
+    .rule-param-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(0,0,0,0.04);
+      border: 1px solid var(--g-border-subtle);
+      border-radius: var(--g-radius-sm);
+      padding: 2px 6px;
+      font-family: var(--g-mono);
+      font-size: 11px;
+      color: var(--g-text-secondary);
+    }
+    [data-theme="dark"] .rule-param-pill {
+      background: rgba(255,255,255,0.05);
+    }
+    .rule-status-chip {
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .rule-status-chip.pass { background: var(--g-green-surface); color: var(--g-green); }
+    .rule-status-chip.fail { background: var(--g-red-surface); color: var(--g-red); }
+    .rule-status-chip.none { background: var(--g-surface-variant); color: var(--g-text-tertiary); }
+    .rule-status-chip.running { background: var(--g-yellow-surface); color: #b06000; animation: gPulse 1s infinite; }
   </style>
 </head>
 <body>
@@ -1228,6 +1295,13 @@
       <button class="g-btn g-btn-danger" id="btnStop" style="display:none;">⏹ 停止</button>
 
       <span style="width:1px; height:18px; background:var(--g-border); margin:0 2px;"></span>
+
+      <!-- Dual Mode Selector: Live Intranet vs Offline Mock -->
+      <select class="target-select" id="envModeSelect" title="运行环境与数据库模式切换" style="max-width:175px; font-weight:600; color:var(--g-blue); border:1.5px solid var(--g-blue); background:var(--g-blue-surface);">
+        <option value="AUTO">⚡ 智能自适应模式</option>
+        <option value="MOCK" selected>💻 离线沙盒(免库)</option>
+        <option value="LIVE">🌐 内网直连(现场)</option>
+      </select>
 
       <button class="g-btn g-btn-tonal" id="btnOpenBrowser" title="立即在桌面弹出独立的 Chrome 窗口">🌐 独立浏览器</button>
       <select class="target-select" id="targetEnvSelect" title="目标环境切换" style="max-width:180px;">
@@ -1292,6 +1366,7 @@
       <!-- Google Tab Bar -->
       <div class="tab-bar">
         <div class="tab-item active" data-tab="tab-validator">🔐 登录与接口验证</div>
+        <div class="tab-item" data-tab="tab-rules">📜 临床与业务规则中心</div>
         <div class="tab-item" data-tab="tab-cases">📋 用例清单与控制台</div>
         <div class="tab-item" data-tab="tab-health">🏥 全院业务模块体检</div>
         <div class="tab-item" data-tab="tab-xml">📝 病历 XML 检查器</div>
@@ -1556,6 +1631,173 @@
             <div style="display:flex; justify-content:flex-end; gap:10px;">
               <button class="g-btn g-btn-tonal" id="btnCopyOrderPayload">📋 复制报文</button>
               <button class="g-btn g-btn-primary" onclick="document.getElementById('orderPayloadModal').style.display='none'">关闭</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab: Business Rules & Gates Governance Center -->
+      <section class="content-area" id="tab-rules">
+        <!-- Hero Header -->
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:18px 24px; box-shadow:var(--g-shadow-1); display:flex; flex-direction:column; gap:14px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:26px;">📋</span>
+              <div>
+                <div style="font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                  临床与财务核心业务规则库
+                  <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue); font-size:11px; padding:2px 8px; border-radius:12px;">🛡️ 16大业务流转铁律与门禁</span>
+                  <span id="rulesEnvChip" class="badge" style="background:var(--g-green-surface); color:var(--g-green); font-size:11px; padding:2px 8px; border-radius:12px;">💻 离线沙盒自愈中</span>
+                </div>
+                <div style="font-size:12px; color:var(--g-text-secondary); margin-top:2px;">
+                  覆盖门诊与住院 16 大临床规则、状态机流转与防篡改门禁。支持可视化规范查阅、在线配置参数维护与现场一键断言校验！
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <button class="g-btn g-btn-primary" id="btnVerifyAllRules" style="font-weight:600; box-shadow:0 1px 3px rgba(26,115,232,0.3);">
+                ⚡ 一键全规则自动化验收
+              </button>
+              <button class="g-btn g-btn-tonal" id="btnRefreshRules">🔄 刷新规则</button>
+              <button class="g-btn g-btn-outlined" id="btnResetRules" title="恢复官方16条标准规则配置">⏪ 恢复默认</button>
+            </div>
+          </div>
+
+          <!-- Stats Ribbon -->
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-top:2px;">
+            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
+              <div style="font-size:11px; color:var(--g-text-secondary);">规则总数</div>
+              <div style="font-size:18px; font-weight:700; color:var(--g-text-primary);" id="ruleStatTotal">16</div>
+            </div>
+            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
+              <div style="font-size:11px; color:var(--g-text-secondary);">🛏️ 住院规则</div>
+              <div style="font-size:18px; font-weight:700; color:#1a73e8;" id="ruleStatIP">8</div>
+            </div>
+            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
+              <div style="font-size:11px; color:var(--g-text-secondary);">🏥 门诊规则</div>
+              <div style="font-size:18px; font-weight:700; color:#1e8e3e;" id="ruleStatOP">8</div>
+            </div>
+            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
+              <div style="font-size:11px; color:var(--g-text-secondary);">🚨 阻断门禁</div>
+              <div style="font-size:18px; font-weight:700; color:#d93025;" id="ruleStatBlock">14</div>
+            </div>
+            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
+              <div style="font-size:11px; color:var(--g-text-secondary);">⚠️ 预警规范</div>
+              <div style="font-size:18px; font-weight:700; color:#f9ab00;" id="ruleStatWarn">2</div>
+            </div>
+            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
+              <div style="font-size:11px; color:var(--g-text-secondary);">✅ 校验通过率</div>
+              <div style="font-size:18px; font-weight:700; color:var(--g-green);" id="ruleStatPassed">16 / 16</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter Toolbar -->
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; box-shadow:var(--g-shadow-1);">
+          <!-- Category Filter Pills -->
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <button class="g-btn g-btn-tonal rule-filter-btn active" data-filter="all" style="padding:4px 12px; font-size:12px; height:28px;">全部 (16)</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="inpatient" style="padding:4px 12px; font-size:12px; height:28px;">🛏️ 住院业务 (8)</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="outpatient" style="padding:4px 12px; font-size:12px; height:28px;">🏥 门诊业务 (8)</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="block" style="padding:4px 12px; font-size:12px; height:28px;">🚨 强阻断门禁</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="warn" style="padding:4px 12px; font-size:12px; height:28px;">⚠️ 预警规范</button>
+          </div>
+
+          <!-- Search Input -->
+          <div style="display:flex; align-items:center; gap:8px; flex:1; max-width:320px;">
+            <input type="text" id="ruleSearchInput" class="target-select" style="width:100%; height:30px; font-size:12px;" placeholder="🔍 快速过滤规则名称、编号或表名...">
+          </div>
+        </div>
+
+        <!-- Rule Cards Container -->
+        <div id="rulesCardsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(460px, 1fr)); gap:16px;">
+          <!-- Dynamically populated via JS -->
+        </div>
+
+        <!-- Rule Edit Modal -->
+        <div id="ruleEditModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+          <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); width:90%; max-width:680px; max-height:90vh; overflow-y:auto; padding:24px; box-shadow:var(--g-shadow-2); display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--g-border); padding-bottom:12px;">
+              <div style="font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                <span>⚙️ 编辑与维护业务规则</span>
+                <span id="editModalRuleIdBadge" class="rule-badge rule-badge-ip">RULE_IP_01</span>
+              </div>
+              <button class="icon-btn" onclick="document.getElementById('ruleEditModal').style.display='none'">✕</button>
+            </div>
+
+            <form id="ruleEditForm" style="display:flex; flex-direction:column; gap:14px;">
+              <input type="hidden" id="editRuleId">
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">规则名称</label>
+                  <input type="text" id="editRuleName" class="target-select" style="width:100%; padding:6px 10px;" required>
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">门禁级别</label>
+                  <select id="editRuleSeverity" class="target-select" style="width:100%; padding:6px 10px;">
+                    <option value="BLOCK">🚨 硬性阻断门禁 (BLOCK)</option>
+                    <option value="WARN">⚠️ 业务预警规范 (WARN)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">触发环节 (Trigger Phase)</label>
+                  <input type="text" id="editRulePhase" class="target-select" style="width:100%; padding:6px 10px;">
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">涉及接口与数据库字段</label>
+                  <input type="text" id="editRuleTarget" class="target-select" style="width:100%; padding:6px 10px;">
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">一句话核心业务规则 (Summary)</label>
+                <input type="text" id="editRuleSummary" class="target-select" style="width:100%; padding:6px 10px;">
+              </div>
+
+              <div>
+                <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">规则背景与临床/财务痛点规范详细说明</label>
+                <textarea id="editRuleDetail" class="target-select" style="width:100%; height:110px; padding:8px 10px; font-size:12px; line-height:1.5; resize:vertical;"></textarea>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary);">动态业务控制参数 (JSON 格式)</label>
+                  <span style="font-size:11px; color:var(--g-blue); cursor:pointer;" onclick="formatEditJsonParams()">✨ 格式化 JSON</span>
+                </div>
+                <textarea id="editRuleParams" class="target-select" style="width:100%; height:90px; padding:8px 10px; font-family:var(--g-mono); font-size:11.5px; resize:vertical;"></textarea>
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between;">
+                <label style="font-size:12.5px; font-weight:600; color:var(--g-text-primary); display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="editRuleEnabled" checked style="width:16px; height:16px;">
+                  <span>启用当前业务规则门禁校验</span>
+                </label>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="g-btn g-btn-tonal" onclick="document.getElementById('ruleEditModal').style.display='none'">取消</button>
+                  <button type="submit" class="g-btn g-btn-primary" style="font-weight:600;">💾 保存规则配置</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Rule Log Modal -->
+        <div id="ruleLogModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+          <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); width:90%; max-width:720px; max-height:85vh; overflow-y:auto; padding:22px; box-shadow:var(--g-shadow-2); display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--g-border); padding-bottom:10px;">
+              <div style="font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                <span>📜 规则现场断言校验执行日志</span>
+                <span id="logModalRuleName" style="color:var(--g-blue); font-size:13px;"></span>
+              </div>
+              <button class="icon-btn" onclick="document.getElementById('ruleLogModal').style.display='none'">✕</button>
+            </div>
+            <pre id="ruleLogContent" style="background:#1e1e1e; color:#d4d4d4; font-family:var(--g-mono); font-size:12px; padding:16px; border-radius:6px; max-height:420px; overflow:auto; line-height:1.6; white-space:pre-wrap; word-break:break-all;"></pre>
+            <div style="display:flex; justify-content:flex-end;">
+              <button class="g-btn g-btn-primary" onclick="document.getElementById('ruleLogModal').style.display='none'">关闭</button>
             </div>
           </div>
         </div>
@@ -3356,6 +3598,432 @@
       }
     });
 
+    // =========================================================================
+    // 🌐 Environment Mode Switcher (Live Intranet vs Offline Mock Sandbox)
+    // =========================================================================
+    async function loadEnvironmentStatus() {
+      try {
+        const resp = await fetch('/api/environment');
+        const data = await resp.json();
+        const sel = document.getElementById('envModeSelect');
+        if (sel && data.mode) {
+          sel.value = data.mode;
+        }
+        const chip = document.getElementById('rulesEnvChip');
+        if (chip) {
+          if (data.is_mock) {
+            chip.style.background = 'var(--g-green-surface)';
+            chip.style.color = 'var(--g-green)';
+            chip.innerText = '💻 离线沙盒模式 (免库/零内网依赖)';
+          } else {
+            chip.style.background = 'var(--g-blue-surface)';
+            chip.style.color = 'var(--g-blue)';
+            chip.innerText = '🌐 内网直连模式 (现场微服务+Oracle)';
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to load environment status:", err);
+      }
+    }
+
+    const envModeSelectEl = document.getElementById('envModeSelect');
+    if (envModeSelectEl) {
+      envModeSelectEl.addEventListener('change', async (e) => {
+        const newMode = e.target.value;
+        try {
+          const resp = await fetch('/api/environment/switch', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: newMode })
+          });
+          const res = await resp.json();
+          await loadEnvironmentStatus();
+          alert(`✅ 已切换运行模式: ${res.mode_name}\n${res.message || ''}`);
+        } catch (err) {
+          alert(`模式切换失败: ${err}`);
+        }
+      });
+    }
+
+    // =========================================================================
+    // 📋 Business Rules Center Logic (业务规则与门禁治理中心)
+    // =========================================================================
+    let allBusinessRules = [];
+    let currentRuleFilter = 'all';
+    let ruleSearchQuery = '';
+
+    async function loadBusinessRules() {
+      try {
+        const resp = await fetch('/api/rules');
+        const data = await resp.json();
+        if (data.status === 'ok') {
+          allBusinessRules = data.rules || [];
+          const stats = data.stats || {};
+
+          // Update stats ribbon
+          const elTotal = document.getElementById('ruleStatTotal');
+          const elIP = document.getElementById('ruleStatIP');
+          const elOP = document.getElementById('ruleStatOP');
+          const elBlock = document.getElementById('ruleStatBlock');
+          const elWarn = document.getElementById('ruleStatWarn');
+          const elPassed = document.getElementById('ruleStatPassed');
+
+          if (elTotal) elTotal.innerText = stats.total || 0;
+          if (elIP) elIP.innerText = stats.inpatient_count || 0;
+          if (elOP) elOP.innerText = stats.outpatient_count || 0;
+          if (elBlock) elBlock.innerText = stats.block_count || 0;
+          if (elWarn) elWarn.innerText = stats.warn_count || 0;
+          if (elPassed) elPassed.innerText = `${stats.passed_count || 0} / ${stats.total || 0}`;
+
+          renderBusinessRules();
+        }
+      } catch (err) {
+        console.error("Failed to load business rules:", err);
+      }
+    }
+
+    function renderBusinessRules() {
+      const container = document.getElementById('rulesCardsContainer');
+      if (!container) return;
+
+      const q = ruleSearchQuery.trim().toLowerCase();
+      const filtered = allBusinessRules.filter(r => {
+        // Domain/Severity filter
+        if (currentRuleFilter === 'inpatient' && r.domain !== 'inpatient') return false;
+        if (currentRuleFilter === 'outpatient' && r.domain !== 'outpatient') return false;
+        if (currentRuleFilter === 'block' && r.severity !== 'BLOCK') return false;
+        if (currentRuleFilter === 'warn' && r.severity !== 'WARN') return false;
+
+        // Search query
+        if (q) {
+          const matchId = (r.id || '').toLowerCase().includes(q);
+          const matchName = (r.name || '').toLowerCase().includes(q);
+          const matchTarget = (r.target_api_table || '').toLowerCase().includes(q);
+          const matchPhase = (r.trigger_phase || '').toLowerCase().includes(q);
+          const matchSummary = (r.summary || '').toLowerCase().includes(q);
+          return matchId || matchName || matchTarget || matchPhase || matchSummary;
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--g-text-secondary); background:var(--g-surface); border:1px dashed var(--g-border); border-radius:var(--g-radius-md);">
+            <div style="font-size:32px; margin-bottom:8px;">🔍</div>
+            <div style="font-weight:600;">未找到匹配的业务规则</div>
+            <div style="font-size:12px; margin-top:4px;">请尝试调整筛选分类或清空搜索关键词</div>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered.map(r => {
+        const isIP = r.domain === 'inpatient';
+        const isBlock = r.severity === 'BLOCK';
+        const domainClass = isIP ? 'rule-badge-ip' : 'rule-badge-op';
+        const severityClass = isBlock ? 'rule-badge-block' : 'rule-badge-warn';
+        
+        let statusChipHtml = '';
+        if (r.last_verify_status === 'PASSED') {
+          statusChipHtml = `<span class="rule-status-chip pass" title="${r.last_verify_time || ''}">✅ 校验通过 (${r.last_verify_duration_ms || 0}ms)</span>`;
+        } else if (r.last_verify_status === 'FAILED') {
+          statusChipHtml = `<span class="rule-status-chip fail" title="${r.last_verify_time || ''}">❌ 校验失败</span>`;
+        } else {
+          statusChipHtml = `<span class="rule-status-chip none">● 待校验</span>`;
+        }
+
+        const params = r.parameters || {};
+        const paramPills = Object.entries(params).map(([k, v]) => {
+          return `<span class="rule-param-pill"><b>${k}</b>: ${v}</span>`;
+        }).join(' ');
+
+        return `
+          <div class="rule-card" id="card_${r.id}">
+            <!-- Header Row -->
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                <span class="rule-badge" style="background:var(--g-surface-variant); color:var(--g-text-primary); font-family:var(--g-mono); font-weight:700;">${r.id}</span>
+                <span class="rule-badge ${domainClass}">${r.domain_name || (isIP ? '🛏️ 住院业务' : '🏥 门诊业务')}</span>
+                <span class="rule-badge ${severityClass}">${r.severity_name || (isBlock ? '🚨 硬性门禁' : '⚠️ 预警规范')}</span>
+              </div>
+              <label style="font-size:12px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;" title="开启/停用此规则">
+                <input type="checkbox" onchange="toggleRuleEnabled('${r.id}', this.checked)" ${r.enabled !== false ? 'checked' : ''} style="width:15px; height:15px; accent-color:var(--g-blue);">
+                <span style="font-size:11.5px; color:var(--g-text-secondary);">${r.enabled !== false ? '已激活' : '已停用'}</span>
+              </label>
+            </div>
+
+            <!-- Title -->
+            <div style="font-size:14.5px; font-weight:600; color:var(--g-text-primary); line-height:1.4;">
+              ${r.name}
+            </div>
+
+            <!-- Target Meta -->
+            <div style="font-size:11.5px; color:var(--g-text-secondary); display:flex; flex-direction:column; gap:3px;">
+              <div><b>📍 触发环节:</b> ${r.trigger_phase || '全流程'}</div>
+              <div><b>🎯 涉及目标:</b> <code style="font-family:var(--g-mono); background:var(--g-surface-variant); padding:1px 5px; border-radius:3px; font-size:11px;">${r.target_api_table || 'N/A'}</code></div>
+            </div>
+
+            <!-- Summary Quote Banner -->
+            <div class="rule-quote-box">
+              “${r.summary || ''}”
+            </div>
+
+            <!-- Details Collapsible -->
+            <details style="font-size:12px; color:var(--g-text-secondary); border-top:1px dashed var(--g-border-subtle); padding-top:6px;">
+              <summary style="cursor:pointer; color:var(--g-blue); font-weight:500; outline:none; user-select:none;">📖 查看临床背景与规范全文</summary>
+              <div style="margin-top:8px; line-height:1.6; white-space:pre-wrap; background:var(--g-surface-variant); padding:10px 12px; border-radius:var(--g-radius-sm); font-size:11.5px;">${r.detail || '暂无详细描述'}</div>
+            </details>
+
+            <!-- Parameters -->
+            ${Object.keys(params).length > 0 ? `
+              <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:2px;">
+                <span style="font-size:11px; color:var(--g-text-tertiary); font-weight:600;">控制参数:</span>
+                ${paramPills}
+              </div>
+            ` : ''}
+
+            <!-- Footer Actions -->
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--g-border-subtle); padding-top:10px; margin-top:auto;">
+              <div>
+                ${statusChipHtml}
+              </div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <button class="g-btn g-btn-tonal" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="verifySingleRule('${r.id}', this)" title="现场执行该规则断言测试">
+                  ▶️ 现场校验
+                </button>
+                <button class="g-btn g-btn-outlined" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="openEditRuleModal('${r.id}')" title="在线调整此规则参数与规范">
+                  ⚙️ 维护
+                </button>
+                ${(r.last_verify_log && r.last_verify_log.length > 0) ? `
+                  <button class="g-btn g-btn-outlined" style="padding:4px 8px; font-size:11.5px; height:26px;" onclick="viewRuleLogs('${r.id}')" title="查看断言日志">
+                    📜 日志
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Toggle rule filter buttons
+    document.querySelectorAll('.rule-filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.rule-filter-btn').forEach(b => {
+          b.classList.remove('active', 'g-btn-tonal');
+          b.classList.add('g-btn-outlined');
+        });
+        btn.classList.add('active', 'g-btn-tonal');
+        btn.classList.remove('g-btn-outlined');
+        currentRuleFilter = btn.dataset.filter;
+        renderBusinessRules();
+      });
+    });
+
+    // Rule search input
+    const ruleSearchInputEl = document.getElementById('ruleSearchInput');
+    if (ruleSearchInputEl) {
+      ruleSearchInputEl.addEventListener('input', (e) => {
+        ruleSearchQuery = e.target.value;
+        renderBusinessRules();
+      });
+    }
+
+    // Refresh rules
+    const btnRefreshRulesEl = document.getElementById('btnRefreshRules');
+    if (btnRefreshRulesEl) {
+      btnRefreshRulesEl.addEventListener('click', () => {
+        loadBusinessRules();
+      });
+    }
+
+    // Reset rules
+    const btnResetRulesEl = document.getElementById('btnResetRules');
+    if (btnResetRulesEl) {
+      btnResetRulesEl.addEventListener('click', async () => {
+        if (!confirm('确定要恢复官方默认16条业务规则吗？这将重置所有自定义参数配置。')) return;
+        try {
+          const resp = await fetch('/api/rules/reset', { method: 'POST' });
+          const res = await resp.json();
+          alert(res.message || '已恢复默认规则');
+          await loadBusinessRules();
+        } catch (err) {
+          alert(`恢复失败: ${err}`);
+        }
+      });
+    }
+
+    // Verify single rule
+    async function verifySingleRule(ruleId, btnElement) {
+      const origText = btnElement ? btnElement.innerHTML : '';
+      if (btnElement) {
+        btnElement.innerHTML = '⏳ 校验中...';
+        btnElement.disabled = true;
+      }
+
+      try {
+        const resp = await fetch(`/api/rules/${ruleId}/verify`, { method: 'POST' });
+        const data = await resp.json();
+        if (data.status === 'ok') {
+          const res = data.result;
+          await loadBusinessRules();
+          // Show quick log toast or dialog if failed
+          if (res.status === 'FAILED') {
+            alert(`❌ 规则 [${ruleId}] 校验未通过:\n${res.error || ''}`);
+            viewRuleLogs(ruleId);
+          }
+        } else {
+          alert(`校验异常: ${data.error || '未知错误'}`);
+        }
+      } catch (err) {
+        alert(`网络异常: ${err}`);
+      } finally {
+        if (btnElement) {
+          btnElement.innerHTML = origText;
+          btnElement.disabled = false;
+        }
+      }
+    }
+
+    // Verify all rules
+    const btnVerifyAllRulesEl = document.getElementById('btnVerifyAllRules');
+    if (btnVerifyAllRulesEl) {
+      btnVerifyAllRulesEl.addEventListener('click', async () => {
+        btnVerifyAllRulesEl.innerHTML = '⏳ 正在全量自动化验收 16 条规则...';
+        btnVerifyAllRulesEl.disabled = true;
+
+        try {
+          const resp = await fetch('/api/rules/verify_all', { method: 'POST' });
+          const data = await resp.json();
+          await loadBusinessRules();
+          alert(`🎉 业务规则全自动化验收完成！\n通过率: ${data.passed} / ${data.total} 条\n失败数: ${data.failed} 条`);
+        } catch (err) {
+          alert(`全规则校验异常: ${err}`);
+        } finally {
+          btnVerifyAllRulesEl.innerHTML = '⚡ 一键全规则自动化验收';
+          btnVerifyAllRulesEl.disabled = false;
+        }
+      });
+    }
+
+    // Toggle rule enabled
+    async function toggleRuleEnabled(ruleId, enabled) {
+      try {
+        await fetch(`/api/rules/${ruleId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: enabled })
+        });
+        const rule = allBusinessRules.find(r => r.id === ruleId);
+        if (rule) rule.enabled = enabled;
+        renderBusinessRules();
+      } catch (err) {
+        console.error("Failed to toggle rule:", err);
+      }
+    }
+
+    // Edit Rule Modal
+    function openEditRuleModal(ruleId) {
+      const rule = allBusinessRules.find(r => r.id === ruleId);
+      if (!rule) return;
+
+      document.getElementById('editRuleId').value = rule.id;
+      document.getElementById('editModalRuleIdBadge').innerText = rule.id;
+      document.getElementById('editRuleName').value = rule.name || '';
+      document.getElementById('editRuleSeverity').value = rule.severity || 'BLOCK';
+      document.getElementById('editRulePhase').value = rule.trigger_phase || '';
+      document.getElementById('editRuleTarget').value = rule.target_api_table || '';
+      document.getElementById('editRuleSummary').value = rule.summary || '';
+      document.getElementById('editRuleDetail').value = rule.detail || '';
+      document.getElementById('editRuleParams').value = JSON.stringify(rule.parameters || {}, null, 2);
+      document.getElementById('editRuleEnabled').checked = (rule.enabled !== false);
+
+      const modal = document.getElementById('ruleEditModal');
+      modal.style.display = 'flex';
+    }
+
+    function formatEditJsonParams() {
+      const ta = document.getElementById('editRuleParams');
+      try {
+        const parsed = JSON.parse(ta.value);
+        ta.value = JSON.stringify(parsed, null, 2);
+      } catch (err) {
+        alert("JSON 语法有误，无法格式化: " + err);
+      }
+    }
+
+    const ruleEditFormEl = document.getElementById('ruleEditForm');
+    if (ruleEditFormEl) {
+      ruleEditFormEl.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const ruleId = document.getElementById('editRuleId').value;
+        let params = {};
+        try {
+          params = JSON.parse(document.getElementById('editRuleParams').value || '{}');
+        } catch (err) {
+          alert("控制参数必须为有效的 JSON 格式！");
+          return;
+        }
+
+        const payload = {
+          name: document.getElementById('editRuleName').value.trim(),
+          severity: document.getElementById('editRuleSeverity').value,
+          trigger_phase: document.getElementById('editRulePhase').value.trim(),
+          target_api_table: document.getElementById('editRuleTarget').value.trim(),
+          summary: document.getElementById('editRuleSummary').value.trim(),
+          detail: document.getElementById('editRuleDetail').value.trim(),
+          parameters: params,
+          enabled: document.getElementById('editRuleEnabled').checked
+        };
+
+        try {
+          const resp = await fetch(`/api/rules/${ruleId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const res = await resp.json();
+          if (res.status === 'ok') {
+            document.getElementById('ruleEditModal').style.display = 'none';
+            await loadBusinessRules();
+            alert(`✓ 业务规则 [${ruleId}] 配置已更新并持久化保存！`);
+          } else {
+            alert(`保存失败: ${res.error}`);
+          }
+        } catch (err) {
+          alert(`网络异常: ${err}`);
+        }
+      });
+    }
+
+    // View rule logs modal
+    function viewRuleLogs(ruleId) {
+      const rule = allBusinessRules.find(r => r.id === ruleId);
+      if (!rule) return;
+
+      document.getElementById('logModalRuleName').innerText = `[${rule.id}] ${rule.name}`;
+      const logs = rule.last_verify_log || ['暂无执行日志'];
+      const formatted = logs.map(line => {
+        if (line.includes('✓') || line.includes('✅')) return `<span style="color:#4ade80;">${line}</span>`;
+        if (line.includes('❌') || line.includes('ERROR')) return `<span style="color:#f87171; font-weight:700;">${line}</span>`;
+        if (line.includes('👉') || line.includes('🚀')) return `<span style="color:#60a5fa;">${line}</span>`;
+        if (line.includes('ℹ️') || line.includes('⚠️')) return `<span style="color:#fbbf24;">${line}</span>`;
+        return line;
+      }).join('\n');
+
+      document.getElementById('ruleLogContent').innerHTML = formatted;
+      document.getElementById('ruleLogModal').style.display = 'flex';
+    }
+
+    // WebSocket event handler for rule live events
+    function handleRuleSocketEvent(msg) {
+      if (msg.type === 'rule_verify_done' || msg.type === 'rule_update') {
+        loadBusinessRules();
+      } else if (msg.type === 'env_change') {
+        loadEnvironmentStatus();
+      }
+    }
+
     // Keyboard shortcut / for search
     window.addEventListener('keydown', (e) => {
       if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
@@ -3366,6 +4034,8 @@
 
     // Initialize
     async function initPlatform() {
+      await loadEnvironmentStatus();
+      await loadBusinessRules();
       await loadTests();
       await loadModules();
       initWebSocket();

@@ -22,6 +22,7 @@ from fs_web_testrunner.config import (
 )
 from fs_web_testrunner.core.test_engine import TestEngine
 from fs_web_testrunner.core.login_validator import LoginValidator
+from fs_web_testrunner.core.business_rules_manager import BusinessRulesManager
 from fs_web_testrunner.suites import register_all_suites
 
 app = FastAPI(title="HIS WebRunner - 医院信息系统全栈自动化测试平台")
@@ -29,9 +30,10 @@ app = FastAPI(title="HIS WebRunner - 医院信息系统全栈自动化测试平�
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
-# Shared Engine & State
+# Shared Engine, Rules Manager & State
 engine = TestEngine(headless=False)
 register_all_suites(engine)
+rules_mgr = BusinessRulesManager()
 active_websockets: List[WebSocket] = []
 current_loop = None
 
@@ -360,6 +362,94 @@ async def get_his_modules():
             }
         ]
     }
+
+class EnvSwitchRequest(BaseModel):
+    mode: str  # "MOCK", "LIVE", "AUTO"
+
+class RuleUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    severity: Optional[str] = None
+    trigger_phase: Optional[str] = None
+    target_api_table: Optional[str] = None
+    summary: Optional[str] = None
+    detail: Optional[str] = None
+    parameters: Optional[Dict[str, Any]] = None
+    enabled: Optional[bool] = None
+
+@app.get("/api/environment")
+async def get_env_endpoint():
+    from fs_web_testrunner.core.offline_sandbox import get_environment_status
+    return {"status": "ok", **get_environment_status()}
+
+@app.post("/api/environment/switch")
+async def switch_env_endpoint(req: EnvSwitchRequest):
+    from fs_web_testrunner.core.offline_sandbox import (
+        activate_live_mode, activate_offline_mode, auto_configure_environment, get_environment_status
+    )
+    if req.mode == "MOCK":
+        activate_offline_mode()
+    elif req.mode == "LIVE":
+        activate_live_mode()
+    else:
+        auto_configure_environment()
+    status = get_environment_status()
+    broadcast_sync({"type": "env_change", "status": status})
+    return {"status": "ok", **status}
+
+@app.get("/api/rules")
+async def get_rules_endpoint(domain: Optional[str] = None):
+    return {
+        "status": "ok",
+        "stats": rules_mgr.get_summary_stats(),
+        "rules": rules_mgr.get_all_rules(domain)
+    }
+
+@app.get("/api/rules/{rule_id}")
+async def get_single_rule_endpoint(rule_id: str):
+    r = rules_mgr.get_rule_by_id(rule_id)
+    if not r:
+        return JSONResponse(status_code=404, content={"error": f"Rule {rule_id} not found"})
+    return {"status": "ok", "rule": r}
+
+@app.put("/api/rules/{rule_id}")
+async def update_rule_endpoint(rule_id: str, req: RuleUpdateRequest):
+    try:
+        updated = rules_mgr.update_rule(rule_id, req.dict(exclude_unset=True))
+        broadcast_sync({"type": "rule_update", "rule_id": rule_id, "rule": updated})
+        return {"status": "ok", "rule": updated}
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+@app.post("/api/rules/{rule_id}/verify")
+async def verify_single_rule_endpoint(rule_id: str):
+    try:
+        res = rules_mgr.verify_rule(rule_id, broadcast_sync)
+        broadcast_sync({"type": "rule_verify_done", "result": res})
+        return {"status": "ok", "result": res}
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
+@app.post("/api/rules/verify_all")
+async def verify_all_rules_endpoint():
+    rules = [r for r in rules_mgr.get_all_rules() if r.get("enabled", True)]
+    results = []
+    for r in rules:
+        res = rules_mgr.verify_rule(r["id"], broadcast_sync)
+        results.append(res)
+    stats = rules_mgr.get_summary_stats()
+    return {
+        "status": "ok",
+        "total": len(results),
+        "passed": sum(1 for res in results if res["status"] == "PASSED"),
+        "failed": sum(1 for res in results if res["status"] == "FAILED"),
+        "stats": stats,
+        "results": results
+    }
+
+@app.post("/api/rules/reset")
+async def reset_rules_endpoint():
+    rules = rules_mgr.reset_to_defaults()
+    return {"status": "ok", "message": "已恢复官方默认16条业务规则", "rules": rules}
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
