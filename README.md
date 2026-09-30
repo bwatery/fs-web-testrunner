@@ -40,11 +40,11 @@
 ---
 
 ### 3. 🎭 双模驱动测试内核 (Dual Testing Modes)
-* **【👀 侵入式·视觉演示套件】**：
+* **【🖥️ 界面验证套件 (前台UI)】**：
   - 基于 Chrome Remote Debugging (CDP) WebSocket 协议，直连真实浏览器；
   - 模拟真实人类操作：真实表单键入、下拉 Popper 点击、表格行双击、树节点激活；
   - 自动分步捕获并归档高保真截图存证（保存在 `reports/screenshots/`）。
-* **【🤖 非侵入式·AI静默验证套件】**：
+* **【⚡ 后台验证套件 (API与数据库)】**：
   - 直连微服务 REST API 与 Oracle 数据库（`oracledb` 驱动）；
   - 毫秒级多角色 Token 交换（住院医生/住院护士/中心药房/住院收费处）；
   - 财务账目守恒断言、库存实物扣减与回退断言、数据库锁与事务一致性。
@@ -155,8 +155,8 @@ fs_web_testrunner/
 │   ├── test_suite_outpatient_full_lifecycle.py # 🏥 门诊全流程大闭环实测与业务规则套件
 │   ├── test_suite_inpatient_business_rules.py # 📋 住院核心业务规则断言套件 (时间跟随/成组等)
 │   ├── test_suite_inpatient_full_lifecycle.py  # 🏥 住院全生命周期大闭环端到端实测套件
-│   ├── test_suite_invasive.py           # 👀 侵入式全流程视觉演示套件
-│   ├── test_suite_non_invasive.py       # 🤖 非侵入式微服务与数据库静默套件
+│   ├── test_suite_invasive.py           # 🖥️ 界面验证全流程视觉演示套件
+│   ├── test_suite_non_invasive.py       # ⚡ 后台验证微服务与数据库静默套件
 │   ├── test_suite_cpoe_closed_loop.py   # 💊 医嘱闭环全流程实测套件
 │   └── test_his_03_inpatient.py         # 🛏️ 住院业务经典兼容套件
 ├── web_runner/                          # Material 3 风格前端控制台

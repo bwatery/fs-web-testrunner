@@ -1544,11 +1544,11 @@
     <div class="top-actions">
       <!-- Group 1: 核心执行操作 -->
       <div class="action-btn-group" title="测试执行模式">
-        <button class="g-btn g-btn-ai" id="btnRunNonInvasive" title="🤖 供 AI 快速验证代码：完全静默、不弹窗口、直连后端与数据库，2秒内验证 11 项核心逻辑与契约">
-          <span>⚡ AI 验证</span>
+        <button class="g-btn g-btn-ai" id="btnRunNonInvasive" title="⚡ 后台验证：完全静默、不弹窗口、直连后端与数据库，毫秒级快速验证业务逻辑与契约">
+          <span>⚡ 后台验证</span>
         </button>
-        <button class="g-btn g-btn-demo" id="btnRunInvasive" title="👀 供人肉眼核验界面：自动弹出 Chrome 窗口、高亮模拟点击选床/结账/弹窗、并自动全屏截图">
-          <span>👀 界面演示</span>
+        <button class="g-btn g-btn-demo" id="btnRunInvasive" title="🖥️ 界面验证：自动弹出 Chrome 窗口、高亮模拟点击交互、直观核验页面并自动截图">
+          <span>🖥️ 界面验证</span>
         </button>
         <button class="g-btn g-btn-primary" id="btnRunSelected" title="仅执行当前勾选的用例">
           <span>▶ 运行选中</span>
@@ -1741,7 +1741,7 @@
               <div>
                 <div style="font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
                   HIS 登录与会话验证器
-                  <span class="badge" style="background:var(--g-green-surface); color:var(--g-green); font-size:11px; padding:2px 8px; border-radius:12px;">🛡️ 零前端干扰模式 (非侵入式)</span>
+                  <span class="badge" style="background:var(--g-green-surface); color:var(--g-green); font-size:11px; padding:2px 8px; border-radius:12px;">🛡️ 零前端干扰模式 (后台静默)</span>
                 </div>
                 <div style="font-size:12px; color:var(--g-text-secondary); margin-top:2px;">
                   直接读取 Chrome 已登录会话并校验后端 API 与 Oracle 数据库，完全不跳转、不点击前台页面，绝不破坏医生工作站界面！
@@ -1982,7 +1982,7 @@
               <button class="icon-btn" onclick="document.getElementById('orderPayloadModal').style.display='none'">✕</button>
             </div>
             <div style="font-size:12px; color:var(--g-text-secondary);">
-              以下为基于 Oracle 真实药品字典生成的住院医生工作站开立报文，可直接提交至 HIS 医嘱开立接口进行非侵入式写入校验：
+              以下为基于 Oracle 真实药品字典生成的住院医生工作站开立报文，可直接提交至 HIS 医嘱开立接口进行后台静默写入校验：
             </div>
             <pre id="orderPayloadJson" style="background:#1e1e1e; color:#9cdcfe; font-family:var(--g-mono); font-size:12px; padding:14px; border-radius:6px; max-height:260px; overflow:auto;"></pre>
             <div style="display:flex; justify-content:flex-end; gap:10px;">
@@ -2313,8 +2313,8 @@
             </div>
             <div class="table-toolbar-right">
               <button class="g-btn g-btn-tonal active filter-btn" id="btnFilterAll" onclick="filterCases('all')">全部</button>
-              <button class="g-btn g-btn-outlined filter-btn" style="color:#e8710a; border-color:#e8710a; font-weight:600;" id="btnFilterInvasive" onclick="filterCases('invasive')">👀 侵入式</button>
-              <button class="g-btn g-btn-outlined filter-btn" style="color:#1a73e8; border-color:#1a73e8; font-weight:600;" id="btnFilterNonInvasive" onclick="filterCases('non_invasive')">🤖 非侵入式</button>
+              <button class="g-btn g-btn-outlined filter-btn" style="color:#e8710a; border-color:#e8710a; font-weight:600;" id="btnFilterInvasive" onclick="filterCases('invasive')">🖥️ 界面验证</button>
+              <button class="g-btn g-btn-outlined filter-btn" style="color:#1a73e8; border-color:#1a73e8; font-weight:600;" id="btnFilterNonInvasive" onclick="filterCases('non_invasive')">⚡ 后台验证</button>
               <button class="g-btn g-btn-outlined filter-btn" id="btnFilterOrder" onclick="filterCases('order')">📋 医嘱开立</button>
               <button class="g-btn g-btn-outlined filter-btn" id="btnFilterHis" onclick="filterCases('his')">🏥 HIS业务</button>
               <button class="g-btn g-btn-outlined filter-btn" id="btnFilterEmr" onclick="filterCases('emr')">📝 EMR病历</button>
@@ -2851,13 +2851,13 @@
         document.getElementById('totalTestsCount').innerText = `${stats.total}`;
         document.getElementById('kpiTotal').innerText = `${stats.total}`;
         const subModesEl = document.getElementById('kpiSubModes');
-        if (subModesEl) subModesEl.innerText = `(👀 侵入 ${invasiveCnt} · 🤖 非侵入 ${nonInvasiveCnt})`;
+        if (subModesEl) subModesEl.innerText = `(🖥️ 界面 ${invasiveCnt} · ⚡ 后台 ${nonInvasiveCnt})`;
         
         // Update filter buttons badge count
         const btnInv = document.getElementById('btnFilterInvasive');
-        if (btnInv) btnInv.innerText = `👀 侵入式 (${invasiveCnt})`;
+        if (btnInv) btnInv.innerText = `🖥️ 界面验证 (${invasiveCnt})`;
         const btnNonInv = document.getElementById('btnFilterNonInvasive');
-        if (btnNonInv) btnNonInv.innerText = `🤖 非侵入式 (${nonInvasiveCnt})`;
+        if (btnNonInv) btnNonInv.innerText = `⚡ 后台验证 (${nonInvasiveCnt})`;
 
         // Initialize all cases selected by default
         allTestCases.forEach(t => selectedCaseIds.add(t.id));
@@ -2901,8 +2901,8 @@
       segWrap.style.cssText = 'display:flex; gap:4px; padding:2px 4px 10px; border-bottom:1px solid var(--g-border); margin-bottom:8px;';
       segWrap.innerHTML = `
         <button type="button" class="drawer-mode-pill ${currentDrawerMode === 'ALL' ? 'active' : ''}" data-mode="ALL" onclick="setDrawerModeFilter('ALL')" title="查看全部业务测试用例">全部 (${tests.length})</button>
-        <button type="button" class="drawer-mode-pill ${currentDrawerMode === 'INVASIVE' ? 'active' : ''}" data-mode="INVASIVE" onclick="setDrawerModeFilter('INVASIVE')" title="仅显示侵入式用例(大屏UI/视觉演示)">👀 侵入 (${invCount})</button>
-        <button type="button" class="drawer-mode-pill ${currentDrawerMode === 'NON_INVASIVE' ? 'active' : ''}" data-mode="NON_INVASIVE" onclick="setDrawerModeFilter('NON_INVASIVE')" title="仅显示非侵入式用例(后台API/AI验证)">🤖 静默 (${nonInvCount})</button>
+        <button type="button" class="drawer-mode-pill ${currentDrawerMode === 'INVASIVE' ? 'active' : ''}" data-mode="INVASIVE" onclick="setDrawerModeFilter('INVASIVE')" title="仅显示界面验证用例(UI交互/页面核验)">🖥️ 界面 (${invCount})</button>
+        <button type="button" class="drawer-mode-pill ${currentDrawerMode === 'NON_INVASIVE' ? 'active' : ''}" data-mode="NON_INVASIVE" onclick="setDrawerModeFilter('NON_INVASIVE')" title="仅显示后台验证用例(后台API/契约校验)">⚡ 后台 (${nonInvCount})</button>
       `;
       nav.appendChild(segWrap);
 
@@ -2978,8 +2978,8 @@
           subItem.title = `${t.id} - ${t.name}`;
           const isInv = t.mode === 'INVASIVE';
           const modeTag = isInv
-            ? `<span style="font-size:10px; padding:0 4px; border-radius:3px; background:#fff3e0; color:#e65100; font-weight:600; flex-shrink:0;" title="侵入式(给我看)">👀</span>`
-            : `<span style="font-size:10px; padding:0 4px; border-radius:3px; background:#e8f0fe; color:#1a73e8; font-weight:600; flex-shrink:0;" title="非侵入式(AI验证)">🤖</span>`;
+            ? `<span style="font-size:10px; padding:0 4px; border-radius:3px; background:#fff3e0; color:#e65100; font-weight:600; flex-shrink:0;" title="界面验证 (UI交互与核验)">🖥️</span>`
+            : `<span style="font-size:10px; padding:0 4px; border-radius:3px; background:#e8f0fe; color:#1a73e8; font-weight:600; flex-shrink:0;" title="后台验证 (API与数据库)">⚡</span>`;
 
           subItem.innerHTML = `
             <input type="checkbox" class="sub-case-chk" data-id="${t.id}" data-cat="${cat}" ${selectedCaseIds.has(t.id) ? 'checked' : ''} title="勾选/取消勾选该用例">
@@ -3094,8 +3094,8 @@
 
         const isInvasive = t.mode === 'INVASIVE';
         const modeBadge = isInvasive
-          ? `<span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; background:#fff3e0; color:#e65100; border:1px solid #ffe0b2; display:inline-flex; align-items:center; gap:3px;" title="【侵入式 (给我看)】自动弹出独立Chrome窗口模拟人工交互并截图">👀 侵入式</span>`
-          : `<span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; background:#e8f0fe; color:#1a73e8; border:1px solid #d2e3fc; display:inline-flex; align-items:center; gap:3px;" title="【非侵入式 (AI验证)】直连后端API与数据库验证代码，完全静默零干扰">🤖 非侵入</span>`;
+          ? `<span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; background:#fff3e0; color:#e65100; border:1px solid #ffe0b2; display:inline-flex; align-items:center; gap:3px;" title="【界面验证】自动弹出独立Chrome窗口模拟人工交互并截图">🖥️ 界面验证</span>`
+          : `<span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; background:#e8f0fe; color:#1a73e8; border:1px solid #d2e3fc; display:inline-flex; align-items:center; gap:3px;" title="【后台验证】直连后端API与数据库验证契约，完全静默零干扰">⚡ 后台验证</span>`;
 
         tr.innerHTML = `
           <td style="text-align:center;"><input type="checkbox" class="case-chk" data-id="${t.id}" ${selectedCaseIds.has(t.id) ? 'checked' : ''}></td>
@@ -3598,7 +3598,7 @@
     });
 
     // -------------------------------------------------------------
-    // HIS Login & Session Validator Logic (非侵入式验证)
+    // HIS Login & Session Validator Logic (后台验证)
     // -------------------------------------------------------------
     let liveValidatorData = null;
     let validatorPollInterval = null;

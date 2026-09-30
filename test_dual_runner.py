@@ -11,16 +11,16 @@ print(f"Total tests registered: {len(engine.registry)}")
 invasive = [tid for tid, m in engine.registry.items() if m.get("mode") == "INVASIVE"]
 non_invasive = [tid for tid, m in engine.registry.items() if m.get("mode") == "NON_INVASIVE"]
 
-print(f"  👀 侵入式用例 (给我看): {len(invasive)} 项")
+print(f"  🖥️ 界面验证用例: {len(invasive)} 项")
 for tid in invasive:
     print(f"     - [{tid}] {engine.registry[tid]['name']}")
 
-print(f"  🤖 非侵入式用例 (AI验证): {len(non_invasive)} 项")
+print(f"  ⚡ 后台验证用例: {len(non_invasive)} 项")
 for tid in non_invasive:
     print(f"     - [{tid}] {engine.registry[tid]['name']}")
 
 print("\n" + "="*70)
-print("  >>> 执行【🤖 非侵入式·AI静默验证套件】(零前端干扰，纯后端+Oracle+规则)...")
+print("  >>> 执行【⚡ 后台验证套件】(零前端干扰，纯后端+Oracle+规则)...")
 print("="*70)
 t0 = time.time()
 results = engine.run_tests(selected_ids=non_invasive, mode_filter="NON_INVASIVE")
