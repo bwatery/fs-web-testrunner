@@ -1265,12 +1265,12 @@
     .rule-card {
       background: var(--g-surface);
       border: 1px solid var(--g-border);
-      border-radius: 12px;
-      padding: 16px 18px;
+      border-radius: 8px;
+      padding: 10px 14px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      gap: 6px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
       transition: all 0.2s ease;
       position: relative;
     }
@@ -1663,7 +1663,7 @@
       border: 1px solid var(--g-border);
       border-radius: var(--g-radius-md);
       box-shadow: var(--g-shadow-1);
-      margin-bottom: 16px;
+      margin-bottom: 8px;
       overflow: hidden;
       transition: border-color 0.2s;
     }
@@ -1671,7 +1671,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px 18px;
+      padding: 7px 12px;
       background: var(--g-surface-variant);
       cursor: pointer;
       user-select: none;
@@ -1698,11 +1698,28 @@
       transform: rotate(180deg);
     }
     .rule-group-body {
-      padding: 16px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
-      gap: 16px;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
       border-top: 1px solid var(--g-border-subtle);
+    }
+    .rule-compact-list-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 14px;
+      border-bottom: 1px solid var(--g-border-subtle);
+      background: var(--g-surface);
+      transition: background 0.15s ease;
+      cursor: pointer;
+      gap: 12px;
+      font-size: 12px;
+    }
+    .rule-compact-list-row:hover {
+      background: rgba(26,115,232,0.04);
+    }
+    .rule-compact-list-row:last-child {
+      border-bottom: none;
     }
 
     /* Compact Table View */
@@ -1723,13 +1740,13 @@
       background: var(--g-surface-variant);
       color: var(--g-text-secondary);
       font-weight: 600;
-      padding: 8px 10px;
+      padding: 6px 10px;
       border-bottom: 1px solid var(--g-border);
       white-space: nowrap;
       font-size: 11.5px;
     }
     .rule-table td {
-      padding: 8px 10px;
+      padding: 6px 10px;
       border-bottom: 1px solid var(--g-border-subtle);
       color: var(--g-text-primary);
       vertical-align: middle;
@@ -2255,117 +2272,87 @@
 
       <!-- Tab: Business Rules & Gates Governance Center -->
       <section class="content-area" id="tab-rules">
-        <!-- Hero Header -->
-        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:18px 24px; box-shadow:var(--g-shadow-1); display:flex; flex-direction:column; gap:14px;">
-          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
-            <div style="display:flex; align-items:center; gap:12px;">
-              <span style="font-size:26px;">📋</span>
-              <div>
-                <div style="font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
-                  临床与财务核心业务规则库
-                  <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue); font-size:11px; padding:2px 8px; border-radius:12px;">🛡️ 16大业务流转铁律与门禁</span>
-                  <span id="rulesEnvChip" class="badge" style="background:var(--g-green-surface); color:var(--g-green); font-size:11px; padding:2px 8px; border-radius:12px;">💻 离线沙盒自愈中</span>
-                </div>
-                <div style="font-size:12px; color:var(--g-text-secondary); margin-top:2px;">
-                  覆盖门诊与住院 16 大临床规则、状态机流转与防篡改门禁。支持可视化规范查阅、在线配置参数维护与现场一键断言校验！
-                </div>
-              </div>
+        <!-- Ultra-Compact Header & Inline Metrics Bar -->
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:8px 14px; box-shadow:var(--g-shadow-1); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <!-- Left: Title & Inline KPI Metrics Chips -->
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div style="font-size:14px; font-weight:700; display:flex; align-items:center; gap:6px; color:var(--g-text-primary);">
+              <span>📋 业务规则中心</span>
+              <span id="rulesEnvChip" class="badge" style="background:var(--g-green-surface); color:var(--g-green); font-size:10.5px; padding:1px 6px; border-radius:10px;">💻 离线沙盒</span>
             </div>
-            <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-              <button class="g-btn g-btn-primary" id="btnOpenCreateRuleModal" style="font-weight:600; background:#1e8e3e; border:none; box-shadow:0 1px 3px rgba(30,142,62,0.3);" title="新增一条临床或财务自定义业务规则与约束门禁">
-                ➕ 新增业务规则
-              </button>
-              <button class="g-btn g-btn-primary" id="btnVerifyAllRules" style="font-weight:600; box-shadow:0 1px 3px rgba(26,115,232,0.3);">
-                ⚡ 一键全规则自动化验收
-              </button>
-              <button class="g-btn g-btn-tonal" id="btnRefreshRules">🔄 刷新规则</button>
-              <button class="g-btn g-btn-outlined" id="btnResetRules" title="恢复官方16条标准规则配置">⏪ 恢复默认</button>
+            <!-- Inline Ultra-Compact KPI Ribbon -->
+            <div style="display:inline-flex; align-items:center; gap:6px; font-size:11.5px; background:var(--g-surface-variant); padding:2px 10px; border-radius:12px; border:1px solid var(--g-border-subtle);">
+              <span>总数: <strong id="ruleStatTotal" style="color:var(--g-text-primary);">16</strong></span>
+              <span style="color:var(--g-border);">|</span>
+              <span style="color:#1a73e8;">🛏️ 住院: <strong id="ruleStatIP">8</strong></span>
+              <span style="color:var(--g-border);">|</span>
+              <span style="color:#1e8e3e;">🏥 门诊: <strong id="ruleStatOP">8</strong></span>
+              <span style="color:var(--g-border);">|</span>
+              <span style="color:#d93025;">🚨 阻断: <strong id="ruleStatBlock">14</strong></span>
+              <span style="color:var(--g-border);">|</span>
+              <span style="color:#f9ab00;">⚠️ 预警: <strong id="ruleStatWarn">2</strong></span>
+              <span style="color:var(--g-border);">|</span>
+              <span style="color:var(--g-green);">✅ 通过: <strong id="ruleStatPassed">16/16</strong></span>
             </div>
           </div>
 
-          <!-- Stats Ribbon -->
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-top:2px;">
-            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
-              <div style="font-size:11px; color:var(--g-text-secondary);">规则总数</div>
-              <div style="font-size:18px; font-weight:700; color:var(--g-text-primary);" id="ruleStatTotal">16</div>
-            </div>
-            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
-              <div style="font-size:11px; color:var(--g-text-secondary);">🛏️ 住院规则</div>
-              <div style="font-size:18px; font-weight:700; color:#1a73e8;" id="ruleStatIP">8</div>
-            </div>
-            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
-              <div style="font-size:11px; color:var(--g-text-secondary);">🏥 门诊规则</div>
-              <div style="font-size:18px; font-weight:700; color:#1e8e3e;" id="ruleStatOP">8</div>
-            </div>
-            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
-              <div style="font-size:11px; color:var(--g-text-secondary);">🚨 阻断门禁</div>
-              <div style="font-size:18px; font-weight:700; color:#d93025;" id="ruleStatBlock">14</div>
-            </div>
-            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
-              <div style="font-size:11px; color:var(--g-text-secondary);">⚠️ 预警规范</div>
-              <div style="font-size:18px; font-weight:700; color:#f9ab00;" id="ruleStatWarn">2</div>
-            </div>
-            <div style="background:var(--g-surface-variant); padding:10px 14px; border-radius:var(--g-radius-sm); border:1px solid var(--g-border-subtle);">
-              <div style="font-size:11px; color:var(--g-text-secondary);">✅ 校验通过率</div>
-              <div style="font-size:18px; font-weight:700; color:var(--g-green);" id="ruleStatPassed">16 / 16</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Modern Smart Search & Quick Tags Bar -->
-        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:14px 18px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--g-shadow-1);">
-          <div class="rule-search-container">
-            <div class="rule-search-input-wrap">
-              <span class="rule-search-icon">🔍</span>
-              <input type="text" id="ruleSearchInput" class="rule-search-input" placeholder="输入规则名称、编号、字段名、触发环节或业务说明（按 / 快速聚焦，按 Esc 清空）..." autocomplete="off">
-              <span id="ruleSearchCountBadge" class="rule-search-count-pill" style="display:none;">共 16 项</span>
-              <button type="button" id="btnRuleSearchClear" class="rule-search-clear-btn" title="清空搜索" onclick="clearRuleSearch()" style="display:none;">✕</button>
-            </div>
-            <!-- Quick Tag Pills -->
-            <div class="rule-quick-tags-wrap">
-              <span class="quick-tags-title">🎯 快捷检索:</span>
-              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('时间')">⏱️ 医嘱开始时间</span>
-              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('皮试')">💉 皮试未出阻断</span>
-              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('状态机')">🔄 状态机单向流转</span>
-              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('退药')">💊 先退药后退费</span>
-              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('出院')">🚪 出院五前置拦截</span>
-              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('挂号')">🏥 挂号退费闭环</span>
-              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('零费用')">💰 零费用发票红冲</span>
-              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('毒麻')">🔐 毒麻精一双人签</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Filter & View Switcher Bar -->
-        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; box-shadow:var(--g-shadow-1);">
-          <!-- Category Filter Pills -->
+          <!-- Right: Action Buttons -->
           <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-            <button class="g-btn g-btn-tonal rule-filter-btn active" data-filter="all" style="padding:4px 12px; font-size:12px; height:28px;">全部 (<span id="filterCountAll">16</span>)</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="inpatient" style="padding:4px 12px; font-size:12px; height:28px;">🛏️ 住院业务 (<span id="filterCountIP">8</span>)</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="outpatient" style="padding:4px 12px; font-size:12px; height:28px;">🏥 门诊业务 (<span id="filterCountOP">8</span>)</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="block" style="padding:4px 12px; font-size:12px; height:28px;">🚨 强阻断门禁</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="warn" style="padding:4px 12px; font-size:12px; height:28px;">⚠️ 预警规范</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="passed" style="padding:4px 12px; font-size:12px; height:28px; color:var(--g-green); border-color:var(--g-green);">✅ 校验通过</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="failed" style="padding:4px 12px; font-size:12px; height:28px; color:var(--g-red); border-color:var(--g-red);">❌ 校验失败</button>
+            <button class="g-btn g-btn-primary" id="btnOpenCreateRuleModal" style="height:26px; font-size:11.5px; padding:0 10px; font-weight:600; background:#1e8e3e; border:none;" title="新增自定义业务规则">
+              ➕ 新增规则
+            </button>
+            <button class="g-btn g-btn-primary" id="btnVerifyAllRules" style="height:26px; font-size:11.5px; padding:0 10px; font-weight:600;" title="执行全部规则自动化验收">
+              ⚡ 一键全验
+            </button>
+            <button class="g-btn g-btn-tonal" id="btnRefreshRules" style="height:26px; font-size:11.5px; padding:0 8px;">🔄 刷新</button>
+            <button class="g-btn g-btn-outlined" id="btnResetRules" style="height:26px; font-size:11.5px; padding:0 8px;" title="恢复官方16条标准规则配置">⏪ 恢复默认</button>
+          </div>
+        </div>
+
+        <!-- Compact Integrated Search, Filters & View Switcher Bar -->
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:6px 12px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px; box-shadow:var(--g-shadow-1);">
+          <!-- Left: Compact Search Bar & Mini Quick Chips -->
+          <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:260px; max-width:440px;">
+            <div class="rule-search-input-wrap" style="height:28px; padding:0 10px; border-radius:14px;">
+              <span class="rule-search-icon" style="font-size:12px; margin-right:6px;">🔍</span>
+              <input type="text" id="ruleSearchInput" class="rule-search-input" style="height:26px; font-size:11.5px;" placeholder="快速过滤 (编号/名称/表名/字段)..." autocomplete="off">
+              <span id="ruleSearchCountBadge" class="rule-search-count-pill" style="display:none; font-size:10px; padding:1px 6px;">共 16 项</span>
+              <button type="button" id="btnRuleSearchClear" class="rule-search-clear-btn" style="width:18px; height:18px; font-size:10px;" title="清空搜索" onclick="clearRuleSearch()" style="display:none;">✕</button>
+            </div>
+            <!-- Hot Keyword Chips -->
+            <div style="display:inline-flex; align-items:center; gap:3px;">
+              <span class="quick-tag-chip" style="font-size:10.5px; padding:1px 6px; height:22px;" onclick="applyRuleQuickSearch('时间')">⏱️时间</span>
+              <span class="quick-tag-chip" style="font-size:10.5px; padding:1px 6px; height:22px;" onclick="applyRuleQuickSearch('皮试')">💉皮试</span>
+              <span class="quick-tag-chip" style="font-size:10.5px; padding:1px 6px; height:22px;" onclick="applyRuleQuickSearch('退药')">💊退药</span>
+              <span class="quick-tag-chip" style="font-size:10.5px; padding:1px 6px; height:22px;" onclick="applyRuleQuickSearch('出院')">🚪出院</span>
+            </div>
           </div>
 
-          <!-- Right Controls: Group Tools & View Switcher -->
-          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-            <div id="ruleGroupTools" style="display:inline-flex; align-items:center; gap:6px;">
-              <button type="button" class="g-btn g-btn-outlined" style="height:26px; padding:0 8px; font-size:11.5px; border-radius:13px;" onclick="expandAllRuleGroups()" title="展开所有业务模块分组">📂 全部展开</button>
-              <button type="button" class="g-btn g-btn-outlined" style="height:26px; padding:0 8px; font-size:11.5px; border-radius:13px;" onclick="collapseAllRuleGroups()" title="收起所有业务模块分组">📁 全部收起</button>
-            </div>
+          <!-- Center: Filter Pills -->
+          <div style="display:flex; align-items:center; gap:3px; flex-wrap:wrap;">
+            <button class="g-btn g-btn-tonal rule-filter-btn active" data-filter="all" style="padding:1px 7px; font-size:11px; height:24px;">全部 (<span id="filterCountAll">16</span>)</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="inpatient" style="padding:1px 7px; font-size:11px; height:24px;">🛏️ 住院 (<span id="filterCountIP">8</span>)</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="outpatient" style="padding:1px 7px; font-size:11px; height:24px;">🏥 门诊 (<span id="filterCountOP">8</span>)</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="block" style="padding:1px 7px; font-size:11px; height:24px;">🚨 强阻断</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="warn" style="padding:1px 7px; font-size:11px; height:24px;">⚠️ 预警</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="passed" style="padding:1px 7px; font-size:11px; height:24px; color:var(--g-green); border-color:var(--g-green);">✅ 通过</button>
+          </div>
 
-            <!-- View Switcher -->
+          <!-- Right: View Switcher -->
+          <div style="display:flex; align-items:center; gap:6px;">
+            <div id="ruleGroupTools" style="display:none; align-items:center; gap:3px;">
+              <button type="button" class="g-btn g-btn-outlined" style="height:22px; padding:0 5px; font-size:10.5px; border-radius:11px;" onclick="expandAllRuleGroups()">📂 展开</button>
+              <button type="button" class="g-btn g-btn-outlined" style="height:22px; padding:0 5px; font-size:10.5px; border-radius:11px;" onclick="collapseAllRuleGroups()">📁 收起</button>
+            </div>
             <div class="rule-view-switcher">
-              <button type="button" class="rule-view-btn active" data-view="grouped" onclick="setRuleView('grouped')" title="按业务模块分组手风琴展示，结构清晰不冗长">
-                🗂️ 分组视图
-              </button>
-              <button type="button" class="rule-view-btn" data-view="table" onclick="setRuleView('table')" title="紧凑数据清单表格，一屏浏览几十条规则，支持行展开">
+              <button type="button" class="rule-view-btn active" data-view="table" onclick="setRuleView('table')" title="紧凑数据清单表格，一屏全览无多余空白">
                 📊 紧凑表格
               </button>
-              <button type="button" class="rule-view-btn" data-view="cards" onclick="setRuleView('cards')" title="完整卡片平铺网格，查看详细参数与说明">
-                🗃️ 详细卡片
+              <button type="button" class="rule-view-btn" data-view="grouped" onclick="setRuleView('grouped')" title="按业务模块分组手风琴，紧凑行排布">
+                🗂️ 模块分组
+              </button>
+              <button type="button" class="rule-view-btn" data-view="cards" onclick="setRuleView('cards')" title="紧凑卡片网格">
+                🗃️ 精简卡片
               </button>
             </div>
           </div>
@@ -4478,7 +4465,7 @@
     let allBusinessRules = [];
     let currentRuleFilter = 'all';
     let ruleSearchQuery = '';
-    let currentRuleView = localStorage.getItem('rule_view_mode') || 'grouped';
+    let currentRuleView = localStorage.getItem('rule_view_mode') || 'table';
     const expandedTableRows = new Set(); // tracks expanded rows in table view
 
     function escapeHtml(str) {
@@ -4857,29 +4844,59 @@
           const warnCnt = groupRules.filter(r => r.severity === 'WARN').length;
           const passCnt = groupRules.filter(r => r.last_verify_status === 'PASSED').length;
 
-          const cardsHtml = groupRules.map(r => renderSingleRuleCard(r, q)).join('');
+          const rowsHtml = groupRules.map(r => {
+            const isBlock = r.severity === 'BLOCK';
+            let statusBadge = '';
+            if (r.last_verify_status === 'PASSED') {
+              statusBadge = `<span class="rule-status-chip pass" style="font-size:10.5px; padding:1px 6px;">✅ 通过 (${r.last_verify_duration_ms || 0}ms)</span>`;
+            } else if (r.last_verify_status === 'FAILED') {
+              statusBadge = `<span class="rule-status-chip fail" style="font-size:10.5px; padding:1px 6px;">❌ 失败</span>`;
+            } else {
+              statusBadge = `<span class="rule-status-chip none" style="font-size:10.5px; padding:1px 6px;">● 待校验</span>`;
+            }
+
+            return `
+              <div class="rule-compact-list-row" onclick="openRuleDetailModal('${r.id}')" title="点击查看【${escapeHtml(r.name)}】临床背景与详细说明">
+                <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0; overflow:hidden;">
+                  <span class="rule-id-pill" style="font-size:10.5px; flex-shrink:0;">${highlightRuleMatch(r.id, q)}</span>
+                  <span style="font-weight:600; font-size:12px; color:var(--g-text-primary); white-space:nowrap; flex-shrink:0;">${highlightRuleMatch(r.name, q)}</span>
+                  <span style="font-size:11px; color:var(--g-text-tertiary); background:var(--g-surface-variant); padding:1px 6px; border-radius:4px; white-space:nowrap; flex-shrink:0;">⚡ ${highlightRuleMatch(r.trigger_phase || '全流程', q)}</span>
+                  <span style="font-size:11.5px; color:var(--g-text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${highlightRuleMatch(r.summary || '', q)}</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                  <code class="rule-meta-code" style="font-size:10.5px; max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${escapeHtml(r.target_api_table || '')}">${highlightRuleMatch(r.target_api_table || 'N/A', q)}</code>
+                  <span class="rule-badge ${isBlock ? 'rule-badge-block' : 'rule-badge-warn'}" style="font-size:10.5px; padding:1px 6px;">${isBlock ? '🚨 阻断' : '⚠️ 预警'}</span>
+                  ${statusBadge}
+                  <input type="checkbox" onchange="event.stopPropagation(); toggleRuleEnabled('${r.id}', this.checked)" ${r.enabled !== false ? 'checked' : ''} style="width:14px; height:14px; accent-color:var(--g-blue);" title="启用/停用此规则">
+                  <button class="g-btn g-btn-tonal" style="height:22px; padding:0 6px; font-size:10.5px; border-radius:11px;" onclick="event.stopPropagation(); verifySingleRule('${r.id}', this)" title="现场执行校验">▶ 校验</button>
+                  <button class="g-btn g-btn-outlined" style="height:22px; padding:0 6px; font-size:10.5px; border-radius:11px;" onclick="event.stopPropagation(); openEditRuleModal('${r.id}')" title="编辑参数与规范">⚙️ 维护</button>
+                  <button class="g-btn g-btn-outlined" style="height:22px; padding:0 6px; font-size:10.5px; border-radius:11px;" onclick="event.stopPropagation(); openRuleDetailModal('${r.id}')" title="全屏查看详情">📖 详情</button>
+                </div>
+              </div>
+            `;
+          }).join('');
 
           return `
             <details class="rule-group-card" open id="group_${dom}">
               <summary class="rule-group-summary">
                 <div style="display:flex; align-items:center; gap:10px;">
-                  <span style="font-size:18px;">${info.icon}</span>
-                  <span style="font-weight:700; font-size:14px;">${info.name}</span>
-                  <span class="badge" style="background:var(--g-surface); border:1px solid var(--g-border); color:var(--g-text-secondary); font-size:11px; padding:2px 8px; border-radius:10px;">${groupRules.length} 项</span>
-                  <span style="font-size:11.5px; color:var(--g-text-tertiary); font-weight:normal; margin-left:4px;">
+                  <span style="font-size:16px;">${info.icon}</span>
+                  <span style="font-weight:700; font-size:13.5px;">${info.name}</span>
+                  <span class="badge" style="background:var(--g-surface); border:1px solid var(--g-border); color:var(--g-text-secondary); font-size:11px; padding:1px 7px; border-radius:10px;">${groupRules.length} 项</span>
+                  <span style="font-size:11px; color:var(--g-text-tertiary); font-weight:normal;">
                     (🚨 ${blockCnt} 阻断 · ⚠️ ${warnCnt} 预警)
                   </span>
-                  ${passCnt > 0 ? `<span class="badge" style="background:var(--g-green-surface); color:var(--g-green); font-size:11px; padding:2px 8px; border-radius:10px;">✅ ${passCnt}/${groupRules.length} 已通过</span>` : ''}
+                  ${passCnt > 0 ? `<span class="badge" style="background:var(--g-green-surface); color:var(--g-green); font-size:11px; padding:1px 7px; border-radius:10px;">✅ ${passCnt}/${groupRules.length} 已通过</span>` : ''}
                 </div>
-                <div style="display:flex; align-items:center; gap:10px;">
-                  <button type="button" class="g-btn g-btn-tonal" style="height:26px; font-size:11px; padding:0 10px; border-radius:13px;" onclick="event.stopPropagation(); verifyGroupRules('${dom}', this)" title="仅校验该分组下的全部规则">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <button type="button" class="g-btn g-btn-tonal" style="height:24px; font-size:11px; padding:0 8px; border-radius:12px;" onclick="event.stopPropagation(); verifyGroupRules('${dom}', this)" title="仅校验该分组下的全部规则">
                     ⚡ 校验本组 (${groupRules.length})
                   </button>
                   <span class="rule-group-chevron">▼</span>
                 </div>
               </summary>
               <div class="rule-group-body">
-                ${cardsHtml}
+                ${rowsHtml}
               </div>
             </details>
           `;
