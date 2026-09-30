@@ -170,15 +170,16 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      width: 220px;
-      flex-shrink: 1;
+      width: 260px;
+      min-width: 180px;
+      flex-shrink: 0;
       transition: all 0.2s ease;
     }
     .search-pill:focus-within {
       background: var(--g-surface);
       border-color: var(--g-blue);
       box-shadow: 0 1px 3px rgba(60,64,67,0.2);
-      width: 280px;
+      width: 320px;
     }
     .search-pill input {
       border: none;
@@ -190,12 +191,25 @@
       width: 100%;
     }
 
-    /* Top Controls */
+    /* Top Controls Grouping */
     .top-actions {
       display: flex;
       align-items: center;
       gap: 8px;
       flex-wrap: nowrap;
+      flex-shrink: 0;
+    }
+    .action-btn-group, .tools-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .header-divider {
+      width: 1px;
+      height: 22px;
+      background: var(--g-border);
+      margin: 0 4px;
       flex-shrink: 0;
     }
     .target-select {
@@ -209,6 +223,58 @@
       outline: none;
       height: 32px;
       flex-shrink: 0;
+    }
+    .env-mode-wrapper {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .env-mode-select {
+      font-weight: 600;
+      color: var(--g-blue);
+      border: 1.5px solid var(--g-blue);
+      background: var(--g-blue-surface);
+      border-radius: var(--g-radius-full);
+      padding: 0 10px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 12px;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .env-mode-select:focus {
+      box-shadow: 0 0 0 2px rgba(26,115,232,0.3);
+    }
+    .config-summary-pill {
+      font-size: 10.5px;
+      font-weight: 500;
+      background: var(--g-surface-variant);
+      color: var(--g-text-secondary);
+      padding: 1px 7px;
+      border-radius: 10px;
+      margin-left: 2px;
+    }
+    .g-btn-ai {
+      background: #1a73e8;
+      color: #ffffff;
+      font-weight: 600;
+      border: none;
+      box-shadow: 0 1px 3px rgba(26,115,232,0.25);
+    }
+    .g-btn-ai:hover {
+      background: #1557b0;
+      box-shadow: 0 2px 5px rgba(26,115,232,0.35);
+    }
+    .g-btn-demo {
+      background: #e8710a;
+      color: #ffffff;
+      font-weight: 600;
+      border: none;
+      box-shadow: 0 1px 3px rgba(232,113,10,0.25);
+    }
+    .g-btn-demo:hover {
+      background: #c55d04;
+      box-shadow: 0 2px 5px rgba(232,113,10,0.35);
     }
     .g-btn {
       display: inline-flex;
@@ -1264,76 +1330,181 @@
 
   <!-- Google App Header -->
   <header>
-    <div class="brand-wrap">
-      <div class="google-dots">
-        <div class="g-dot g-dot-blue"></div>
-        <div class="g-dot g-dot-red"></div>
-        <div class="g-dot g-dot-yellow"></div>
-        <div class="g-dot g-dot-green"></div>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div class="brand-wrap" style="min-width:auto;">
+        <div class="google-dots">
+          <div class="g-dot g-dot-blue"></div>
+          <div class="g-dot g-dot-red"></div>
+          <div class="g-dot g-dot-yellow"></div>
+          <div class="g-dot g-dot-green"></div>
+        </div>
+        <div class="brand-title">
+          HIS WebRunner
+          <span class="badge">Google QA Suite</span>
+        </div>
       </div>
-      <div class="brand-title">
-        HIS WebRunner
-        <span class="badge">Google QA Suite</span>
-      </div>
-    </div>
 
-    <!-- Search Pill -->
-    <div class="search-pill">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--g-text-tertiary)">
-        <circle cx="11" cy="11" r="8"></circle>
-        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-      </svg>
-      <input type="text" id="searchInput" placeholder="搜索测试用例、病历元素或 HIS 模块 (按 / 聚焦)...">
-    </div>
-
-    <!-- Top Action Buttons -->
-    <div class="top-actions">
-      <button class="g-btn" id="btnRunNonInvasive" style="background:#1a73e8; color:white; font-weight:600; border:none; box-shadow:0 1px 3px rgba(26,115,232,0.3);" title="🤖 供 AI 快速验证代码：完全静默、不弹窗口、直连后端与数据库，2秒内验证 11 项核心逻辑与契约">⚡ 非侵入式 (AI验证)</button>
-      <button class="g-btn" id="btnRunInvasive" style="background:#e8710a; color:white; font-weight:600; border:none; box-shadow:0 1px 3px rgba(232,113,10,0.3);" title="👀 供人肉眼核验界面：自动弹出 Chrome 窗口、高亮模拟点击选床/结账/弹窗、并自动全屏截图">👀 侵入式 (给我看)</button>
-      <button class="g-btn g-btn-primary" id="btnRunSelected" title="仅执行当前勾选的用例">▶ 运行选中</button>
-      <button class="g-btn g-btn-outlined" id="btnRunAll" title="运行全部用例">▶ 运行全量</button>
-      <button class="g-btn g-btn-danger" id="btnStop" style="display:none;">⏹ 停止</button>
-
-      <span style="width:1px; height:18px; background:var(--g-border); margin:0 2px;"></span>
-
-      <!-- Dual Mode Selector: Live Intranet vs Offline Mock -->
-      <select class="target-select" id="envModeSelect" title="运行环境与数据库模式切换" style="max-width:175px; font-weight:600; color:var(--g-blue); border:1.5px solid var(--g-blue); background:var(--g-blue-surface);">
-        <option value="AUTO">⚡ 智能自适应模式</option>
-        <option value="MOCK" selected>💻 离线沙盒(免库)</option>
-        <option value="LIVE">🌐 内网直连(现场)</option>
-      </select>
-
-      <button class="g-btn g-btn-tonal" id="btnOpenBrowser" title="立即在桌面弹出独立的 Chrome 窗口">🌐 独立浏览器</button>
-      <select class="target-select" id="targetEnvSelect" title="目标环境切换" style="max-width:180px;">
-        <option value="http://192.168.1.198:8088">湛江赤坎中医 (198:8088)</option>
-        <option value="http://localhost:8088">本地环境 (localhost:8088)</option>
-      </select>
-      <select class="target-select" id="loginModeSelect" title="登录方式切换" style="max-width:115px;">
-        <option value="B" selected>手动登录</option>
-        <option value="A">自动代登</option>
-      </select>
-      <div id="autoLoginFields" style="display:none; align-items:center; gap:4px;">
-        <input type="text" id="autoUsername" class="target-select" style="width:65px; padding:2px 6px;" placeholder="工号" value="admin">
-        <input type="password" id="autoPassword" class="target-select" style="width:65px; padding:2px 6px;" placeholder="密码" value="123456">
-      </div>
-      <label style="font-size: 12px; color: var(--g-text-secondary); display:flex; align-items:center; gap:4px; cursor:pointer;" title="开启后静默运行无界面">
-        <input type="checkbox" id="chkHeadless"> 静默
-      </label>
-      <button class="icon-btn" id="btnToggleTheme" title="切换深色/浅色主题">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="5"></circle>
-          <line x1="12" y1="1" x2="12" y2="3"></line>
-          <line x1="12" y1="21" x2="12" y2="23"></line>
-          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-          <line x1="1" y1="12" x2="3" y2="12"></line>
-          <line x1="21" y1="12" x2="23" y2="12"></line>
-          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+      <!-- Search Pill -->
+      <div class="search-pill">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--g-text-tertiary); flex-shrink:0;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
         </svg>
-      </button>
+        <input type="text" id="searchInput" placeholder="搜索测试用例、病历元素或 HIS 模块 (按 / 聚焦)...">
+      </div>
+    </div>
+
+    <!-- Top Action Groups -->
+    <div class="top-actions">
+      <!-- Group 1: 核心执行操作 -->
+      <div class="action-btn-group" title="测试执行模式">
+        <button class="g-btn g-btn-ai" id="btnRunNonInvasive" title="🤖 供 AI 快速验证代码：完全静默、不弹窗口、直连后端与数据库，2秒内验证 11 项核心逻辑与契约">
+          <span>⚡ AI 验证</span>
+        </button>
+        <button class="g-btn g-btn-demo" id="btnRunInvasive" title="👀 供人肉眼核验界面：自动弹出 Chrome 窗口、高亮模拟点击选床/结账/弹窗、并自动全屏截图">
+          <span>👀 界面演示</span>
+        </button>
+        <button class="g-btn g-btn-primary" id="btnRunSelected" title="仅执行当前勾选的用例">
+          <span>▶ 运行选中</span>
+        </button>
+        <button class="g-btn g-btn-danger" id="btnStop" style="display:none;" title="强制终止当前正在运行的测试">
+          <span>⏹ 停止</span>
+        </button>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <!-- Group 2: 环境模式选择 -->
+      <div class="env-mode-wrapper" title="运行环境与数据库模式切换">
+        <select class="target-select env-mode-select" id="envModeSelect">
+          <option value="AUTO">⚡ 自适应模式</option>
+          <option value="MOCK" selected>💻 离线沙盒(免库)</option>
+          <option value="LIVE">🌐 内网直连(现场)</option>
+        </select>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <!-- Group 3: 工具与配置 -->
+      <div class="tools-btn-group">
+        <button class="g-btn g-btn-tonal" id="btnOpenBrowser" title="立即在桌面弹出独立的 Chrome 窗口并打开目标系统">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>独立浏览器</span>
+        </button>
+
+        <button class="g-btn g-btn-outlined" id="btnOpenRunConfig" title="运行环境、登录凭据与静默选项配置">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>运行配置</span>
+          <span id="configSummaryBadge" class="config-summary-pill">本地 · 手动</span>
+        </button>
+
+        <button class="icon-btn" id="btnToggleTheme" title="切换深色/浅色主题">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+      </div>
     </div>
   </header>
+
+  <!-- ⚙️ 运行配置弹出对话框 (Run Configuration Modal) -->
+  <div id="runSettingsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.45); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(2px);">
+    <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:12px; width:92%; max-width:520px; box-shadow:0 8px 32px rgba(0,0,0,0.2); display:flex; flex-direction:column; overflow:hidden;">
+      <!-- Modal Header -->
+      <div style="padding:16px 20px; border-bottom:1px solid var(--g-border); display:flex; justify-content:space-between; align-items:center; background:var(--g-surface-variant);">
+        <div style="font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px;">
+          <span>⚙️</span>
+          <span>运行参数与目标配置</span>
+        </div>
+        <button class="icon-btn" onclick="document.getElementById('runSettingsModal').style.display='none'">✕</button>
+      </div>
+
+      <!-- Modal Body -->
+      <div style="padding:20px; display:flex; flex-direction:column; gap:16px; max-height:80vh; overflow-y:auto;">
+        <!-- Target System Env -->
+        <div>
+          <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:6px;">
+            🏥 目标系统环境 (Target System)
+          </label>
+          <select class="target-select" id="targetEnvSelect" style="width:100%; height:36px; padding:0 12px; font-size:13px;">
+            <option value="http://localhost:8088" selected>本地开发环境 (localhost:8088)</option>
+            <option value="http://192.168.1.198:8088">湛江赤坎中医现场 (192.168.1.198:8088)</option>
+          </select>
+          <div style="font-size:11px; color:var(--g-text-tertiary); margin-top:4px;">
+            提示：在【离线沙盒(免库)】模式下，自动模拟微服务与数据库，不依赖内网网络连通。
+          </div>
+        </div>
+
+        <!-- Login Authentication Mode -->
+        <div style="border-top:1px dashed var(--g-border); padding-top:14px;">
+          <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:6px;">
+            🔐 认证登录方式 (Authentication)
+          </label>
+          <select class="target-select" id="loginModeSelect" style="width:100%; height:36px; padding:0 12px; font-size:13px;">
+            <option value="B" selected>手动登录 (打开浏览器由人工完成扫码或账号登入)</option>
+            <option value="A">自动代登 (由自动化脚本自动填人工号密码登入)</option>
+          </select>
+        </div>
+
+        <!-- Auto Login Credential Fields -->
+        <div id="autoLoginFields" style="display:none; background:var(--g-surface-variant); border-radius:8px; padding:12px; border:1px solid var(--g-border);">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+            <div>
+              <label style="font-size:11px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">医生/员工工号</label>
+              <input type="text" id="autoUsername" class="target-select" style="width:100%; height:32px; padding:0 8px;" placeholder="例如: admin" value="admin">
+            </div>
+            <div>
+              <label style="font-size:11px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">登录密码</label>
+              <input type="password" id="autoPassword" class="target-select" style="width:100%; height:32px; padding:0 8px;" placeholder="密码" value="123456">
+            </div>
+          </div>
+        </div>
+
+        <!-- Headless / Execution Options -->
+        <div style="border-top:1px dashed var(--g-border); padding-top:14px; display:flex; flex-direction:column; gap:10px;">
+          <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block;">
+            🛡️ 运行模式与选项
+          </label>
+          <label style="font-size:13px; color:var(--g-text-primary); display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
+            <input type="checkbox" id="chkHeadless" style="width:16px; height:16px;">
+            <span>静默无头运行 (Headless，不弹出可见浏览器窗口，速度更快)</span>
+          </label>
+        </div>
+
+        <!-- Batch Execution -->
+        <div style="border-top:1px dashed var(--g-border); padding-top:14px;">
+          <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:8px;">
+            📋 批量全量用例执行
+          </label>
+          <button class="g-btn g-btn-outlined" id="btnRunAll" style="width:100%; height:36px; justify-content:center; font-weight:600;" title="按当前配置执行用例库全部测试用例">
+            ▶ 运行全量用例 (50+ 项用例)
+          </button>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div style="padding:12px 20px; border-top:1px solid var(--g-border); display:flex; justify-content:flex-end; gap:8px; background:var(--g-surface);">
+        <button class="g-btn g-btn-primary" onclick="document.getElementById('runSettingsModal').style.display='none'">
+          完成并关闭
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- Main App Layout -->
   <div class="app-layout">
@@ -2926,10 +3097,56 @@
       updateKpis();
     }
 
+    // ⚙️ Run Configuration Modal & Summary Badge
+    function updateConfigSummaryBadge() {
+      const badge = document.getElementById('configSummaryBadge');
+      if (!badge) return;
+      const targetEl = document.getElementById('targetEnvSelect');
+      const loginEl = document.getElementById('loginModeSelect');
+      const chkHeadlessEl = document.getElementById('chkHeadless');
+      
+      const targetStr = (targetEl && targetEl.value.includes('localhost')) ? '本地' : '现场';
+      const loginStr = (loginEl && loginEl.value === 'A') ? '代登' : '手动';
+      const headlessStr = (chkHeadlessEl && chkHeadlessEl.checked) ? ' · 静默' : '';
+      badge.innerText = `${targetStr} · ${loginStr}${headlessStr}`;
+    }
+
+    const btnOpenRunConfig = document.getElementById('btnOpenRunConfig');
+    const runSettingsModal = document.getElementById('runSettingsModal');
+    if (btnOpenRunConfig && runSettingsModal) {
+      btnOpenRunConfig.addEventListener('click', () => {
+        runSettingsModal.style.display = 'flex';
+      });
+      runSettingsModal.addEventListener('click', (e) => {
+        if (e.target === runSettingsModal) {
+          runSettingsModal.style.display = 'none';
+        }
+      });
+    }
+
     // Login Mode Toggle
-    document.getElementById('loginModeSelect').addEventListener('change', (e) => {
-      document.getElementById('autoLoginFields').style.display = e.target.value === 'A' ? 'inline-flex' : 'none';
-    });
+    const loginModeEl = document.getElementById('loginModeSelect');
+    if (loginModeEl) {
+      loginModeEl.addEventListener('change', (e) => {
+        const autoFields = document.getElementById('autoLoginFields');
+        if (autoFields) {
+          autoFields.style.display = e.target.value === 'A' ? 'block' : 'none';
+        }
+        updateConfigSummaryBadge();
+      });
+    }
+
+    const targetEnvEl = document.getElementById('targetEnvSelect');
+    if (targetEnvEl) {
+      targetEnvEl.addEventListener('change', updateConfigSummaryBadge);
+    }
+
+    const chkHeadlessEl = document.getElementById('chkHeadless');
+    if (chkHeadlessEl) {
+      chkHeadlessEl.addEventListener('change', updateConfigSummaryBadge);
+    }
+
+    updateConfigSummaryBadge();
 
     // Run Tests Action
     async function startExecution(selectedIds, runMode = 'ALL') {
@@ -2971,6 +3188,8 @@
     });
 
     document.getElementById('btnRunAll').addEventListener('click', () => {
+      const modal = document.getElementById('runSettingsModal');
+      if (modal) modal.style.display = 'none';
       startExecution(null, 'ALL');
     });
 
