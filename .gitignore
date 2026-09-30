@@ -12,7 +12,7 @@ ENV/
 
 # Temporary test logs & scratch dumps
 *.log
-scratch/*.json
+scratch/
 reports/test_run_*.json
 
 # OS generated files

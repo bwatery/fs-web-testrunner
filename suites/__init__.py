@@ -51,3 +51,7 @@ def register_all_suites(engine: "TestEngine"):
     from .test_suite_inpatient_business_rules import register_tests as r_rules
     r_rules(engine)
 
+    # 8. 门诊全生命周期大闭环实测与业务规则套件 (建档 -> 挂号 -> 分诊 -> 开嘱 -> 收费 -> 退费 -> 退号 -> 状态机)
+    from .test_suite_outpatient_full_lifecycle import register_tests as r_op_lifecycle
+    r_op_lifecycle(engine)
+
