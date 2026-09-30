@@ -1508,8 +1508,268 @@
     }
     .rule-status-chip.pass { background: var(--g-green-surface); color: var(--g-green); }
     .rule-status-chip.fail { background: var(--g-red-surface); color: var(--g-red); }
-    .rule-status-chip.none { background: var(--g-surface-variant); color: var(--g-text-tertiary); }
-    .rule-status-chip.running { background: var(--g-yellow-surface); color: #b06000; animation: gPulse 1s infinite; }
+    /* ============================================================
+       Business Rules Modern Experience CSS
+       ============================================================ */
+    /* Search Bar & Quick Tags */
+    .rule-search-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 2px;
+    }
+    .rule-search-input-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+      width: 100%;
+      background: var(--g-surface);
+      border: 1.5px solid var(--g-border);
+      border-radius: 24px;
+      padding: 0 16px;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .rule-search-input-wrap:focus-within {
+      border-color: var(--g-blue);
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+    .rule-search-icon {
+      font-size: 15px;
+      color: var(--g-text-tertiary);
+      margin-right: 10px;
+      user-select: none;
+    }
+    .rule-search-input {
+      flex: 1;
+      height: 38px;
+      border: none;
+      background: transparent;
+      font-size: 13px;
+      color: var(--g-text-primary);
+      outline: none;
+    }
+    .rule-search-input::placeholder {
+      color: var(--g-text-tertiary);
+    }
+    .rule-search-count-pill {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--g-blue);
+      background: var(--g-blue-surface);
+      border-radius: 12px;
+      padding: 2px 8px;
+      margin-right: 8px;
+      white-space: nowrap;
+    }
+    .rule-search-clear-btn {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: none;
+      background: var(--g-surface-variant);
+      color: var(--g-text-secondary);
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .rule-search-clear-btn:hover {
+      background: var(--g-border);
+      color: var(--g-text-primary);
+    }
+
+    /* Quick Tags */
+    .rule-quick-tags-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 0 4px;
+    }
+    .quick-tags-title {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--g-text-tertiary);
+      margin-right: 2px;
+    }
+    .quick-tag-chip {
+      font-size: 11.5px;
+      padding: 3px 10px;
+      border-radius: 14px;
+      background: var(--g-surface-variant);
+      border: 1px solid var(--g-border-subtle);
+      color: var(--g-text-secondary);
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .quick-tag-chip:hover {
+      background: var(--g-blue-surface);
+      border-color: var(--g-blue);
+      color: var(--g-blue);
+      transform: translateY(-1px);
+    }
+    .quick-tag-chip.active {
+      background: var(--g-blue);
+      color: #fff;
+      border-color: var(--g-blue);
+      font-weight: 600;
+    }
+
+    /* View Switcher */
+    .rule-view-switcher {
+      display: inline-flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--g-surface-variant);
+      padding: 3px;
+      border-radius: 20px;
+      border: 1px solid var(--g-border-subtle);
+    }
+    .rule-view-btn {
+      height: 26px !important;
+      padding: 0 10px !important;
+      font-size: 11.5px !important;
+      border-radius: 13px !important;
+      border: none !important;
+      background: transparent !important;
+      color: var(--g-text-secondary) !important;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.15s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .rule-view-btn:hover {
+      color: var(--g-text-primary) !important;
+    }
+    .rule-view-btn.active {
+      background: var(--g-surface) !important;
+      color: var(--g-blue) !important;
+      font-weight: 600 !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1) !important;
+    }
+
+    /* Group Accordion View */
+    .rule-group-card {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      box-shadow: var(--g-shadow-1);
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    .rule-group-summary {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: var(--g-surface-variant);
+      cursor: pointer;
+      user-select: none;
+      font-size: 13.5px;
+      font-weight: 600;
+      color: var(--g-text-primary);
+      transition: background 0.15s;
+    }
+    .rule-group-summary:hover {
+      background: rgba(0,0,0,0.03);
+    }
+    [data-theme="dark"] .rule-group-summary:hover {
+      background: rgba(255,255,255,0.04);
+    }
+    .rule-group-summary::-webkit-details-marker {
+      display: none;
+    }
+    .rule-group-chevron {
+      transition: transform 0.2s ease;
+      font-size: 13px;
+      color: var(--g-text-tertiary);
+    }
+    .rule-group-card[open] .rule-group-chevron {
+      transform: rotate(180deg);
+    }
+    .rule-group-body {
+      padding: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
+      gap: 16px;
+      border-top: 1px solid var(--g-border-subtle);
+    }
+
+    /* Compact Table View */
+    .rule-table-container {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      overflow-x: auto;
+      box-shadow: var(--g-shadow-1);
+    }
+    .rule-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+    .rule-table th {
+      background: var(--g-surface-variant);
+      color: var(--g-text-secondary);
+      font-weight: 600;
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--g-border);
+      white-space: nowrap;
+      font-size: 11.5px;
+    }
+    .rule-table td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--g-border-subtle);
+      color: var(--g-text-primary);
+      vertical-align: middle;
+    }
+    .rule-table-row {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .rule-table-row:hover {
+      background: rgba(26,115,232,0.04);
+    }
+    .rule-table-row.expanded {
+      background: var(--g-surface-variant);
+    }
+    .rule-table-expand-cell {
+      padding: 0 !important;
+      border-bottom: 1px solid var(--g-border) !important;
+    }
+    .rule-table-expand-content {
+      padding: 16px 22px;
+      background: var(--g-surface-variant);
+      border-left: 4px solid var(--g-blue);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 12px;
+    }
+
+    /* Search Highlighting */
+    .rule-search-highlight {
+      background: #ffe082;
+      color: #202124;
+      padding: 1px 3px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    [data-theme="dark"] .rule-search-highlight {
+      background: #fbc02d;
+      color: #000;
+    }
   </style>
 </head>
 <body>
@@ -2052,26 +2312,96 @@
           </div>
         </div>
 
-        <!-- Filter Toolbar -->
-        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; box-shadow:var(--g-shadow-1);">
-          <!-- Category Filter Pills -->
-          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-            <button class="g-btn g-btn-tonal rule-filter-btn active" data-filter="all" style="padding:4px 12px; font-size:12px; height:28px;">全部 (16)</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="inpatient" style="padding:4px 12px; font-size:12px; height:28px;">🛏️ 住院业务 (8)</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="outpatient" style="padding:4px 12px; font-size:12px; height:28px;">🏥 门诊业务 (8)</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="block" style="padding:4px 12px; font-size:12px; height:28px;">🚨 强阻断门禁</button>
-            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="warn" style="padding:4px 12px; font-size:12px; height:28px;">⚠️ 预警规范</button>
-          </div>
-
-          <!-- Search Input -->
-          <div style="display:flex; align-items:center; gap:8px; flex:1; max-width:320px;">
-            <input type="text" id="ruleSearchInput" class="target-select" style="width:100%; height:30px; font-size:12px;" placeholder="🔍 快速过滤规则名称、编号或表名...">
+        <!-- Modern Smart Search & Quick Tags Bar -->
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:14px 18px; display:flex; flex-direction:column; gap:10px; box-shadow:var(--g-shadow-1);">
+          <div class="rule-search-container">
+            <div class="rule-search-input-wrap">
+              <span class="rule-search-icon">🔍</span>
+              <input type="text" id="ruleSearchInput" class="rule-search-input" placeholder="输入规则名称、编号、字段名、触发环节或业务说明（按 / 快速聚焦，按 Esc 清空）..." autocomplete="off">
+              <span id="ruleSearchCountBadge" class="rule-search-count-pill" style="display:none;">共 16 项</span>
+              <button type="button" id="btnRuleSearchClear" class="rule-search-clear-btn" title="清空搜索" onclick="clearRuleSearch()" style="display:none;">✕</button>
+            </div>
+            <!-- Quick Tag Pills -->
+            <div class="rule-quick-tags-wrap">
+              <span class="quick-tags-title">🎯 快捷检索:</span>
+              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('时间')">⏱️ 医嘱开始时间</span>
+              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('皮试')">💉 皮试未出阻断</span>
+              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('状态机')">🔄 状态机单向流转</span>
+              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('退药')">💊 先退药后退费</span>
+              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('出院')">🚪 出院五前置拦截</span>
+              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('挂号')">🏥 挂号退费闭环</span>
+              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('零费用')">💰 零费用发票红冲</span>
+              <span class="quick-tag-chip" onclick="applyRuleQuickSearch('毒麻')">🔐 毒麻精一双人签</span>
+            </div>
           </div>
         </div>
 
-        <!-- Rule Cards Container -->
-        <div id="rulesCardsContainer" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(460px, 1fr)); gap:16px;">
+        <!-- Filter & View Switcher Bar -->
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:10px 16px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; box-shadow:var(--g-shadow-1);">
+          <!-- Category Filter Pills -->
+          <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+            <button class="g-btn g-btn-tonal rule-filter-btn active" data-filter="all" style="padding:4px 12px; font-size:12px; height:28px;">全部 (<span id="filterCountAll">16</span>)</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="inpatient" style="padding:4px 12px; font-size:12px; height:28px;">🛏️ 住院业务 (<span id="filterCountIP">8</span>)</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="outpatient" style="padding:4px 12px; font-size:12px; height:28px;">🏥 门诊业务 (<span id="filterCountOP">8</span>)</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="block" style="padding:4px 12px; font-size:12px; height:28px;">🚨 强阻断门禁</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="warn" style="padding:4px 12px; font-size:12px; height:28px;">⚠️ 预警规范</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="passed" style="padding:4px 12px; font-size:12px; height:28px; color:var(--g-green); border-color:var(--g-green);">✅ 校验通过</button>
+            <button class="g-btn g-btn-outlined rule-filter-btn" data-filter="failed" style="padding:4px 12px; font-size:12px; height:28px; color:var(--g-red); border-color:var(--g-red);">❌ 校验失败</button>
+          </div>
+
+          <!-- Right Controls: Group Tools & View Switcher -->
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <div id="ruleGroupTools" style="display:inline-flex; align-items:center; gap:6px;">
+              <button type="button" class="g-btn g-btn-outlined" style="height:26px; padding:0 8px; font-size:11.5px; border-radius:13px;" onclick="expandAllRuleGroups()" title="展开所有业务模块分组">📂 全部展开</button>
+              <button type="button" class="g-btn g-btn-outlined" style="height:26px; padding:0 8px; font-size:11.5px; border-radius:13px;" onclick="collapseAllRuleGroups()" title="收起所有业务模块分组">📁 全部收起</button>
+            </div>
+
+            <!-- View Switcher -->
+            <div class="rule-view-switcher">
+              <button type="button" class="rule-view-btn active" data-view="grouped" onclick="setRuleView('grouped')" title="按业务模块分组手风琴展示，结构清晰不冗长">
+                🗂️ 分组视图
+              </button>
+              <button type="button" class="rule-view-btn" data-view="table" onclick="setRuleView('table')" title="紧凑数据清单表格，一屏浏览几十条规则，支持行展开">
+                📊 紧凑表格
+              </button>
+              <button type="button" class="rule-view-btn" data-view="cards" onclick="setRuleView('cards')" title="完整卡片平铺网格，查看详细参数与说明">
+                🗃️ 详细卡片
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rule Content Viewport (Renders grouped/table/cards) -->
+        <div id="rulesCardsContainer">
           <!-- Dynamically populated via JS -->
+        </div>
+
+        <!-- Rule Detail Modal (📖 业务规则深度解读与技术明细) -->
+        <div id="ruleDetailModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(2px);">
+          <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); width:90%; max-width:720px; max-height:90vh; overflow-y:auto; padding:24px; box-shadow:var(--g-shadow-2); display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--g-border); padding-bottom:12px;">
+              <div style="font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                <span>📖 业务规则深度解读与技术明细</span>
+                <span id="detailRuleIdBadge" class="rule-id-pill">RULE_IP_01</span>
+                <span id="detailRuleDomainBadge" class="rule-badge">🛏️ 住院业务</span>
+                <span id="detailRuleSeverityBadge" class="rule-badge">🚨 阻断门禁</span>
+              </div>
+              <button class="icon-btn" onclick="document.getElementById('ruleDetailModal').style.display='none'">✕</button>
+            </div>
+
+            <div id="ruleDetailModalBody" style="display:flex; flex-direction:column; gap:14px;">
+              <!-- Injected dynamically -->
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--g-border); padding-top:14px; margin-top:8px;">
+              <div id="detailRuleStatusChip"></div>
+              <div style="display:flex; gap:8px;">
+                <button type="button" class="g-btn g-btn-tonal" id="btnDetailVerifyRule">▶️ 现场校验</button>
+                <button type="button" class="g-btn g-btn-outlined" id="btnDetailEditRule">⚙️ 编辑维护</button>
+                <button type="button" class="g-btn g-btn-primary" onclick="document.getElementById('ruleDetailModal').style.display='none'">关闭</button>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Rule Edit Modal -->
@@ -4143,11 +4473,119 @@
     }
 
     // =========================================================================
-    // 📋 Business Rules Center Logic (业务规则与门禁治理中心)
+    // 📋 Business Rules Center Logic (业务规则与门禁治理中心 - 智能检索与多模交互)
     // =========================================================================
     let allBusinessRules = [];
     let currentRuleFilter = 'all';
     let ruleSearchQuery = '';
+    let currentRuleView = localStorage.getItem('rule_view_mode') || 'grouped';
+    const expandedTableRows = new Set(); // tracks expanded rows in table view
+
+    function escapeHtml(str) {
+      if (typeof str !== 'string') return str === undefined || str === null ? '' : String(str);
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function highlightRuleMatch(text, query) {
+      if (!text) return '';
+      const safeText = escapeHtml(text);
+      if (!query || !query.trim()) return safeText;
+      const terms = query.trim().split(/\s+/).filter(Boolean);
+      if (query.trim().length >= 4 && !query.includes(' ')) {
+        terms.push(query.trim().slice(0, 2), query.trim().slice(2));
+      }
+      let result = safeText;
+      for (const t of terms) {
+        if (!t) continue;
+        const qClean = t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const re = new RegExp(`(${qClean})`, 'gi');
+        result = result.replace(re, '<mark class="rule-search-highlight">$1</mark>');
+      }
+      return result;
+    }
+
+    function setRuleView(mode) {
+      currentRuleView = mode;
+      localStorage.setItem('rule_view_mode', mode);
+      document.querySelectorAll('.rule-view-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.view === mode);
+      });
+      const groupTools = document.getElementById('ruleGroupTools');
+      if (groupTools) {
+        groupTools.style.display = mode === 'grouped' ? 'inline-flex' : 'none';
+      }
+      renderBusinessRules();
+    }
+
+    function expandAllRuleGroups() {
+      document.querySelectorAll('.rule-group-card').forEach(c => c.open = true);
+    }
+
+    function collapseAllRuleGroups() {
+      document.querySelectorAll('.rule-group-card').forEach(c => c.open = false);
+    }
+
+    function applyRuleQuickSearch(keyword) {
+      ruleSearchQuery = keyword;
+      const input = document.getElementById('ruleSearchInput');
+      if (input) {
+        input.value = keyword;
+        input.focus();
+      }
+      document.querySelectorAll('.quick-tag-chip').forEach(chip => {
+        chip.classList.toggle('active', chip.innerText.includes(keyword));
+      });
+      renderBusinessRules();
+    }
+
+    function clearRuleSearch() {
+      ruleSearchQuery = '';
+      const input = document.getElementById('ruleSearchInput');
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+      document.querySelectorAll('.quick-tag-chip').forEach(chip => chip.classList.remove('active'));
+      renderBusinessRules();
+    }
+
+    function toggleRuleTableRow(ruleId) {
+      if (expandedTableRows.has(ruleId)) {
+        expandedTableRows.delete(ruleId);
+      } else {
+        expandedTableRows.add(ruleId);
+      }
+      const expandRow = document.getElementById(`expand_row_${ruleId}`);
+      const parentRow = document.getElementById(`table_row_${ruleId}`);
+      const arrowEl = document.getElementById(`arrow_${ruleId}`);
+      if (expandRow) {
+        expandRow.style.display = expandedTableRows.has(ruleId) ? 'table-row' : 'none';
+      }
+      if (parentRow) {
+        parentRow.classList.toggle('expanded', expandedTableRows.has(ruleId));
+      }
+      if (arrowEl) {
+        arrowEl.innerText = expandedTableRows.has(ruleId) ? '▼' : '▶';
+      }
+    }
+
+    // Keyboard shortcut '/' to focus rule search, Esc to clear
+    window.addEventListener('keydown', (e) => {
+      const activeEl = document.activeElement;
+      const isInput = activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable);
+      
+      if (e.key === '/' && !isInput) {
+        const rulesTab = document.getElementById('tab-rules');
+        if (rulesTab && rulesTab.classList.contains('active')) {
+          e.preventDefault();
+          const input = document.getElementById('ruleSearchInput');
+          if (input) input.focus();
+        }
+      } else if (e.key === 'Escape' && activeEl && activeEl.id === 'ruleSearchInput') {
+        clearRuleSearch();
+        activeEl.blur();
+      }
+    });
 
     async function loadBusinessRules() {
       try {
@@ -4172,11 +4610,138 @@
           if (elWarn) elWarn.innerText = stats.warn_count || 0;
           if (elPassed) elPassed.innerText = `${stats.passed_count || 0} / ${stats.total || 0}`;
 
+          // Update filter badge counts
+          const fAll = document.getElementById('filterCountAll');
+          const fIP = document.getElementById('filterCountIP');
+          const fOP = document.getElementById('filterCountOP');
+          if (fAll) fAll.innerText = allBusinessRules.length;
+          if (fIP) fIP.innerText = allBusinessRules.filter(r => r.domain === 'inpatient').length;
+          if (fOP) fOP.innerText = allBusinessRules.filter(r => r.domain === 'outpatient').length;
+
           renderBusinessRules();
         }
       } catch (err) {
         console.error("Failed to load business rules:", err);
       }
+    }
+
+    function renderSingleRuleCard(r, q) {
+      const isIP = r.domain === 'inpatient';
+      const isOP = r.domain === 'outpatient';
+      const isPharma = r.domain === 'pharmacy';
+      const isEMR = r.domain === 'emr';
+      const isCharge = r.domain === 'charge';
+      
+      let domainClass = 'rule-badge-custom';
+      if (isIP) domainClass = 'rule-badge-ip';
+      else if (isOP) domainClass = 'rule-badge-op';
+      else if (isPharma) domainClass = 'rule-badge-pharma';
+      else if (isEMR) domainClass = 'rule-badge-emr';
+      else if (isCharge) domainClass = 'rule-badge-charge';
+
+      const isBlock = r.severity === 'BLOCK';
+      const severityClass = isBlock ? 'rule-badge-block' : 'rule-badge-warn';
+      
+      let statusChipHtml = '';
+      if (r.last_verify_status === 'PASSED') {
+        statusChipHtml = `<span class="rule-status-chip pass" title="${r.last_verify_time || ''}">✅ 校验通过 (${r.last_verify_duration_ms || 0}ms)</span>`;
+      } else if (r.last_verify_status === 'FAILED') {
+        statusChipHtml = `<span class="rule-status-chip fail" title="${r.last_verify_time || ''}">❌ 校验失败</span>`;
+      } else {
+        statusChipHtml = `<span class="rule-status-chip none">● 待校验</span>`;
+      }
+
+      const params = r.parameters || {};
+      const paramPills = Object.entries(params).map(([k, v]) => {
+        const displayVal = (typeof v === 'object') ? JSON.stringify(v) : v;
+        return `<span class="rule-param-pill"><span class="p-key">${escapeHtml(k)}</span>: <span class="p-val">${highlightRuleMatch(String(displayVal), q)}</span></span>`;
+      }).join('');
+
+      const isCustom = !!r.is_custom;
+
+      return `
+        <div class="rule-card ${r.enabled === false ? 'disabled-rule' : ''}" id="card_${r.id}">
+          <!-- Header Row -->
+          <div class="rule-card-header">
+            <div class="rule-card-badges">
+              <span class="rule-id-pill">${highlightRuleMatch(r.id, q)}</span>
+              <span class="rule-badge ${domainClass}">${highlightRuleMatch(r.domain_name || '🛡️ 业务规则', q)}</span>
+              <span class="rule-badge ${severityClass}">${highlightRuleMatch(r.severity_name || (isBlock ? '🚨 阻断门禁' : '⚠️ 预警规范'), q)}</span>
+            </div>
+            <div class="rule-card-toggle">
+              <label class="rule-toggle-label" title="开启/停用此规则">
+                <input type="checkbox" onchange="toggleRuleEnabled('${r.id}', this.checked)" ${r.enabled !== false ? 'checked' : ''} style="width:15px; height:15px; accent-color:var(--g-blue);">
+                <span>${r.enabled !== false ? '已激活' : '已停用'}</span>
+              </label>
+              ${isCustom ? `
+                <button class="icon-btn btn-rule-del" onclick="deleteRule('${r.id}')" title="删除此自定义规则" style="width:24px; height:24px; font-size:12px; color:var(--g-red); margin-left:4px;">
+                  🗑️
+                </button>
+              ` : ''}
+            </div>
+          </div>
+
+          <!-- Title -->
+          <h4 class="rule-card-title" onclick="openRuleDetailModal('${r.id}')" style="cursor:pointer;" title="点击查看规则全景详细说明">
+            ${highlightRuleMatch(r.name, q)}
+          </h4>
+
+          <!-- Core Rule Callout -->
+          <div class="rule-core-callout">
+            <span class="callout-icon">💡</span>
+            <span class="callout-text">${highlightRuleMatch(r.summary || '', q)}</span>
+          </div>
+
+          <!-- Meta Grid (Trigger & Target) -->
+          <div class="rule-meta-grid">
+            <div class="rule-meta-row">
+              <span class="rule-meta-label">⚡ 触发环节</span>
+              <span class="rule-meta-val">${highlightRuleMatch(r.trigger_phase || '全流程', q)}</span>
+            </div>
+            <div class="rule-meta-row">
+              <span class="rule-meta-label">🎯 涉及目标</span>
+              <span class="rule-meta-val"><code class="rule-meta-code">${highlightRuleMatch(r.target_api_table || 'N/A', q)}</code></span>
+            </div>
+          </div>
+
+          <!-- Parameters Section -->
+          ${Object.keys(params).length > 0 ? `
+            <div class="rule-params-wrap">
+              <span class="rule-params-title">⚙️ 控制参数:</span>
+              ${paramPills}
+            </div>
+          ` : ''}
+
+          <!-- Details Collapsible -->
+          <details class="rule-details-box" ${q ? 'open' : ''}>
+            <summary>📖 查看临床背景与规范说明</summary>
+            <div class="rule-details-content">${highlightRuleMatch(r.detail || '暂无详细描述', q)}</div>
+          </details>
+
+          <!-- Footer Actions -->
+          <div class="rule-card-footer">
+            <div>
+              ${statusChipHtml}
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <button class="g-btn g-btn-tonal btn-rule-verify" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="verifySingleRule('${r.id}', this)" title="现场执行该规则断言测试">
+                ▶️ 现场校验
+              </button>
+              <button class="g-btn g-btn-outlined btn-rule-edit" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="openEditRuleModal('${r.id}')" title="在线调整此规则参数与规范">
+                ⚙️ 维护
+              </button>
+              <button class="g-btn g-btn-outlined" style="padding:4px 8px; font-size:11.5px; height:26px;" onclick="openRuleDetailModal('${r.id}')" title="全屏查看规则背景">
+                📖 详情
+              </button>
+              ${(r.last_verify_log && r.last_verify_log.length > 0) ? `
+                <button class="g-btn g-btn-outlined" style="padding:4px 8px; font-size:11.5px; height:26px;" onclick="viewRuleLogs('${r.id}')" title="查看断言日志">
+                  📜 日志
+                </button>
+              ` : ''}
+            </div>
+          </div>
+        </div>
+      `;
     }
 
     function renderBusinessRules() {
@@ -4185,150 +4750,275 @@
 
       const q = ruleSearchQuery.trim().toLowerCase();
       const filtered = allBusinessRules.filter(r => {
-        // Domain/Severity filter
+        // Domain/Severity/Status filters
         if (currentRuleFilter === 'inpatient' && r.domain !== 'inpatient') return false;
         if (currentRuleFilter === 'outpatient' && r.domain !== 'outpatient') return false;
         if (currentRuleFilter === 'block' && r.severity !== 'BLOCK') return false;
         if (currentRuleFilter === 'warn' && r.severity !== 'WARN') return false;
+        if (currentRuleFilter === 'passed' && r.last_verify_status !== 'PASSED') return false;
+        if (currentRuleFilter === 'failed' && r.last_verify_status !== 'FAILED') return false;
 
         // Search query
         if (q) {
-          const matchId = (r.id || '').toLowerCase().includes(q);
-          const matchName = (r.name || '').toLowerCase().includes(q);
-          const matchTarget = (r.target_api_table || '').toLowerCase().includes(q);
-          const matchPhase = (r.trigger_phase || '').toLowerCase().includes(q);
-          const matchSummary = (r.summary || '').toLowerCase().includes(q);
-          return matchId || matchName || matchTarget || matchPhase || matchSummary;
+          const combined = [
+            r.id, r.name, r.target_api_table, r.trigger_phase, r.summary, r.detail, r.domain_name, r.severity_name, JSON.stringify(r.parameters || {})
+          ].join(' ').toLowerCase();
+
+          // 1. Direct substring match
+          if (combined.includes(q)) return true;
+
+          // 2. Multi-term match (e.g. "时间 跟随")
+          const terms = q.split(/\s+/).filter(Boolean);
+          if (terms.length > 1 && terms.every(t => combined.includes(t))) return true;
+
+          // 3. Fallback for compound 4+ character queries (e.g. "时间跟随" -> "时间" & "跟随")
+          if (q.length >= 4) {
+            const sub1 = q.slice(0, 2);
+            const sub2 = q.slice(2);
+            if (combined.includes(sub1) && combined.includes(sub2)) return true;
+          }
+
+          return false;
         }
         return true;
       });
 
+      // Update search count badge & clear button
+      const countBadge = document.getElementById('ruleSearchCountBadge');
+      const clearBtn = document.getElementById('btnRuleSearchClear');
+      if (q) {
+        if (countBadge) {
+          countBadge.style.display = 'inline-block';
+          countBadge.innerText = `匹配 ${filtered.length} / ${allBusinessRules.length} 项`;
+        }
+        if (clearBtn) clearBtn.style.display = 'inline-flex';
+      } else {
+        if (countBadge) {
+          countBadge.style.display = 'inline-block';
+          countBadge.innerText = `共 ${allBusinessRules.length} 项`;
+        }
+        if (clearBtn) clearBtn.style.display = 'none';
+      }
+
+      // Empty State
       if (filtered.length === 0) {
         container.innerHTML = `
-          <div style="grid-column: 1 / -1; text-align:center; padding:40px; color:var(--g-text-secondary); background:var(--g-surface); border:1px dashed var(--g-border); border-radius:var(--g-radius-md);">
-            <div style="font-size:32px; margin-bottom:8px;">🔍</div>
-            <div style="font-weight:600;">未找到匹配的业务规则</div>
-            <div style="font-size:12px; margin-top:4px;">请尝试调整筛选分类或清空搜索关键词</div>
+          <div style="text-align:center; padding:48px 24px; color:var(--g-text-secondary); background:var(--g-surface); border:1px dashed var(--g-border); border-radius:var(--g-radius-md); box-shadow:var(--g-shadow-1);">
+            <div style="font-size:36px; margin-bottom:10px;">🔍</div>
+            <div style="font-size:15px; font-weight:600; color:var(--g-text-primary);">未找到与 “${escapeHtml(ruleSearchQuery)}” 匹配的业务规则</div>
+            <div style="font-size:12px; margin-top:6px; color:var(--g-text-tertiary);">请尝试更换关键词，或者点击下方按钮恢复全部规则查看</div>
+            <div style="margin-top:16px;">
+              <button class="g-btn g-btn-primary" onclick="clearRuleSearch()" style="height:32px; font-size:12px;">🔄 清空搜索并查看全部</button>
+            </div>
           </div>
         `;
         return;
       }
 
-      container.innerHTML = filtered.map(r => {
-        const isIP = r.domain === 'inpatient';
-        const isOP = r.domain === 'outpatient';
-        const isPharma = r.domain === 'pharmacy';
-        const isEMR = r.domain === 'emr';
-        const isCharge = r.domain === 'charge';
-        
-        let domainClass = 'rule-badge-custom';
-        if (isIP) domainClass = 'rule-badge-ip';
-        else if (isOP) domainClass = 'rule-badge-op';
-        else if (isPharma) domainClass = 'rule-badge-pharma';
-        else if (isEMR) domainClass = 'rule-badge-emr';
-        else if (isCharge) domainClass = 'rule-badge-charge';
+      // Synchronize View Switcher Button states
+      document.querySelectorAll('.rule-view-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.view === currentRuleView);
+      });
+      const groupTools = document.getElementById('ruleGroupTools');
+      if (groupTools) {
+        groupTools.style.display = currentRuleView === 'grouped' ? 'inline-flex' : 'none';
+      }
 
-        const isBlock = r.severity === 'BLOCK';
-        const severityClass = isBlock ? 'rule-badge-block' : 'rule-badge-warn';
-        
-        let statusChipHtml = '';
-        if (r.last_verify_status === 'PASSED') {
-          statusChipHtml = `<span class="rule-status-chip pass" title="${r.last_verify_time || ''}">✅ 校验通过 (${r.last_verify_duration_ms || 0}ms)</span>`;
-        } else if (r.last_verify_status === 'FAILED') {
-          statusChipHtml = `<span class="rule-status-chip fail" title="${r.last_verify_time || ''}">❌ 校验失败</span>`;
-        } else {
-          statusChipHtml = `<span class="rule-status-chip none">● 待校验</span>`;
-        }
+      // -------------------------------------------------------------
+      // View 1: 🗂️ Grouped Accordions (业务模块分组手风琴)
+      // -------------------------------------------------------------
+      if (currentRuleView === 'grouped') {
+        const domainMap = {
+          'inpatient': { name: '住院核心业务与医嘱规范', icon: '🛏️', order: 1 },
+          'outpatient': { name: '门诊流程与挂号收费规范', icon: '🏥', order: 2 },
+          'pharmacy': { name: '药房药品与库房管理规范', icon: '💊', order: 3 },
+          'emr': { name: '电子病历与医疗质控规范', icon: '📝', order: 4 },
+          'charge': { name: '费用结算与医保控费规范', icon: '💰', order: 5 },
+          'other': { name: '自定义与其它扩展业务规范', icon: '🧩', order: 6 }
+        };
 
-        const params = r.parameters || {};
-        const paramPills = Object.entries(params).map(([k, v]) => {
-          const displayVal = (typeof v === 'object') ? JSON.stringify(v) : v;
-          return `<span class="rule-param-pill"><span class="p-key">${k}</span>: <span class="p-val">${displayVal}</span></span>`;
+        const groups = {};
+        filtered.forEach(r => {
+          const dom = r.domain || 'other';
+          if (!groups[dom]) groups[dom] = [];
+          groups[dom].push(r);
+        });
+
+        const sortedDomKeys = Object.keys(groups).sort((a, b) => {
+          const oA = (domainMap[a] && domainMap[a].order) || 99;
+          const oB = (domainMap[b] && domainMap[b].order) || 99;
+          return oA - oB;
+        });
+
+        container.innerHTML = sortedDomKeys.map(dom => {
+          const groupRules = groups[dom];
+          const info = domainMap[dom] || { name: `${dom} 业务规范`, icon: '📌' };
+          const blockCnt = groupRules.filter(r => r.severity === 'BLOCK').length;
+          const warnCnt = groupRules.filter(r => r.severity === 'WARN').length;
+          const passCnt = groupRules.filter(r => r.last_verify_status === 'PASSED').length;
+
+          const cardsHtml = groupRules.map(r => renderSingleRuleCard(r, q)).join('');
+
+          return `
+            <details class="rule-group-card" open id="group_${dom}">
+              <summary class="rule-group-summary">
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <span style="font-size:18px;">${info.icon}</span>
+                  <span style="font-weight:700; font-size:14px;">${info.name}</span>
+                  <span class="badge" style="background:var(--g-surface); border:1px solid var(--g-border); color:var(--g-text-secondary); font-size:11px; padding:2px 8px; border-radius:10px;">${groupRules.length} 项</span>
+                  <span style="font-size:11.5px; color:var(--g-text-tertiary); font-weight:normal; margin-left:4px;">
+                    (🚨 ${blockCnt} 阻断 · ⚠️ ${warnCnt} 预警)
+                  </span>
+                  ${passCnt > 0 ? `<span class="badge" style="background:var(--g-green-surface); color:var(--g-green); font-size:11px; padding:2px 8px; border-radius:10px;">✅ ${passCnt}/${groupRules.length} 已通过</span>` : ''}
+                </div>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  <button type="button" class="g-btn g-btn-tonal" style="height:26px; font-size:11px; padding:0 10px; border-radius:13px;" onclick="event.stopPropagation(); verifyGroupRules('${dom}', this)" title="仅校验该分组下的全部规则">
+                    ⚡ 校验本组 (${groupRules.length})
+                  </button>
+                  <span class="rule-group-chevron">▼</span>
+                </div>
+              </summary>
+              <div class="rule-group-body">
+                ${cardsHtml}
+              </div>
+            </details>
+          `;
+        }).join('');
+        return;
+      }
+
+      // -------------------------------------------------------------
+      // View 2: 📊 Compact Master Table (紧凑清单表格视图 - 一屏全览)
+      // -------------------------------------------------------------
+      if (currentRuleView === 'table') {
+        const tableRows = filtered.map(r => {
+          const isIP = r.domain === 'inpatient';
+          const isOP = r.domain === 'outpatient';
+          const isPharma = r.domain === 'pharmacy';
+          const isEMR = r.domain === 'emr';
+          const isCharge = r.domain === 'charge';
+          
+          let domainBadge = 'rule-badge-custom';
+          if (isIP) domainBadge = 'rule-badge-ip';
+          else if (isOP) domainBadge = 'rule-badge-op';
+          else if (isPharma) domainBadge = 'rule-badge-pharma';
+          else if (isEMR) domainBadge = 'rule-badge-emr';
+          else if (isCharge) domainBadge = 'rule-badge-charge';
+
+          const isBlock = r.severity === 'BLOCK';
+          const severityBadge = isBlock ? 'rule-badge-block' : 'rule-badge-warn';
+          
+          let statusBadge = '';
+          if (r.last_verify_status === 'PASSED') {
+            statusBadge = `<span class="rule-status-chip pass" style="font-size:11px; padding:2px 8px;">✅ 通过 (${r.last_verify_duration_ms || 0}ms)</span>`;
+          } else if (r.last_verify_status === 'FAILED') {
+            statusBadge = `<span class="rule-status-chip fail" style="font-size:11px; padding:2px 8px;">❌ 失败</span>`;
+          } else {
+            statusBadge = `<span class="rule-status-chip none" style="font-size:11px; padding:2px 8px;">● 待校验</span>`;
+          }
+
+          const isExpanded = expandedTableRows.has(r.id);
+          const params = r.parameters || {};
+          const paramPills = Object.entries(params).map(([k, v]) => {
+            const displayVal = (typeof v === 'object') ? JSON.stringify(v) : v;
+            return `<span class="rule-param-pill"><span class="p-key">${escapeHtml(k)}</span>: <span class="p-val">${highlightRuleMatch(String(displayVal), q)}</span></span>`;
+          }).join('');
+
+          return `
+            <tr class="rule-table-row ${isExpanded ? 'expanded' : ''}" id="table_row_${r.id}">
+              <td style="text-align:center; width:36px;" onclick="toggleRuleTableRow('${r.id}')">
+                <span id="arrow_${r.id}" style="font-size:11px; color:var(--g-text-tertiary);">${isExpanded ? '▼' : '▶'}</span>
+              </td>
+              <td style="font-family:var(--g-mono); font-weight:700; font-size:11.5px; white-space:nowrap;" onclick="toggleRuleTableRow('${r.id}')">
+                <span class="rule-id-pill">${highlightRuleMatch(r.id, q)}</span>
+              </td>
+              <td style="white-space:nowrap;" onclick="toggleRuleTableRow('${r.id}')">
+                <span class="rule-badge ${domainBadge}">${highlightRuleMatch(r.domain_name || '规则', q)}</span>
+              </td>
+              <td onclick="toggleRuleTableRow('${r.id}')">
+                <div style="font-weight:600; color:var(--g-text-primary); font-size:12.5px;">${highlightRuleMatch(r.name, q)}</div>
+                <div style="font-size:11.5px; color:var(--g-text-secondary); margin-top:2px;">${highlightRuleMatch(r.summary || '', q)}</div>
+              </td>
+              <td style="white-space:nowrap;" onclick="toggleRuleTableRow('${r.id}')">
+                <span class="rule-badge ${severityBadge}">${highlightRuleMatch(r.severity_name || (isBlock ? '🚨 阻断' : '⚠️ 预警'), q)}</span>
+              </td>
+              <td style="font-size:11.5px; color:var(--g-text-secondary); max-width:125px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" onclick="toggleRuleTableRow('${r.id}')" title="${escapeHtml(r.trigger_phase || '')}">
+                ${highlightRuleMatch(r.trigger_phase || '全流程', q)}
+              </td>
+              <td style="font-size:11px; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" onclick="toggleRuleTableRow('${r.id}')" title="${escapeHtml(r.target_api_table || '')}">
+                <code class="rule-meta-code">${highlightRuleMatch(r.target_api_table || 'N/A', q)}</code>
+              </td>
+              <td style="white-space:nowrap;" onclick="toggleRuleTableRow('${r.id}')">
+                ${statusBadge}
+              </td>
+              <td style="text-align:center; width:45px;">
+                <input type="checkbox" onchange="toggleRuleEnabled('${r.id}', this.checked)" ${r.enabled !== false ? 'checked' : ''} style="width:15px; height:15px; accent-color:var(--g-blue);" title="启用/停用此规则">
+              </td>
+              <td style="text-align:right; white-space:nowrap; width:150px;">
+                <div style="display:inline-flex; align-items:center; gap:4px;">
+                  <button class="g-btn g-btn-tonal" style="height:24px; padding:0 8px; font-size:11px; border-radius:12px;" onclick="verifySingleRule('${r.id}', this)" title="现场执行断言测试">▶ 校验</button>
+                  <button class="g-btn g-btn-outlined" style="height:24px; padding:0 8px; font-size:11px; border-radius:12px;" onclick="openEditRuleModal('${r.id}')" title="编辑参数">⚙️ 维护</button>
+                  <button class="g-btn g-btn-outlined" style="height:24px; padding:0 8px; font-size:11px; border-radius:12px;" onclick="openRuleDetailModal('${r.id}')" title="查看完整详情">📖 详情</button>
+                </div>
+              </td>
+            </tr>
+            <tr id="expand_row_${r.id}" class="rule-table-expand-row" style="display:${isExpanded ? 'table-row' : 'none'};">
+              <td colspan="10" class="rule-table-expand-cell">
+                <div class="rule-table-expand-content">
+                  <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap;">
+                    <div style="flex:1; min-width:300px;">
+                      <div style="font-weight:600; font-size:12px; color:var(--g-text-secondary); margin-bottom:4px;">📖 临床痛点背景与规范说明:</div>
+                      <div style="background:var(--g-surface); border:1px solid var(--g-border-subtle); border-radius:6px; padding:8px 12px; line-height:1.6; white-space:pre-wrap; color:var(--g-text-primary); font-size:12px;">${highlightRuleMatch(r.detail || '暂无详细描述', q)}</div>
+                    </div>
+                    ${Object.keys(params).length > 0 ? `
+                      <div style="min-width:280px; max-width:400px;">
+                        <div style="font-weight:600; font-size:12px; color:var(--g-text-secondary); margin-bottom:4px;">⚙️ 控制参数 (JSON):</div>
+                        <div class="rule-params-wrap" style="background:var(--g-surface); border:1px solid var(--g-border-subtle); border-radius:6px; padding:8px 10px;">
+                          ${paramPills}
+                        </div>
+                      </div>
+                    ` : ''}
+                  </div>
+                </div>
+              </td>
+            </tr>
+          `;
         }).join('');
 
-        const isCustom = !!r.is_custom;
-
-        return `
-          <div class="rule-card ${r.enabled === false ? 'disabled-rule' : ''}" id="card_${r.id}">
-            <!-- Header Row -->
-            <div class="rule-card-header">
-              <div class="rule-card-badges">
-                <span class="rule-id-pill">${r.id}</span>
-                <span class="rule-badge ${domainClass}">${r.domain_name || '🛡️ 业务规则'}</span>
-                <span class="rule-badge ${severityClass}">${r.severity_name || (isBlock ? '🚨 阻断门禁' : '⚠️ 预警规范')}</span>
-              </div>
-              <div class="rule-card-toggle">
-                <label class="rule-toggle-label" title="开启/停用此规则">
-                  <input type="checkbox" onchange="toggleRuleEnabled('${r.id}', this.checked)" ${r.enabled !== false ? 'checked' : ''} style="width:15px; height:15px; accent-color:var(--g-blue);">
-                  <span>${r.enabled !== false ? '已激活' : '已停用'}</span>
-                </label>
-                ${isCustom ? `
-                  <button class="icon-btn btn-rule-del" onclick="deleteRule('${r.id}')" title="删除此自定义规则" style="width:24px; height:24px; font-size:12px; color:var(--g-red); margin-left:4px;">
-                    🗑️
-                  </button>
-                ` : ''}
-              </div>
-            </div>
-
-            <!-- Title -->
-            <h4 class="rule-card-title">
-              ${r.name}
-            </h4>
-
-            <!-- Core Rule Callout -->
-            <div class="rule-core-callout">
-              <span class="callout-icon">💡</span>
-              <span class="callout-text">${r.summary || ''}</span>
-            </div>
-
-            <!-- Meta Grid (Trigger & Target) -->
-            <div class="rule-meta-grid">
-              <div class="rule-meta-row">
-                <span class="rule-meta-label">⚡ 触发环节</span>
-                <span class="rule-meta-val">${r.trigger_phase || '全流程'}</span>
-              </div>
-              <div class="rule-meta-row">
-                <span class="rule-meta-label">🎯 涉及目标</span>
-                <span class="rule-meta-val"><code class="rule-meta-code">${r.target_api_table || 'N/A'}</code></span>
-              </div>
-            </div>
-
-            <!-- Parameters Section -->
-            ${Object.keys(params).length > 0 ? `
-              <div class="rule-params-wrap">
-                <span class="rule-params-title">⚙️ 控制参数:</span>
-                ${paramPills}
-              </div>
-            ` : ''}
-
-            <!-- Details Collapsible -->
-            <details class="rule-details-box">
-              <summary>📖 查看临床背景与规范说明</summary>
-              <div class="rule-details-content">${r.detail || '暂无详细描述'}</div>
-            </details>
-
-            <!-- Footer Actions -->
-            <div class="rule-card-footer">
-              <div>
-                ${statusChipHtml}
-              </div>
-              <div style="display:flex; align-items:center; gap:6px;">
-                <button class="g-btn g-btn-tonal btn-rule-verify" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="verifySingleRule('${r.id}', this)" title="现场执行该规则断言测试">
-                  ▶️ 现场校验
-                </button>
-                <button class="g-btn g-btn-outlined btn-rule-edit" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="openEditRuleModal('${r.id}')" title="在线调整此规则参数与规范">
-                  ⚙️ 维护
-                </button>
-                ${(r.last_verify_log && r.last_verify_log.length > 0) ? `
-                  <button class="g-btn g-btn-outlined" style="padding:4px 8px; font-size:11.5px; height:26px;" onclick="viewRuleLogs('${r.id}')" title="查看断言日志">
-                    📜 日志
-                  </button>
-                ` : ''}
-              </div>
-            </div>
+        container.innerHTML = `
+          <div class="rule-table-container">
+            <table class="rule-table">
+              <thead>
+                <tr>
+                  <th style="width:32px; text-align:center;"></th>
+                  <th style="width:95px;">编号</th>
+                  <th style="width:80px;">模块</th>
+                  <th>规则名称 & 核心约束</th>
+                  <th style="width:88px;">门禁级别</th>
+                  <th style="width:125px;">触发环节</th>
+                  <th style="width:160px;">涉及目标 (表/字段)</th>
+                  <th style="width:105px;">校验状态</th>
+                  <th style="width:45px; text-align:center;">启用</th>
+                  <th style="width:150px; text-align:right;">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRows}
+              </tbody>
+            </table>
           </div>
         `;
-      }).join('');
+        return;
+      }
+
+      // -------------------------------------------------------------
+      // View 3: 🗃️ Card Grid View (详细卡片网格)
+      // -------------------------------------------------------------
+      container.innerHTML = `
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(460px, 1fr)); gap:16px;">
+          ${filtered.map(r => renderSingleRuleCard(r, q)).join('')}
+        </div>
+      `;
     }
 
     // Toggle rule filter buttons
@@ -4354,28 +5044,126 @@
       });
     }
 
-    // Refresh rules
-    const btnRefreshRulesEl = document.getElementById('btnRefreshRules');
-    if (btnRefreshRulesEl) {
-      btnRefreshRulesEl.addEventListener('click', () => {
-        loadBusinessRules();
-      });
+    // Open Rule Detail Modal
+    function openRuleDetailModal(ruleId) {
+      const r = allBusinessRules.find(x => x.id === ruleId);
+      if (!r) return;
+
+      const modal = document.getElementById('ruleDetailModal');
+      const body = document.getElementById('ruleDetailModalBody');
+      const idBadge = document.getElementById('detailRuleIdBadge');
+      const domainBadge = document.getElementById('detailRuleDomainBadge');
+      const severityBadge = document.getElementById('detailRuleSeverityBadge');
+      const statusChip = document.getElementById('detailRuleStatusChip');
+      const btnVerify = document.getElementById('btnDetailVerifyRule');
+      const btnEdit = document.getElementById('btnDetailEditRule');
+
+      if (idBadge) idBadge.innerText = r.id;
+      if (domainBadge) {
+        domainBadge.innerText = r.domain_name || r.domain;
+        domainBadge.className = `rule-badge rule-badge-${r.domain || 'custom'}`;
+      }
+      if (severityBadge) {
+        severityBadge.innerText = r.severity === 'BLOCK' ? '🚨 硬性阻断门禁' : '⚠️ 业务预警规范';
+        severityBadge.className = `rule-badge ${r.severity === 'BLOCK' ? 'rule-badge-block' : 'rule-badge-warn'}`;
+      }
+
+      if (statusChip) {
+        if (r.last_verify_status === 'PASSED') {
+          statusChip.innerHTML = `<span class="rule-status-chip pass">✅ 校验通过 (${r.last_verify_duration_ms || 0}ms - ${r.last_verify_time || ''})</span>`;
+        } else if (r.last_verify_status === 'FAILED') {
+          statusChip.innerHTML = `<span class="rule-status-chip fail">❌ 校验失败 (${r.last_verify_time || ''})</span>`;
+        } else {
+          statusChip.innerHTML = `<span class="rule-status-chip none">● 待校验</span>`;
+        }
+      }
+
+      const params = r.parameters || {};
+      const paramsJson = JSON.stringify(params, null, 2);
+
+      body.innerHTML = `
+        <div style="font-size:16px; font-weight:700; color:var(--g-text-primary);">${escapeHtml(r.name)}</div>
+        <div class="rule-core-callout">
+          <span class="callout-icon">💡</span>
+          <span class="callout-text" style="font-size:13px; font-weight:600;">${escapeHtml(r.summary || '')}</span>
+        </div>
+
+        <div class="rule-meta-grid" style="grid-template-columns: 1fr 1fr; gap:10px; padding:12px;">
+          <div class="rule-meta-row">
+            <span class="rule-meta-label">⚡ 触发环节</span>
+            <span class="rule-meta-val" style="font-weight:600;">${escapeHtml(r.trigger_phase || '全流程')}</span>
+          </div>
+          <div class="rule-meta-row">
+            <span class="rule-meta-label">🎯 涉及目标</span>
+            <span class="rule-meta-val"><code class="rule-meta-code">${escapeHtml(r.target_api_table || 'N/A')}</code></span>
+          </div>
+          <div class="rule-meta-row">
+            <span class="rule-meta-label">🧪 自动化用例</span>
+            <span class="rule-meta-val"><code class="rule-meta-code">${escapeHtml(r.test_id || 'N/A')}</code></span>
+          </div>
+          <div class="rule-meta-row">
+            <span class="rule-meta-label">🔒 门禁防篡改</span>
+            <span class="rule-meta-val">${r.severity === 'BLOCK' ? '强门禁·数据库及接口级物理阻断' : '软预警·界面弹窗提醒并记入审计'}</span>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size:12px; font-weight:700; color:var(--g-text-secondary); margin-bottom:6px;">📖 临床痛点背景与国家/行业业务规范说明:</div>
+          <div style="background:var(--g-surface-variant); border:1px solid var(--g-border-subtle); border-radius:6px; padding:12px 14px; font-size:12.5px; line-height:1.7; white-space:pre-wrap; color:var(--g-text-primary); max-height:220px; overflow-y:auto;">${escapeHtml(r.detail || '暂无详细描述')}</div>
+        </div>
+
+        ${Object.keys(params).length > 0 ? `
+          <div>
+            <div style="font-size:12px; font-weight:700; color:var(--g-text-secondary); margin-bottom:6px;">⚙️ 当前动态控制参数 (JSON):</div>
+            <pre style="background:#1e1e1e; color:#9cdcfe; font-family:var(--g-mono); font-size:12px; padding:10px 14px; border-radius:6px; max-height:140px; overflow:auto; margin:0;">${escapeHtml(paramsJson)}</pre>
+          </div>
+        ` : ''}
+
+        ${(r.last_verify_log && r.last_verify_log.length > 0) ? `
+          <div>
+            <div style="font-size:12px; font-weight:700; color:var(--g-text-secondary); margin-bottom:6px;">📜 最近断言校验执行日志:</div>
+            <pre style="background:var(--g-surface-variant); border:1px solid var(--g-border-subtle); font-family:var(--g-mono); font-size:11px; padding:8px 12px; border-radius:6px; max-height:120px; overflow:auto; margin:0; line-height:1.5;">${escapeHtml(r.last_verify_log.join('\n'))}</pre>
+          </div>
+        ` : ''}
+      `;
+
+      if (btnVerify) {
+        btnVerify.onclick = async () => {
+          await verifySingleRule(ruleId, btnVerify);
+          openRuleDetailModal(ruleId);
+        };
+      }
+      if (btnEdit) {
+        btnEdit.onclick = () => {
+          modal.style.display = 'none';
+          openEditRuleModal(ruleId);
+        };
+      }
+
+      modal.style.display = 'flex';
     }
 
-    // Reset rules
-    const btnResetRulesEl = document.getElementById('btnResetRules');
-    if (btnResetRulesEl) {
-      btnResetRulesEl.addEventListener('click', async () => {
-        if (!confirm('确定要恢复官方默认16条业务规则吗？这将重置所有自定义参数配置。')) return;
-        try {
-          const resp = await fetch('/api/rules/reset', { method: 'POST' });
-          const res = await resp.json();
-          alert(res.message || '已恢复默认规则');
-          await loadBusinessRules();
-        } catch (err) {
-          alert(`恢复失败: ${err}`);
+    // Verify rules in a single group
+    async function verifyGroupRules(domain, btnElement) {
+      const origText = btnElement ? btnElement.innerHTML : '';
+      if (btnElement) {
+        btnElement.innerHTML = '⏳ 校验中...';
+        btnElement.disabled = true;
+      }
+      try {
+        const rulesToVerify = allBusinessRules.filter(r => (r.domain || 'other') === domain && r.enabled !== false);
+        for (const r of rulesToVerify) {
+          await fetch(`/api/rules/${r.id}/verify`, { method: 'POST' });
         }
-      });
+        await loadBusinessRules();
+      } catch (err) {
+        alert(`校验分组规则失败: ${err}`);
+      } finally {
+        if (btnElement) {
+          btnElement.innerHTML = origText;
+          btnElement.disabled = false;
+        }
+      }
     }
 
     // Verify single rule
