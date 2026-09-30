@@ -1,0 +1,3382 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HIS WebRunner - 医院信息系统全栈自动化测试平台</title>
+  <style>
+    /* Google Material Design 3 Design System */
+    :root {
+      --g-font: -apple-system, BlinkMacSystemFont, "Google Sans", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --g-mono: "Roboto Mono", Consolas, "Courier New", monospace;
+      
+      /* Google Light Theme */
+      --g-bg-base: #f8f9fa;
+      --g-surface: #ffffff;
+      --g-surface-variant: #f1f3f4;
+      --g-surface-hover: #f5f5f5;
+      --g-border: #dadce0;
+      --g-border-subtle: #e8eaed;
+      
+      --g-text-primary: #202124;
+      --g-text-secondary: #5f6368;
+      --g-text-tertiary: #80868b;
+      
+      /* Google Signature Colors */
+      --g-blue: #1a73e8;
+      --g-blue-hover: #1557b0;
+      --g-blue-surface: #e8f0fe;
+      --g-green: #1e8e3e;
+      --g-green-surface: #e6f4ea;
+      --g-red: #d93025;
+      --g-red-surface: #fce8e6;
+      --g-yellow: #f9ab00;
+      --g-yellow-surface: #fef7e0;
+      
+      --g-shadow-1: 0 1px 2px 0 rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+      --g-shadow-2: 0 1px 3px 0 rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+      --g-radius-sm: 4px;
+      --g-radius-md: 8px;
+      --g-radius-lg: 16px;
+      --g-radius-full: 9999px;
+    }
+
+    /* Google Cloud Dark Mode */
+    [data-theme="dark"] {
+      --g-bg-base: #1f1f1f;
+      --g-surface: #28292a;
+      --g-surface-variant: #333538;
+      --g-surface-hover: #3c4043;
+      --g-border: #444746;
+      --g-border-subtle: #3c4043;
+      
+      --g-text-primary: #e8eaed;
+      --g-text-secondary: #9aa0a6;
+      --g-text-tertiary: #bdc1c6;
+      
+      --g-blue: #8ab4f8;
+      --g-blue-hover: #aecbfa;
+      --g-blue-surface: rgba(138, 180, 248, 0.15);
+      --g-green: #81c995;
+      --g-green-surface: rgba(129, 201, 149, 0.15);
+      --g-red: #f28b82;
+      --g-red-surface: rgba(242, 139, 130, 0.15);
+      --g-yellow: #fdd663;
+      --g-yellow-surface: rgba(253, 214, 99, 0.15);
+      
+      --g-shadow-1: 0 1px 3px 0 rgba(0,0,0,0.5);
+      --g-shadow-2: 0 4px 12px 0 rgba(0,0,0,0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scrollbar-width: thin;
+      scrollbar-color: #bdc1c6 transparent;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #bdc1c6;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #80868b;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      max-height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden !important; /* Strict lock to prevent any window.scrollY jump */
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      font-family: var(--g-font);
+      background-color: var(--g-bg-base);
+      color: var(--g-text-primary);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Google Header App Bar */
+    header {
+      background: var(--g-surface);
+      border-bottom: 1px solid var(--g-border);
+      padding: 0 16px;
+      height: 54px;
+      min-height: 54px;
+      max-height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      z-index: 20;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 240px;
+    }
+    .google-dots {
+      display: flex;
+      gap: 3px;
+    }
+    .g-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+    }
+    .g-dot-blue { background-color: #4285f4; }
+    .g-dot-red { background-color: #ea4335; }
+    .g-dot-yellow { background-color: #fbbc05; }
+    .g-dot-green { background-color: #34a853; }
+    
+    .brand-title {
+      font-size: 18px;
+      font-weight: 500;
+      letter-spacing: -0.2px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .brand-title span.badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--g-blue);
+      background: var(--g-blue-surface);
+      padding: 2px 8px;
+      border-radius: var(--g-radius-full);
+      letter-spacing: 0.2px;
+    }
+
+    /* Google Search Pill */
+    .search-pill {
+      background: var(--g-surface-variant);
+      border: 1px solid transparent;
+      border-radius: var(--g-radius-full);
+      padding: 6px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 220px;
+      flex-shrink: 1;
+      transition: all 0.2s ease;
+    }
+    .search-pill:focus-within {
+      background: var(--g-surface);
+      border-color: var(--g-blue);
+      box-shadow: 0 1px 3px rgba(60,64,67,0.2);
+      width: 280px;
+    }
+    .search-pill input {
+      border: none;
+      background: transparent;
+      outline: none;
+      font-family: var(--g-font);
+      font-size: 13px;
+      color: var(--g-text-primary);
+      width: 100%;
+    }
+
+    /* Top Controls */
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+    }
+    .target-select {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      padding: 5px 10px;
+      font-family: var(--g-font);
+      font-size: 12px;
+      color: var(--g-text-secondary);
+      outline: none;
+      height: 32px;
+      flex-shrink: 0;
+    }
+    .g-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 14px;
+      height: 32px;
+      font-family: var(--g-font);
+      font-size: 12px;
+      font-weight: 500;
+      border-radius: var(--g-radius-full);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      text-decoration: none;
+      border: 1px solid transparent;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .g-btn-primary {
+      background-color: var(--g-blue);
+      color: #ffffff;
+    }
+    .g-btn-primary:hover {
+      background-color: var(--g-blue-hover);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+    .g-btn-tonal {
+      background-color: var(--g-blue-surface);
+      color: var(--g-blue);
+    }
+    .g-btn-tonal:hover {
+      background-color: rgba(26, 115, 232, 0.25);
+    }
+    .g-btn-outlined {
+      background-color: transparent;
+      border-color: var(--g-border);
+      color: var(--g-text-primary);
+    }
+    .g-btn-outlined:hover {
+      background-color: var(--g-surface-variant);
+    }
+    .g-btn-danger {
+      background-color: var(--g-red-surface);
+      color: var(--g-red);
+      border-color: var(--g-red);
+    }
+
+    /* Theme Toggle */
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--g-text-secondary);
+      transition: background-color 0.2s;
+    }
+    .icon-btn:hover { background-color: var(--g-surface-variant); }
+
+    /* App Layout */
+    .app-layout {
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+      flex: 1;
+      height: calc(100% - 54px);
+      max-height: calc(100% - 54px);
+      overflow: hidden;
+      min-height: 0;
+      min-width: 0;
+    }
+
+    /* Sidebar Drawer (Google Cloud Style) */
+    .drawer {
+      width: 280px;
+      min-width: 280px;
+      max-width: 280px;
+      background: var(--g-surface);
+      border-right: 1px solid var(--g-border);
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .drawer-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--g-border-subtle);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex-shrink: 0;
+      background: var(--g-surface);
+    }
+    .drawer-tree-tools {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      width: 100%;
+      padding-top: 5px;
+      border-top: 1px dashed var(--g-border-subtle);
+    }
+    .drawer-tool-btn {
+      background: none;
+      border: 1px solid transparent;
+      color: var(--g-text-secondary);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      transition: all 0.15s ease;
+    }
+    .drawer-tool-btn:hover {
+      background: var(--g-surface-variant);
+      color: var(--g-blue);
+      border-color: var(--g-border-subtle);
+    }
+    .drawer-tool-sep {
+      color: var(--g-border);
+      font-size: 10px;
+    }
+    .drawer-title {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--g-text-secondary);
+    }
+    .drawer-nav {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 10px 8px;
+    }
+    .nav-group-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--g-text-tertiary);
+      padding: 10px 12px 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: var(--g-radius-md);
+      font-size: 13px;
+      color: var(--g-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+    }
+    .nav-item:hover {
+      background-color: var(--g-surface-variant);
+      color: var(--g-text-primary);
+    }
+    .nav-item.active {
+      background-color: var(--g-blue-surface);
+      color: var(--g-blue);
+      font-weight: 500;
+    }
+    .nav-pill {
+      font-size: 11px;
+      background: var(--g-surface-variant);
+      color: var(--g-text-secondary);
+      padding: 2px 7px;
+      border-radius: var(--g-radius-full);
+    }
+    .nav-item.active .nav-pill {
+      background: var(--g-blue);
+      color: #ffffff;
+    }
+    .drawer-mode-pill {
+      flex: 1;
+      padding: 4px 6px;
+      font-size: 11px;
+      font-weight: 500;
+      border-radius: var(--g-radius-full);
+      border: 1px solid var(--g-border);
+      background: var(--g-surface);
+      color: var(--g-text-secondary);
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: center;
+      transition: all 0.15s ease;
+    }
+    .drawer-mode-pill:hover {
+      background: var(--g-surface-variant);
+      color: var(--g-text-primary);
+    }
+    .drawer-mode-pill.active {
+      background: var(--g-blue);
+      color: #ffffff;
+      border-color: var(--g-blue);
+      font-weight: 600;
+    }
+
+    /* Workspaces & Tree Nav Styles */
+    .workspace-section {
+      padding-bottom: 8px;
+      margin-bottom: 8px;
+      border-bottom: 1px solid var(--g-border-subtle);
+    }
+    .workspace-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border-radius: var(--g-radius-md);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--g-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      margin-bottom: 2px;
+    }
+    .workspace-nav-item:hover {
+      background-color: var(--g-surface-variant);
+      color: var(--g-text-primary);
+    }
+    .workspace-nav-item.active {
+      background-color: var(--g-blue-surface);
+      color: var(--g-blue);
+      font-weight: 600;
+    }
+
+    .nav-cat-wrap {
+      margin-bottom: 4px;
+    }
+    .nav-cat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 10px;
+      border-radius: var(--g-radius-md);
+      font-size: 12.5px;
+      font-weight: 500;
+      color: var(--g-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .nav-cat-header:hover {
+      background-color: var(--g-surface-variant);
+      color: var(--g-text-primary);
+    }
+    .nav-cat-header.active {
+      background-color: var(--g-blue-surface);
+      color: var(--g-blue);
+      font-weight: 600;
+    }
+    .nav-cat-header .arrow {
+      font-size: 9px;
+      margin-right: 6px;
+      display: inline-block;
+      transition: transform 0.2s ease;
+      color: var(--g-text-tertiary);
+    }
+    .nav-cat-header.collapsed .arrow {
+      transform: rotate(-90deg);
+    }
+    .nav-sub-list {
+      display: flex;
+      flex-direction: column;
+      padding-left: 12px;
+      margin-top: 2px;
+      margin-bottom: 6px;
+      border-left: 2px solid var(--g-border-subtle);
+      margin-left: 14px;
+      transition: all 0.2s ease;
+    }
+    .nav-sub-list.collapsed {
+      display: none;
+    }
+    .nav-sub-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 8px;
+      border-radius: var(--g-radius-sm);
+      font-size: 11.5px;
+      color: var(--g-text-secondary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .nav-sub-item:hover {
+      background-color: var(--g-surface-variant);
+      color: var(--g-blue);
+    }
+    .nav-sub-item.active {
+      background-color: var(--g-blue-surface);
+      color: var(--g-blue);
+      font-weight: 600;
+    }
+    .nav-status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: #9aa0a6;
+      flex-shrink: 0;
+      transition: background-color 0.2s;
+    }
+    .nav-status-dot.pass { background-color: var(--g-green); }
+    .nav-status-dot.fail { background-color: var(--g-red); }
+    .nav-status-dot.running { background-color: var(--g-yellow); animation: gPulse 1s infinite; }
+    .cat-select-chk, .sub-case-chk {
+      width: 14px;
+      height: 14px;
+      margin: 0;
+      cursor: pointer;
+      flex-shrink: 0;
+      accent-color: var(--g-blue);
+    }
+
+    @keyframes rowFlash {
+      0% { background-color: rgba(26, 115, 232, 0.4); }
+      50% { background-color: rgba(26, 115, 232, 0.2); }
+      100% { background-color: transparent; }
+    }
+    .row-highlight {
+      animation: rowFlash 2.5s ease-out;
+      outline: 2px solid var(--g-blue);
+      border-radius: 4px;
+    }
+
+    /* Main Container */
+    .main-viewport {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      min-height: 0;
+      min-width: 0;
+      overflow: hidden;
+      background: var(--g-bg-base);
+      position: relative;
+    }
+
+    /* Google Tab Bar */
+    .tab-bar {
+      background: var(--g-surface);
+      border-bottom: 1px solid var(--g-border);
+      padding: 0 16px;
+      display: flex;
+      gap: 6px;
+      flex-shrink: 0;
+      height: 42px;
+      min-height: 42px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      align-items: center;
+    }
+    .tab-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--g-text-secondary);
+      cursor: pointer;
+      position: relative;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .tab-item:hover { color: var(--g-text-primary); }
+    .tab-item.active {
+      color: var(--g-blue);
+      font-weight: 600;
+    }
+    .tab-item.active::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--g-blue);
+      border-radius: 3px 3px 0 0;
+    }
+
+    /* Content Panes */
+    .content-area {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 16px 20px 20px 20px;
+      display: none;
+    }
+    .content-area.active {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    #tab-cases.content-area {
+      overflow: hidden; /* Case tab stays in view, inner table scrolls */
+      padding: 10px 16px 12px 16px;
+      gap: 8px;
+    }
+
+    /* KPI Status Tag Bar (Replaces bulky cards with compact badges) */
+    .kpi-badge-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+    }
+    .kpi-tag-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 13px;
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      font-size: 11px;
+      box-shadow: 0 1px 2px rgba(60,64,67,0.04);
+      white-space: nowrap;
+      transition: all 0.15s ease;
+    }
+    .kpi-tag-item:hover {
+      border-color: var(--g-blue);
+      box-shadow: 0 1px 3px rgba(60,64,67,0.08);
+    }
+    .kpi-tag-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .kpi-tag-item.total .kpi-tag-dot { background: var(--g-blue); }
+    .kpi-tag-item.exec .kpi-tag-dot { background: var(--g-yellow); }
+    .kpi-tag-item.pass .kpi-tag-dot { background: var(--g-green); }
+    .kpi-tag-item.fail .kpi-tag-dot { background: var(--g-red); }
+    .kpi-tag-item.sel .kpi-tag-dot { background: #6366f1; }
+
+    .kpi-tag-title {
+      color: var(--g-text-secondary);
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .kpi-tag-num {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--g-text-primary);
+    }
+    .kpi-tag-item.pass .kpi-tag-num { color: var(--g-green); }
+    .kpi-tag-item.fail .kpi-tag-num { color: var(--g-red); }
+    .kpi-tag-item.sel .kpi-tag-num { color: #4338ca; }
+    [data-theme="dark"] .kpi-tag-item.sel .kpi-tag-num { color: #818cf8; }
+
+    .kpi-tag-extra {
+      font-size: 11px;
+      color: var(--g-text-tertiary);
+      font-weight: 400;
+      margin-left: 2px;
+    }
+
+    /* Google Data Table (Material Table with Fixed Sticky Header) */
+    .card-table-wrapper {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      box-shadow: 0 1px 2px rgba(60,64,67,0.05);
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
+    }
+    .table-toolbar {
+      padding: 8px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--g-border-subtle);
+      background: var(--g-surface);
+      flex-shrink: 0;
+      gap: 12px;
+    }
+    .table-toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .table-toolbar-right {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      max-width: 100%;
+      padding-bottom: 2px;
+    }
+    .table-toolbar-right::-webkit-scrollbar {
+      height: 3px;
+    }
+    .table-title { font-size: 13px; font-weight: 600; color: var(--g-text-primary); white-space: nowrap; }
+    
+    .table-scroll-container {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      overflow-x: auto;
+      position: relative;
+    }
+    .table-scroll-container::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    .table-scroll-container::-webkit-scrollbar-track {
+      background: var(--g-surface-variant);
+    }
+    .table-scroll-container::-webkit-scrollbar-thumb {
+      background: #bdc1c6;
+      border-radius: 4px;
+    }
+    .table-scroll-container::-webkit-scrollbar-thumb:hover {
+      background: #9aa0a6;
+    }
+
+    .g-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+      font-size: 13px;
+    }
+    .g-table th {
+      background: var(--g-surface-variant);
+      padding: 9px 12px;
+      font-weight: 600;
+      font-size: 12px;
+      color: var(--g-text-secondary);
+      border-bottom: 1px solid var(--g-border);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      white-space: nowrap;
+    }
+    .g-table td {
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--g-border-subtle);
+      color: var(--g-text-primary);
+    }
+    .g-table tr:hover td { background-color: var(--g-surface-hover); }
+    
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 3px 9px;
+      border-radius: var(--g-radius-full);
+    }
+    .status-chip.passed { background: var(--g-green-surface); color: var(--g-green); }
+    .status-chip.failed { background: var(--g-red-surface); color: var(--g-red); }
+    .status-chip.running { background: var(--g-yellow-surface); color: var(--g-yellow); }
+    .status-chip.pending { background: var(--g-surface-variant); color: var(--g-text-tertiary); }
+
+    /* Selection Pill & Smart Banner Styles */
+    .selection-pill {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 10px;
+      border-radius: 12px;
+      background: var(--g-blue-surface);
+      color: var(--g-blue);
+      border: 1px solid #d2e3fc;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    [data-theme="dark"] .selection-pill {
+      background: #1e293b;
+      color: #93c5fd;
+      border-color: #334155;
+    }
+
+    .smart-selection-banner {
+      background: #e8f0fe;
+      border-bottom: 1px solid #d2e3fc;
+      color: #1967d2;
+      padding: 7px 16px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      animation: gFadeIn 0.15s ease-out;
+    }
+    @keyframes gFadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    [data-theme="dark"] .smart-selection-banner {
+      background: #1e293b;
+      border-bottom: 1px solid #334155;
+      color: #93c5fd;
+    }
+    .smart-banner-btn {
+      background: rgba(255, 255, 255, 0.85);
+      border: 1px solid #bfdbfe;
+      color: #1a73e8;
+      font-weight: 600;
+      font-size: 11px;
+      cursor: pointer;
+      padding: 3px 9px;
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
+    }
+    .smart-banner-btn:hover {
+      background: #ffffff;
+      border-color: #1a73e8;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    }
+    [data-theme="dark"] .smart-banner-btn {
+      background: #334155;
+      border-color: #475569;
+      color: #bfdbfe;
+    }
+    [data-theme="dark"] .smart-banner-btn:hover {
+      background: #475569;
+      border-color: #93c5fd;
+      color: #ffffff;
+    }
+
+    /* Table Header Dropdown Checkbox */
+    .table-select-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+    .table-select-arrow {
+      background: none;
+      border: none;
+      color: var(--g-text-tertiary);
+      font-size: 10px;
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 3px;
+      line-height: 1;
+      display: inline-flex;
+      align-items: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .table-select-arrow:hover {
+      background: rgba(60,64,67,0.1);
+      color: var(--g-text-primary);
+    }
+    .table-select-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-sm);
+      box-shadow: 0 4px 14px rgba(60,64,67,0.18);
+      padding: 4px 0;
+      min-width: 210px;
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      text-align: left;
+    }
+    .table-select-menu.show {
+      display: flex;
+    }
+    .table-select-item {
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--g-text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .table-select-item:hover {
+      background: var(--g-surface-variant);
+      color: var(--g-blue);
+    }
+    .table-select-tag {
+      font-size: 10px;
+      font-weight: 600;
+      padding: 1px 6px;
+      border-radius: 8px;
+      background: var(--g-surface-variant);
+      color: var(--g-text-secondary);
+    }
+    .table-select-divider {
+      height: 1px;
+      background: var(--g-border-subtle);
+      margin: 4px 0;
+    }
+
+    /* Cloud Shell Terminal Bottom Drawer */
+    .terminal-drawer {
+      background: #1e1e1e;
+      color: #e0e0e0;
+      border-top: 1px solid var(--g-border);
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      font-family: var(--g-mono);
+      font-size: 12px;
+      transition: height 0.15s ease, width 0.15s ease;
+      position: relative;
+      flex-shrink: 0;
+      z-index: 30;
+    }
+    .terminal-drawer.collapsed { height: 34px !important; }
+    .term-resize-handle {
+      position: absolute;
+      top: -4px;
+      left: 0;
+      right: 0;
+      height: 7px;
+      cursor: ns-resize;
+      z-index: 50;
+      background: transparent;
+      transition: background 0.15s;
+    }
+    .term-resize-handle:hover, .term-resize-handle.active {
+      background: var(--g-blue);
+    }
+    .terminal-drawer.floating {
+      position: fixed;
+      right: 24px;
+      bottom: 24px;
+      width: 580px;
+      max-width: calc(100vw - 48px);
+      height: 300px;
+      border-radius: var(--g-radius-md);
+      box-shadow: 0 10px 36px rgba(0,0,0,0.5);
+      border: 1.5px solid #444;
+      z-index: 1000;
+      flex-shrink: initial;
+    }
+    .terminal-drawer.floating.collapsed {
+      width: 360px;
+      height: 34px !important;
+    }
+    .terminal-drawer.floating .term-resize-handle {
+      top: -4px;
+      cursor: nwse-resize;
+    }
+    .terminal-topbar {
+      background: #252526;
+      padding: 6px 14px;
+      height: 34px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      border-bottom: 1px solid #333;
+    }
+    .terminal-topbar span { font-weight: 500; font-size: 12px; color: #9cdcfe; display: flex; align-items: center; gap: 6px; }
+    .terminal-logs {
+      flex: 1;
+      padding: 10px 14px;
+      overflow-y: auto;
+      line-height: 1.6;
+    }
+    .t-line { margin-bottom: 3px; }
+    .t-line.INFO { color: #9cdcfe; }
+    .t-line.SUCCESS { color: #4ec9b0; }
+    .t-line.WARN { color: #ce9178; }
+    .t-line.ERROR { color: #f48771; font-weight: 600; }
+
+    /* Module Radar Grid */
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+    .module-card {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      padding: 16px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .module-card:hover {
+      box-shadow: var(--g-shadow-1);
+      border-color: var(--g-blue);
+    }
+    .module-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .module-name { font-weight: 600; font-size: 14px; }
+    .module-badge { font-size: 11px; padding: 2px 7px; border-radius: 4px; background: var(--g-surface-variant); color: var(--g-text-secondary); }
+    .module-desc { font-size: 12px; color: var(--g-text-secondary); line-height: 1.5; }
+    .module-path { font-size: 11px; font-family: var(--g-mono); color: var(--g-blue); }
+
+    /* XML Inspector */
+    .xml-container {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
+    .xml-viewer {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      font-family: var(--g-mono);
+      font-size: 12px;
+      padding: 16px;
+      border-radius: var(--g-radius-sm);
+      overflow: auto;
+      flex: 1;
+      white-space: pre-wrap;
+    }
+
+    /* REPL Console */
+    .repl-box {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .chips-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .code-chip {
+      background: var(--g-surface-variant);
+      border: 1px solid var(--g-border-subtle);
+      padding: 5px 12px;
+      border-radius: var(--g-radius-full);
+      font-size: 12px;
+      font-family: var(--g-mono);
+      cursor: pointer;
+      color: var(--g-text-secondary);
+      transition: all 0.15s;
+    }
+    .code-chip:hover {
+      background: var(--g-blue-surface);
+      color: var(--g-blue);
+      border-color: var(--g-blue);
+    }
+    .code-editor {
+      width: 100%;
+      height: 120px;
+      background: #1e1e1e;
+      color: #9cdcfe;
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-sm);
+      font-family: var(--g-mono);
+      padding: 12px;
+      font-size: 13px;
+      outline: none;
+    }
+
+    /* Live Preview Screen */
+    .preview-box {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      padding: 20px;
+      text-align: center;
+    }
+    .preview-img {
+      max-width: 100%;
+      border-radius: var(--g-radius-sm);
+      border: 1px solid var(--g-border);
+      box-shadow: var(--g-shadow-1);
+    }
+    
+    /* Login Alert Banner & Pulse Animation */
+    @keyframes gPulse {
+      0% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.4); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.6; }
+    }
+    .g-pulse-dot {
+      animation: gPulse 1.2s infinite ease-in-out;
+    }
+
+    /* Validator Specific Styles */
+    .val-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 1100px) {
+      .val-grid-2 { grid-template-columns: 1fr; }
+    }
+    .val-card {
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: var(--g-radius-md);
+      padding: 18px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: var(--g-shadow-1);
+    }
+    .val-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--g-border-subtle);
+      padding-bottom: 10px;
+    }
+    .val-card-title {
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .val-field-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 5px 0;
+      border-bottom: 1px dashed var(--g-border-subtle);
+    }
+    .val-field-row:last-child {
+      border-bottom: none;
+    }
+    .val-field-label {
+      color: var(--g-text-secondary);
+      font-weight: 500;
+    }
+    .val-field-val {
+      color: var(--g-text-primary);
+      font-weight: 600;
+      text-align: right;
+    }
+    .val-svc-item {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 10px 12px;
+      border-radius: var(--g-radius-sm);
+      background: var(--g-surface-variant);
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Google App Header -->
+  <header>
+    <div class="brand-wrap">
+      <div class="google-dots">
+        <div class="g-dot g-dot-blue"></div>
+        <div class="g-dot g-dot-red"></div>
+        <div class="g-dot g-dot-yellow"></div>
+        <div class="g-dot g-dot-green"></div>
+      </div>
+      <div class="brand-title">
+        HIS WebRunner
+        <span class="badge">Google QA Suite</span>
+      </div>
+    </div>
+
+    <!-- Search Pill -->
+    <div class="search-pill">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--g-text-tertiary)">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input type="text" id="searchInput" placeholder="搜索测试用例、病历元素或 HIS 模块 (按 / 聚焦)...">
+    </div>
+
+    <!-- Top Action Buttons -->
+    <div class="top-actions">
+      <button class="g-btn" id="btnRunNonInvasive" style="background:#1a73e8; color:white; font-weight:600; border:none; box-shadow:0 1px 3px rgba(26,115,232,0.3);" title="🤖 供 AI 快速验证代码：完全静默、不弹窗口、直连后端与数据库，2秒内验证 11 项核心逻辑与契约">⚡ 非侵入式 (AI验证)</button>
+      <button class="g-btn" id="btnRunInvasive" style="background:#e8710a; color:white; font-weight:600; border:none; box-shadow:0 1px 3px rgba(232,113,10,0.3);" title="👀 供人肉眼核验界面：自动弹出 Chrome 窗口、高亮模拟点击选床/结账/弹窗、并自动全屏截图">👀 侵入式 (给我看)</button>
+      <button class="g-btn g-btn-primary" id="btnRunSelected" title="仅执行当前勾选的用例">▶ 运行选中</button>
+      <button class="g-btn g-btn-outlined" id="btnRunAll" title="运行全部用例">▶ 运行全量</button>
+      <button class="g-btn g-btn-danger" id="btnStop" style="display:none;">⏹ 停止</button>
+
+      <span style="width:1px; height:18px; background:var(--g-border); margin:0 2px;"></span>
+
+      <button class="g-btn g-btn-tonal" id="btnOpenBrowser" title="立即在桌面弹出独立的 Chrome 窗口">🌐 独立浏览器</button>
+      <select class="target-select" id="targetEnvSelect" title="目标环境切换" style="max-width:180px;">
+        <option value="http://192.168.1.198:8088">湛江赤坎中医 (198:8088)</option>
+        <option value="http://localhost:8088">本地环境 (localhost:8088)</option>
+      </select>
+      <select class="target-select" id="loginModeSelect" title="登录方式切换" style="max-width:115px;">
+        <option value="B" selected>手动登录</option>
+        <option value="A">自动代登</option>
+      </select>
+      <div id="autoLoginFields" style="display:none; align-items:center; gap:4px;">
+        <input type="text" id="autoUsername" class="target-select" style="width:65px; padding:2px 6px;" placeholder="工号" value="admin">
+        <input type="password" id="autoPassword" class="target-select" style="width:65px; padding:2px 6px;" placeholder="密码" value="123456">
+      </div>
+      <label style="font-size: 12px; color: var(--g-text-secondary); display:flex; align-items:center; gap:4px; cursor:pointer;" title="开启后静默运行无界面">
+        <input type="checkbox" id="chkHeadless"> 静默
+      </label>
+      <button class="icon-btn" id="btnToggleTheme" title="切换深色/浅色主题">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main App Layout -->
+  <div class="app-layout">
+    <!-- Left Navigation Drawer -->
+    <aside class="drawer">
+      <div class="drawer-header">
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <div class="drawer-title">业务模块分类 (<span id="totalTestsCount">0</span>)</div>
+          <label style="font-size:12px; color:var(--g-blue); cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+            <input type="checkbox" id="chkSelectAll" checked> 全选
+          </label>
+        </div>
+        <div class="drawer-tree-tools">
+          <button type="button" class="drawer-tool-btn" id="btnCollapseAllCategories" onclick="collapseAllCategories()" title="收起全部业务模块分类">
+            <span>📁</span> 全部收缩
+          </button>
+          <span class="drawer-tool-sep">|</span>
+          <button type="button" class="drawer-tool-btn" id="btnExpandAllCategories" onclick="expandAllCategories()" title="展开全部业务模块分类">
+            <span>📂</span> 全部展开
+          </button>
+        </div>
+      </div>
+      <nav class="drawer-nav" id="drawerNavContainer">
+        <!-- Injected dynamically -->
+      </nav>
+    </aside>
+
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      <!-- Google Tab Bar -->
+      <div class="tab-bar">
+        <div class="tab-item active" data-tab="tab-validator">🔐 登录与接口验证</div>
+        <div class="tab-item" data-tab="tab-cases">📋 用例清单与控制台</div>
+        <div class="tab-item" data-tab="tab-health">🏥 全院业务模块体检</div>
+        <div class="tab-item" data-tab="tab-xml">📝 病历 XML 检查器</div>
+        <div class="tab-item" data-tab="tab-repl">💻 交互沙盒 (REPL)</div>
+        <div class="tab-item" data-tab="tab-screen">🖼️ 浏览器实时视窗</div>
+      </div>
+
+      <!-- Tab 0: Non-invasive HIS Login & Session Validator -->
+      <section class="content-area active" id="tab-validator">
+        <!-- Hero Header & Mode Notice Banner -->
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:18px 24px; box-shadow:var(--g-shadow-1); display:flex; flex-direction:column; gap:12px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:24px;">🔐</span>
+              <div>
+                <div style="font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                  HIS 登录与会话验证器
+                  <span class="badge" style="background:var(--g-green-surface); color:var(--g-green); font-size:11px; padding:2px 8px; border-radius:12px;">🛡️ 零前端干扰模式 (非侵入式)</span>
+                </div>
+                <div style="font-size:12px; color:var(--g-text-secondary); margin-top:2px;">
+                  直接读取 Chrome 已登录会话并校验后端 API 与 Oracle 数据库，完全不跳转、不点击前台页面，绝不破坏医生工作站界面！
+                </div>
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+              <span id="validatorGlobalChip" class="status-chip pass" style="font-size:12px; padding:4px 12px;">● 正在检测...</span>
+              <button class="g-btn g-btn-primary" id="btnTriggerValidate" style="height:32px;">🔍 立即深度验证</button>
+              <button class="g-btn g-btn-tonal" id="btnValidatorOpenBrowser" style="height:32px;">🌐 弹出/置顶 Chrome</button>
+              <label style="font-size:12px; color:var(--g-text-secondary); display:flex; align-items:center; gap:4px; cursor:pointer;">
+                <input type="checkbox" id="chkAutoPollValidator" checked> 自动轮询 (5s)
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Role & Dept Switching Hub Card (方案 1 & 3) -->
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:18px 24px; box-shadow:var(--g-shadow-1); margin-top:16px; display:flex; flex-direction:column; gap:14px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--g-border-subtle); padding-bottom:10px;">
+            <div>
+              <div style="font-size:14px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                <span>🎯</span> 角色 + 科室 一键选岗中枢 (方案 1 & 3 解决测试切岗痛点)
+                <span class="badge" style="background:#e0f2fe; color:#0369a1; font-size:11px; padding:2px 8px; border-radius:12px;">全院 15 大核心角色矩阵</span>
+              </div>
+              <div style="font-size:12px; color:var(--g-text-secondary); margin-top:2px;">
+                针对登录后自动选择科室、跨岗位测试报 404 的痛点：支持在控制台一键直达对应工作站，或预设下次登录身份！
+              </div>
+            </div>
+            <span id="switchStatusBadge" class="status-chip pass" style="display:none;">已更新</span>
+          </div>
+
+          <!-- Section A: 常用测试身份一键矩阵 (方案 3) -->
+          <div>
+            <div style="font-size:12px; font-weight:600; color:var(--g-text-tertiary); text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">
+              ⚡ 方案 3: 常用测试角色与工作站矩阵 (点击卡片一键平滑换岗):
+            </div>
+            <div id="rolePresetsContainer" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:10px;">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Section B: 任意角色与科室自由组合切换 (方案 1) -->
+          <div style="background:var(--g-surface-variant); border-radius:var(--g-radius-sm); padding:12px 16px; display:flex; flex-direction:column; gap:8px;">
+            <div style="font-size:12px; font-weight:600; color:var(--g-text-secondary);">
+              🛠️ 方案 1: 自定义任意角色与就诊科室组合切换:
+            </div>
+            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+              <select id="switchRoleSelect" class="target-select" style="min-width:160px; height:34px;" title="选择目标角色">
+                <option value="">加载角色列表中...</option>
+              </select>
+              <select id="switchDeptSelect" class="target-select" style="min-width:200px; height:34px;" title="联动选择科室">
+                <option value="">请先选择角色...</option>
+              </select>
+              <input id="switchRouteInput" type="text" class="target-select" style="width:210px; height:34px; font-family:var(--g-mono); font-size:11px;" placeholder="目标工作站路由 (可选)">
+              <button class="g-btn g-btn-primary" id="btnExecuteSwitch" style="height:34px; background:#0b57d0;">🔄 立即切换当前浏览器身份</button>
+              <button class="g-btn g-btn-tonal" id="btnExecutePreset" style="height:34px;">📌 预设为下次登录身份</button>
+              <span id="switchFeedback" style="font-size:12px; font-weight:600; color:var(--g-blue);"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Column Dashboard Cards -->
+        <div class="val-grid-2" style="margin-top:16px;">
+
+          <!-- Card 1: Session & User Context -->
+          <div class="val-card">
+            <div class="val-card-header">
+              <div class="val-card-title">
+                <span>👤</span> 医生工作站登录凭证 (Session & Context)
+              </div>
+              <span id="valLoginBadge" class="status-chip pass">已登录</span>
+            </div>
+            <div class="val-field-row">
+              <span class="val-field-label">当前登录工号 / 用户名</span>
+              <span class="val-field-val" id="valUsername">admin</span>
+            </div>
+            <div class="val-field-row">
+              <span class="val-field-label">岗位角色与权限</span>
+              <span class="val-field-val" id="valRole">住院医生 (ZYYS)</span>
+            </div>
+            <div class="val-field-row">
+              <span class="val-field-label">科室与病区代码</span>
+              <span class="val-field-val" id="valDept">科室ID: 910092</span>
+            </div>
+            <div class="val-field-row">
+              <span class="val-field-label">关联浏览器当前路由</span>
+              <span class="val-field-val" id="valRoute" style="font-family:var(--g-mono); font-size:11px; color:var(--g-blue); max-width:280px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">-</span>
+            </div>
+            <div class="val-field-row">
+              <span class="val-field-label">前台页面标题</span>
+              <span class="val-field-val" id="valTitle" style="font-size:12px;">-</span>
+            </div>
+            <div style="margin-top:6px;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                <span class="val-field-label">会话鉴权令牌 (JWT Token)</span>
+                <div style="display:flex; gap:6px;">
+                  <button class="g-btn g-btn-tonal" id="btnCopyBearer" style="height:24px; font-size:11px; padding:0 8px;">📋 复制 Bearer</button>
+                  <button class="g-btn g-btn-outlined" id="btnCopyJwt" style="height:24px; font-size:11px; padding:0 8px;">复制原始 Token</button>
+                </div>
+              </div>
+              <div id="valTokenText" style="font-family:var(--g-mono); font-size:11px; background:var(--g-surface-variant); padding:10px; border-radius:6px; word-break:break-all; max-height:65px; overflow-y:auto; color:var(--g-text-secondary);">-</div>
+            </div>
+          </div>
+
+          <!-- Card 2: Microservices & Oracle Database Status -->
+          <div class="val-card">
+            <div class="val-card-header">
+              <div class="val-card-title">
+                <span>🏥</span> 后端核心微服务与 Oracle 数据库健康度
+              </div>
+              <span id="valDbBadge" class="status-chip pass">Oracle 连通</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px;">
+              <!-- Service 1: UserInfo -->
+              <div class="val-svc-item">
+                <div style="flex:1;">
+                  <div style="font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px;">
+                    <span>🔑</span> 用户身份鉴权服务
+                    <span style="font-size:11px; font-family:var(--g-mono); color:var(--g-text-tertiary);">/userInfo</span>
+                  </div>
+                  <div id="svcUserMsg" style="font-size:12px; color:var(--g-text-secondary); margin-top:2px;">正在连接...</div>
+                </div>
+                <span id="svcUserStatus" class="status-chip pass">PASS</span>
+              </div>
+              <!-- Service 2: Patient Queue -->
+              <div class="val-svc-item">
+                <div style="flex:1;">
+                  <div style="font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px;">
+                    <span>🛏️</span> 病区在院患者队列
+                    <span style="font-size:11px; font-family:var(--g-mono); color:var(--g-text-tertiary);">/ward/patient/list</span>
+                  </div>
+                  <div id="svcPatMsg" style="font-size:12px; color:var(--g-text-secondary); margin-top:2px;">正在连接...</div>
+                  <div id="svcPatSamples" style="font-size:11px; color:var(--g-text-tertiary); margin-top:3px;"></div>
+                </div>
+                <span id="svcPatStatus" class="status-chip pass">PASS</span>
+              </div>
+              <!-- Service 3: Order Dictionary -->
+              <div class="val-svc-item">
+                <div style="flex:1;">
+                  <div style="font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px;">
+                    <span>💊</span> 医嘱项目字典服务
+                    <span style="font-size:11px; font-family:var(--g-mono); color:var(--g-text-tertiary);">/order/item/list</span>
+                  </div>
+                  <div id="svcOrderDictMsg" style="font-size:12px; color:var(--g-text-secondary); margin-top:2px;">正在连接...</div>
+                  <div id="svcOrderDictSample" style="font-size:11px; color:var(--g-text-tertiary); margin-top:3px;"></div>
+                </div>
+                <span id="svcOrderDictStatus" class="status-chip pass">PASS</span>
+              </div>
+              <!-- Service 4: Rule Engine -->
+              <div class="val-svc-item">
+                <div style="flex:1;">
+                  <div style="font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px;">
+                    <span>⚙️</span> 医嘱业务规则引擎
+                    <span style="font-size:11px; font-family:var(--g-mono); color:var(--g-text-tertiary);">/order/list</span>
+                  </div>
+                  <div id="svcRuleMsg" style="font-size:12px; color:var(--g-text-secondary); margin-top:2px;">正在连接...</div>
+                </div>
+                <span id="svcRuleStatus" class="status-chip pass">PASS</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3: Live Order Dictionary Search & Direct Oracle Query -->
+        <div class="val-card" style="margin-top:16px;">
+          <div class="val-card-header">
+            <div>
+              <div class="val-card-title">
+                <span>💊</span> 医嘱项目字典与开立数据直连检索 (Oracle 11g/19c 真实数据回查)
+              </div>
+              <div style="font-size:12px; color:var(--g-text-secondary); margin-top:3px;">
+                直连 HIS 后端检索 Oracle 数据库中的在用药品、处方与诊疗项目，完全在后台接口完成，零前端页面干扰。
+              </div>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="searchResultCountBadge" class="module-badge" style="font-size:12px;">库内总计 1,601 项</span>
+            </div>
+          </div>
+
+          <!-- Search Controls -->
+          <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <div class="search-pill" style="flex:1; width:auto; height:36px; padding:0 14px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--g-text-tertiary)">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              <input type="text" id="orderSearchInput" placeholder="输入药品名称、拼音码或编号 (如: 丹参, 葡萄糖, 氯化钠, DSZSY)..." value="丹参">
+            </div>
+            <select class="target-select" id="orderClassifySelect" style="height:36px;">
+              <option value="W">全部分类 (西药/中成药/诊疗)</option>
+              <option value="CM">中成药 (CM)</option>
+              <option value="WM">西药 (WM)</option>
+            </select>
+            <button class="g-btn g-btn-primary" id="btnSearchOrderItems" style="height:36px; padding:0 18px;">🔍 检索 Oracle 数据库</button>
+          </div>
+
+          <!-- Fast Shortcut Chips -->
+          <div class="chips-row" style="margin-top:2px;">
+            <span style="font-size:12px; color:var(--g-text-tertiary); display:flex; align-items:center;">快速推荐:</span>
+            <span class="code-chip" onclick="quickSearchOrder('丹参')">丹参 (DSZSY)</span>
+            <span class="code-chip" onclick="quickSearchOrder('葡萄糖')">葡萄糖 (PTT)</span>
+            <span class="code-chip" onclick="quickSearchOrder('氯化钠')">氯化钠 (LHN)</span>
+            <span class="code-chip" onclick="quickSearchOrder('阿莫西林')">阿莫西林 (AMXL)</span>
+            <span class="code-chip" onclick="quickSearchOrder('复方')">复方 (FF)</span>
+            <span class="code-chip" onclick="quickSearchOrder('注射液')">注射液</span>
+          </div>
+
+          <!-- Result Table -->
+          <div style="overflow-x:auto; margin-top:6px; border:1px solid var(--g-border-subtle); border-radius:var(--g-radius-sm);">
+            <table class="data-table" style="width:100%; border-collapse:collapse;">
+              <thead>
+                <tr>
+                  <th style="width:100px;">项目编码</th>
+                  <th>药品/项目通用名称</th>
+                  <th>规格</th>
+                  <th style="width:100px;">单价 (元)</th>
+                  <th style="width:80px;">包装单位</th>
+                  <th style="width:110px;">拼音首字母</th>
+                  <th style="width:110px;">系统分类</th>
+                  <th style="width:130px; text-align:center;">开立报文检验</th>
+                </tr>
+              </thead>
+              <tbody id="orderSearchResultBody">
+                <!-- Dynamically rendered -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Sample Order Payload Modal / Dialog (Hidden by default) -->
+        <div id="orderPayloadModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; align-items:center; justify-content:center;">
+          <div style="background:var(--g-surface); border-radius:var(--g-radius-md); width:650px; max-width:90%; padding:24px; box-shadow:var(--g-shadow-2); display:flex; flex-direction:column; gap:14px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--g-border-subtle); padding-bottom:10px;">
+              <div style="font-weight:600; font-size:15px; display:flex; align-items:center; gap:8px;">
+                <span>📋</span> 医嘱开立标准化 JSON 报文
+              </div>
+              <button class="icon-btn" onclick="document.getElementById('orderPayloadModal').style.display='none'">✕</button>
+            </div>
+            <div style="font-size:12px; color:var(--g-text-secondary);">
+              以下为基于 Oracle 真实药品字典生成的住院医生工作站开立报文，可直接提交至 HIS 医嘱开立接口进行非侵入式写入校验：
+            </div>
+            <pre id="orderPayloadJson" style="background:#1e1e1e; color:#9cdcfe; font-family:var(--g-mono); font-size:12px; padding:14px; border-radius:6px; max-height:260px; overflow:auto;"></pre>
+            <div style="display:flex; justify-content:flex-end; gap:10px;">
+              <button class="g-btn g-btn-tonal" id="btnCopyOrderPayload">📋 复制报文</button>
+              <button class="g-btn g-btn-primary" onclick="document.getElementById('orderPayloadModal').style.display='none'">关闭</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 1: Execution Center -->
+      <section class="content-area" id="tab-cases">
+        <!-- Floating Login Notice Banner for Option B -->
+        <div id="loginAlertBanner" style="display:none; background: var(--g-yellow-surface); border: 1.5px solid var(--g-yellow); border-radius: var(--g-radius-md); padding: 16px 20px; align-items: center; justify-content: space-between; box-shadow: var(--g-shadow-2); transition: all 0.3s ease;">
+          <div style="display:flex; align-items:flex-start; gap:16px; flex:1; margin-right: 20px;">
+            <div class="g-pulse-dot" style="width:14px; height:14px; border-radius:50%; background:var(--g-yellow); margin-top:3px; flex-shrink:0;"></div>
+            <div style="flex:1;">
+              <div style="font-weight:600; font-size:14px; color:var(--g-text-primary);" id="loginAlertTitle">【方案 B: 等待手动登录】已在独立 Chrome 窗口为您打开 HIS 登录页</div>
+              <div style="font-size:13px; color:var(--g-text-secondary); margin-top:4px;" id="loginAlertDesc">👉 请在弹出的 Chrome 窗口中输入您的医生工号与密码并点击【登录】。系统检测到登录后将立即开始执行用例。</div>
+              <div style="display:flex; align-items:center; gap:12px; margin-top:8px;">
+                <div style="flex:1; background:rgba(0,0,0,0.08); height:6px; border-radius:3px; overflow:hidden;">
+                  <div id="loginProgressBar" style="width:0%; height:100%; background:var(--g-yellow); transition: width 0.8s ease;"></div>
+                </div>
+                <div style="font-size:12px; font-weight:600; color:var(--g-text-secondary); white-space:nowrap;" id="loginAlertCountdown">已等待 0 秒 / 剩余 180 秒</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <button class="g-btn g-btn-tonal" id="btnBannerBringFront" style="height:32px; font-size:12px; padding:0 12px;" onclick="fetch('/api/open_browser', {method:'POST'})">🌐 置顶 Chrome 窗口</button>
+            <button class="g-btn g-btn-danger" style="height:32px; font-size:12px; padding:0 12px;" onclick="document.getElementById('btnStop').click()">⏹ 取消并停止</button>
+          </div>
+        </div>
+
+        <!-- KPI Mini Status Badges (Replacing 4 bulky cards with sleek tags) -->
+        <div class="kpi-badge-bar">
+          <div class="kpi-tag-item total" title="全系统已注册的测试用例总数">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">注册用例:</span>
+            <b class="kpi-tag-num" id="kpiTotal">0</b>
+            <span class="kpi-tag-extra" id="kpiSubModes"></span>
+          </div>
+          <div class="kpi-tag-item exec" title="本次运行累计已执行次数">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">已执行:</span>
+            <b class="kpi-tag-num" id="kpiExecuted">0</b>
+          </div>
+          <div class="kpi-tag-item pass" title="测试通过数量与通过率">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">通过:</span>
+            <b class="kpi-tag-num" id="kpiPassed">0</b>
+          </div>
+          <div class="kpi-tag-item fail" title="异常或阻断用例数量">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">失败:</span>
+            <b class="kpi-tag-num" id="kpiFailed">0</b>
+          </div>
+          <div class="kpi-tag-item sel" id="selectionStatusBadge" title="当前用例勾选统计与模式">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">已勾选:</span>
+            <b class="kpi-tag-num"><span id="selCountBadge">0</span>/<span id="totalCountBadge">0</span></b>
+            <span class="kpi-tag-extra">(展示项: <b id="dispSelCountBadge">0/0</b>)</span>
+          </div>
+        </div>
+
+        <!-- Material Data Table with 100% Fixed Sticky Header -->
+        <div class="card-table-wrapper">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <div class="table-title">用例执行清单</div>
+              <span style="font-size:11px; color:var(--g-text-tertiary);" id="filteredCasesCount">(显示 38 项)</span>
+            </div>
+            <div class="table-toolbar-right">
+              <button class="g-btn g-btn-tonal active filter-btn" id="btnFilterAll" onclick="filterCases('all')">全部</button>
+              <button class="g-btn g-btn-outlined filter-btn" style="color:#e8710a; border-color:#e8710a; font-weight:600;" id="btnFilterInvasive" onclick="filterCases('invasive')">👀 侵入式</button>
+              <button class="g-btn g-btn-outlined filter-btn" style="color:#1a73e8; border-color:#1a73e8; font-weight:600;" id="btnFilterNonInvasive" onclick="filterCases('non_invasive')">🤖 非侵入式</button>
+              <button class="g-btn g-btn-outlined filter-btn" id="btnFilterOrder" onclick="filterCases('order')">📋 医嘱开立</button>
+              <button class="g-btn g-btn-outlined filter-btn" id="btnFilterHis" onclick="filterCases('his')">🏥 HIS业务</button>
+              <button class="g-btn g-btn-outlined filter-btn" id="btnFilterEmr" onclick="filterCases('emr')">📝 EMR病历</button>
+              <button class="g-btn g-btn-outlined filter-btn" id="btnFilterHealth" onclick="filterCases('health')">🛡️ 系统巡检</button>
+              <button class="g-btn g-btn-outlined filter-btn" style="color:var(--g-red); border-color:var(--g-red);" id="btnFilterFailed" onclick="filterCases('failed')">❌ 仅看失败</button>
+            </div>
+          </div>
+          <!-- Smart Selection Context Banner -->
+          <div id="smartSelectionBanner" class="smart-selection-banner" style="display:none;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="smartBannerIcon">💡</span>
+              <span id="smartBannerText">已勾选当前展示的全部用例。</span>
+            </div>
+            <div id="smartBannerActions" style="display:flex; align-items:center; gap:8px;"></div>
+          </div>
+          <!-- Dedicated Table Scroll Container: Keeps Table Header 100% Permanently Fixed/Sticky! -->
+          <div class="table-scroll-container" id="caseTableContainer">
+            <table class="g-table">
+              <thead>
+                <tr>
+                  <th style="width: 58px; text-align:center;">
+                    <div class="table-select-wrapper">
+                      <input type="checkbox" id="chkTableSelectAll" checked title="全选/全不选当前视图">
+                      <button type="button" id="btnTableSelectDropdown" class="table-select-arrow" title="更多选择模式">▾</button>
+                      <div id="tableSelectMenu" class="table-select-menu">
+                        <div class="table-select-item" onclick="tableBatchAction('select_visible')">
+                          <span>☑️ 全选当前列表</span>
+                          <span class="table-select-tag" id="menuCntVisible">0</span>
+                        </div>
+                        <div class="table-select-item" onclick="tableBatchAction('invert_visible')">
+                          <span>🔄 反选当前列表</span>
+                        </div>
+                        <div class="table-select-item" onclick="tableBatchAction('only_visible')">
+                          <span>🎯 仅选当前列表 (取消其他)</span>
+                        </div>
+                        <div class="table-select-divider"></div>
+                        <div class="table-select-item" onclick="tableBatchAction('select_all_system')">
+                          <span>🌐 全选系统所有</span>
+                          <span class="table-select-tag" id="menuCntAll">0</span>
+                        </div>
+                        <div class="table-select-item" onclick="tableBatchAction('clear_all')">
+                          <span>❌ 取消全部选择</span>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                  <th style="width: 140px;">用例 ID</th>
+                  <th>用例名称</th>
+                  <th style="width: 105px;">测试模式</th>
+                  <th style="width: 150px;">所属业务模块</th>
+                  <th style="width: 85px;">耗时</th>
+                  <th style="width: 95px;">状态</th>
+                  <th style="width: 85px; text-align:center;">单独执行</th>
+                </tr>
+              </thead>
+              <tbody id="caseTableBody">
+                <!-- Rendered dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- Tab 2: HIS Site Radar -->
+      <section class="content-area" id="tab-health">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <h2 style="font-size:16px; font-weight:600;">全院 HIS 业务模块矩阵与健康巡检</h2>
+            <p style="font-size:13px; color:var(--g-text-secondary); margin-top:2px;">一键扫描覆盖电子病历、门诊挂号收费、门诊医生站、住院护士站、药房药库全流程路由状态</p>
+          </div>
+          <button class="g-btn g-btn-primary" id="btnRunSiteScan">🚀 启动全院快速巡检</button>
+        </div>
+        <div id="moduleRadarContainer" style="display:flex; flex-direction:column; gap:24px;">
+          <!-- Dynamically loaded -->
+        </div>
+      </section>
+
+      <!-- Tab 3: XML Inspector -->
+      <section class="content-area" id="tab-xml">
+        <div class="xml-container">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h2 style="font-size:15px; font-weight:600;">病历设计器 WebAssembly XML 实时检视</h2>
+              <p style="font-size:12px; color:var(--g-text-secondary);">从编辑器 DOM 内存实时抓取标准卫生信息数据元节点与属性结构</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="g-btn g-btn-tonal" id="btnRefreshXml">↻ 重新抓取 XML</button>
+              <button class="g-btn g-btn-outlined" id="btnCopyXml">复制 XML</button>
+            </div>
+          </div>
+          <pre class="xml-viewer" id="xmlContentBlock">&lt;!-- 点击 [重新抓取 XML] 获取当前病历文档内容 --&gt;</pre>
+        </div>
+      </section>
+
+      <!-- Tab 4: API REPL -->
+      <section class="content-area" id="tab-repl">
+        <div class="repl-box">
+          <h2 style="font-size:15px; font-weight:600;">HIS 前端 & FSWriter WebAssembly 指令控制台</h2>
+          <div class="chips-row">
+            <span class="code-chip" onclick="setRepl('document.querySelector(\'.emr-writer\').AboutControl()')">AboutControl()</span>
+            <span class="code-chip" onclick="setRepl('document.querySelector(\'.emr-writer\').GetAllInputFields()')">GetAllInputFields()</span>
+            <span class="code-chip" onclick="setRepl('document.querySelector(\'.emr-writer\').BodyText()')">BodyText()</span>
+            <span class="code-chip" onclick="setRepl('document.querySelector(\'.emr-writer\').FSExecuteCommand(\'Bold\', false, null)')">FSExecuteCommand('Bold')</span>
+            <span class="code-chip" onclick="setRepl('window.location.hash')">当前路由</span>
+            <span class="code-chip" onclick="setRepl('document.title')">页面标题</span>
+          </div>
+          <textarea id="replEditor" class="code-editor" placeholder="输入要执行的 JavaScript / 控件指令..."></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <button class="g-btn g-btn-primary" id="btnExecRepl">▶ 在当前浏览器中执行</button>
+            <span style="font-size:12px; color:var(--g-text-tertiary);">支持异步 Promise 自动展开</span>
+          </div>
+          <pre class="xml-viewer" style="height: 180px;" id="replResultBlock">// 执行回显输出...</pre>
+        </div>
+      </section>
+
+      <!-- Tab 5: Live View -->
+      <section class="content-area" id="tab-screen">
+        <div class="preview-box">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h2 style="font-size:15px; font-weight:600;">Chromium 视口画面实时快照</h2>
+            <button class="g-btn g-btn-tonal" id="btnRefreshScreen">↻ 刷新当前画面</button>
+          </div>
+          <img id="liveImgView" class="preview-img" style="display:none;" alt="页面截图">
+          <div id="noImgTip" style="padding: 60px 0; color:var(--g-text-secondary);">尚未连接浏览器实例，点击上方【运行测试】后将自动捕获画面。</div>
+        </div>
+      </section>
+
+      <!-- Bottom Cloud Shell Terminal Drawer -->
+      <div class="terminal-drawer collapsed" id="termDrawer">
+        <div class="term-resize-handle" id="termResizeHandle" title="按住上下拖拽可自由调节终端高度"></div>
+        <div class="terminal-topbar" id="termToggleBtn">
+          <div style="display:flex; align-items:center; overflow:hidden; flex:1; margin-right:12px;">
+            <span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+              Cloud Shell 实时日志终端
+            </span>
+            <span id="termLatestLine" style="font-size:11px; color:#888; font-weight:normal; margin-left:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center; flex-shrink:0;">
+            <button class="g-btn g-btn-outlined" style="height:22px; font-size:11px; padding:0 8px; border-color:#555; color:#ccc;" id="btnClearTerm" title="清空终端日志">清空</button>
+            <button class="g-btn g-btn-outlined" style="height:22px; font-size:11px; padding:0 8px; border-color:#555; color:#ccc;" id="btnToggleFloat" title="在底部停靠与悬浮窗之间切换 (悬浮模式完全不占下方测试用例空间)">🪟 悬浮</button>
+            <button class="g-btn g-btn-outlined" style="height:22px; font-size:11px; padding:0 8px; border-color:#555; color:#ccc;" id="btnMinTerm" title="收起或展开终端日志">▲ 展开</button>
+          </div>
+        </div>
+        <div class="terminal-logs" id="termLogsContainer">
+          <div class="t-line INFO">[就绪] HIS WebRunner 控制台已挂载，等待执行指令...</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    // State
+    let allTestCases = [];
+    let currentFilter = 'all';
+    let stats = { total: 0, executed: 0, passed: 0, failed: 0 };
+    let ws = null;
+
+    // Theme Toggle
+    const themeBtn = document.getElementById('btnToggleTheme');
+    themeBtn.addEventListener('click', () => {
+      const current = document.documentElement.getAttribute('data-theme');
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+    });
+
+    // Global Tab Navigation
+    window.switchTab = function(tabId) {
+      window.scrollTo(0, 0);
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+
+      document.querySelectorAll('.tab-item').forEach(t => {
+        if (t.dataset.tab === tabId) {
+          t.classList.add('active');
+        } else {
+          t.classList.remove('active');
+        }
+      });
+      document.querySelectorAll('.content-area').forEach(c => {
+        if (c.id === tabId) {
+          c.classList.add('active');
+        } else {
+          c.classList.remove('active');
+        }
+      });
+      document.querySelectorAll('.workspace-nav-item').forEach(w => {
+        if (w.dataset.tab === tabId) {
+          w.classList.add('active');
+        } else {
+          w.classList.remove('active');
+        }
+      });
+    };
+
+    document.querySelectorAll('.tab-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        switchTab(tab.dataset.tab);
+      });
+    });
+
+    const btnNavValidatorEl = document.getElementById('btnNavValidator');
+    if (btnNavValidatorEl) {
+      btnNavValidatorEl.addEventListener('click', () => switchTab('tab-validator'));
+    }
+
+    // Terminal Drawer Controls & Drag Resize
+    const termDrawer = document.getElementById('termDrawer');
+    const termToggleBtn = document.getElementById('termToggleBtn');
+    const btnMinTerm = document.getElementById('btnMinTerm');
+    const btnToggleFloat = document.getElementById('btnToggleFloat');
+    const btnClearTerm = document.getElementById('btnClearTerm');
+    const resizeHandle = document.getElementById('termResizeHandle');
+
+    function toggleTermCollapse(forceState) {
+      if (typeof forceState === 'boolean') {
+        termDrawer.classList.toggle('collapsed', forceState);
+      } else {
+        termDrawer.classList.toggle('collapsed');
+      }
+      const isCollapsed = termDrawer.classList.contains('collapsed');
+      if (btnMinTerm) {
+        btnMinTerm.innerText = isCollapsed ? '▲ 展开' : '▼ 收起';
+      }
+    }
+
+    if (termToggleBtn) {
+      termToggleBtn.addEventListener('click', (e) => {
+        if (e.target.tagName !== 'BUTTON' && !e.target.closest('button')) {
+          toggleTermCollapse();
+        }
+      });
+    }
+
+    if (btnMinTerm) {
+      btnMinTerm.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleTermCollapse();
+      });
+    }
+
+    if (btnToggleFloat) {
+      btnToggleFloat.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isFloating = termDrawer.classList.toggle('floating');
+        btnToggleFloat.innerText = isFloating ? '📌 底部停靠' : '🪟 悬浮';
+        btnToggleFloat.title = isFloating ? '恢复底部停靠分割模式' : '切换为悬浮窗模式，完全不占下方测试用例空间';
+        if (isFloating) {
+          termDrawer.classList.remove('collapsed');
+          if (btnMinTerm) btnMinTerm.innerText = '▼ 收起';
+        }
+      });
+    }
+
+    if (btnClearTerm) {
+      btnClearTerm.addEventListener('click', (e) => {
+        e.stopPropagation();
+        document.getElementById('termLogsContainer').innerHTML = '';
+        const line = document.getElementById('termLatestLine');
+        if (line) line.innerText = '';
+      });
+    }
+
+    // Drag-to-Resize Handle
+    let isDraggingTerm = false;
+    let startY = 0;
+    let startH = 0;
+
+    if (resizeHandle && termDrawer) {
+      resizeHandle.addEventListener('mousedown', (e) => {
+        isDraggingTerm = true;
+        startY = e.clientY;
+        startH = termDrawer.offsetHeight;
+        resizeHandle.classList.add('active');
+        termDrawer.classList.remove('collapsed');
+        if (btnMinTerm) btnMinTerm.innerText = '▼ 收起';
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'ns-resize';
+      });
+
+      window.addEventListener('mousemove', (e) => {
+        if (!isDraggingTerm) return;
+        const diff = startY - e.clientY;
+        const maxH = window.innerHeight - 140;
+        const newH = Math.max(70, Math.min(maxH, startH + diff));
+        termDrawer.style.height = newH + 'px';
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (isDraggingTerm) {
+          isDraggingTerm = false;
+          resizeHandle.classList.remove('active');
+          document.body.style.userSelect = '';
+          document.body.style.cursor = '';
+        }
+      });
+    }
+
+    // Global & Table Selection State
+    let selectedCaseIds = new Set();
+    let currentDisplayedTests = []; // Always tracks currently visible/filtered tests in table
+
+    function updateSelectionUI() {
+      // 1. Update table checkboxes
+      document.querySelectorAll('.case-chk').forEach(c => {
+        c.checked = selectedCaseIds.has(c.dataset.id);
+      });
+
+      // 2. Update sidebar sub-item checkboxes
+      document.querySelectorAll('.sub-case-chk').forEach(c => {
+        c.checked = selectedCaseIds.has(c.dataset.id);
+      });
+
+      // 3. Update module/category checkboxes (checked / unchecked / indeterminate)
+      document.querySelectorAll('.cat-select-chk').forEach(catChk => {
+        const cat = catChk.dataset.cat;
+        const catCases = allTestCases.filter(t => t.category === cat);
+        const checkedCount = catCases.filter(t => selectedCaseIds.has(t.id)).length;
+        if (checkedCount === 0) {
+          catChk.checked = false;
+          catChk.indeterminate = false;
+        } else if (checkedCount === catCases.length) {
+          catChk.checked = true;
+          catChk.indeterminate = false;
+        } else {
+          catChk.checked = false;
+          catChk.indeterminate = true;
+        }
+      });
+
+      // 4. Update global drawer select-all checkbox (reflects ALL 38 tests in system)
+      const allCount = allTestCases.length;
+      const selCount = selectedCaseIds.size;
+      const isDrawerAll = allCount > 0 && selCount === allCount;
+      const isDrawerInd = selCount > 0 && selCount < allCount;
+
+      const chkDrawer = document.getElementById('chkSelectAll');
+      if (chkDrawer) {
+        chkDrawer.checked = isDrawerAll;
+        chkDrawer.indeterminate = isDrawerInd;
+      }
+
+      // 5. Update TABLE Select-All checkbox (STRICTLY reflects currentDisplayedTests!)
+      const dispCount = currentDisplayedTests.length;
+      const dispSelCount = currentDisplayedTests.filter(t => selectedCaseIds.has(t.id)).length;
+      const isTableAll = dispCount > 0 && dispSelCount === dispCount;
+      const isTableInd = dispSelCount > 0 && dispSelCount < dispCount;
+
+      const chkTable = document.getElementById('chkTableSelectAll');
+      if (chkTable) {
+        chkTable.checked = isTableAll;
+        chkTable.indeterminate = isTableInd;
+        if (isTableAll) {
+          chkTable.title = `已全选当前展示的全部 ${dispCount} 项用例，点击取消全选`;
+        } else if (isTableInd) {
+          chkTable.title = `当前展示列表中已勾选 ${dispSelCount}/${dispCount} 项，点击全选当前展示列表`;
+        } else {
+          chkTable.title = `点击全选当前展示的 ${dispCount} 项用例`;
+        }
+      }
+
+      // 6. Update Selection Status Badge & Menu Counts
+      const selCountBadge = document.getElementById('selCountBadge');
+      if (selCountBadge) selCountBadge.innerText = `${selCount}`;
+      const totalCountBadge = document.getElementById('totalCountBadge');
+      if (totalCountBadge) totalCountBadge.innerText = `${allCount}`;
+      const dispSelCountBadge = document.getElementById('dispSelCountBadge');
+      if (dispSelCountBadge) dispSelCountBadge.innerText = `${dispSelCount}/${dispCount}`;
+
+      const menuCntVisible = document.getElementById('menuCntVisible');
+      if (menuCntVisible) menuCntVisible.innerText = `${dispCount}`;
+      const menuCntAll = document.getElementById('menuCntAll');
+      if (menuCntAll) menuCntAll.innerText = `${allCount}`;
+
+      // 7. Update Run Selected Button badge
+      const btnRunSel = document.getElementById('btnRunSelected');
+      if (btnRunSel) {
+        btnRunSel.innerText = `▶ 运行选中用例 (${selCount})`;
+        btnRunSel.title = `运行当前勾选的 ${selCount} 项用例（当前展示中 ${dispSelCount} 项，其他未展示项 ${selCount - dispSelCount} 项）`;
+      }
+
+      // 8. Update Smart Selection Banner
+      updateSmartBanner(dispCount, dispSelCount, allCount, selCount);
+    }
+
+    function updateSmartBanner(dispCount, dispSelCount, allCount, selCount) {
+      const banner = document.getElementById('smartSelectionBanner');
+      if (!banner) return;
+      const bannerText = document.getElementById('smartBannerText');
+      const bannerActions = document.getElementById('smartBannerActions');
+      const bannerIcon = document.getElementById('smartBannerIcon');
+
+      // If viewing all items (dispCount === allCount):
+      if (dispCount >= allCount) {
+        if (selCount > 0 && selCount < allCount) {
+          banner.style.display = 'flex';
+          bannerIcon.innerText = 'ℹ️';
+          bannerText.innerHTML = `已选择系统 <b>${selCount}</b> / <b>${allCount}</b> 项用例。`;
+          bannerActions.innerHTML = `
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('select_all_system')">🌐 全选全部 (${allCount})</button>
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('invert_visible')">🔄 反选</button>
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('clear_all')">❌ 全部清空</button>
+          `;
+        } else {
+          banner.style.display = 'none';
+        }
+        return;
+      }
+
+      // When in a filtered or searched view (dispCount < allCount):
+      const outsideCount = allCount - dispCount;
+      const outsideSelCount = selCount - dispSelCount;
+
+      if (dispSelCount === dispCount && dispCount > 0) {
+        banner.style.display = 'flex';
+        if (selCount === allCount) {
+          bannerIcon.innerText = '🌐';
+          bannerText.innerHTML = `已勾选系统全部 <b>${allCount}</b> 项用例（包含此处未展示的 ${outsideCount} 项）。`;
+          bannerActions.innerHTML = `
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('only_visible')">🎯 仅保留勾选当前展示的 ${dispCount} 项</button>
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('deselect_visible')">取消勾选当前项</button>
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('clear_all')">❌ 清空全部</button>
+          `;
+        } else {
+          bannerIcon.innerText = '💡';
+          bannerText.innerHTML = `已勾选当前展示的全部 <b>${dispCount}</b> 项用例。需要连同系统其余 ${outsideCount} 项一起勾选吗？`;
+          bannerActions.innerHTML = `
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('select_all_system')">🌐 勾选系统全部 ${allCount} 项</button>
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('invert_visible')">🔄 反选当前</button>
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('deselect_visible')">❌ 取消当前所选</button>
+          `;
+        }
+      } else if (dispSelCount > 0) {
+        banner.style.display = 'flex';
+        bannerIcon.innerText = 'ℹ️';
+        if (outsideSelCount > 0) {
+          bannerText.innerHTML = `当前展示已选 <b>${dispSelCount}/${dispCount}</b> 项（全系统共勾选 <b>${selCount}</b> 项，含其他模块 ${outsideSelCount} 项）。`;
+        } else {
+          bannerText.innerHTML = `当前展示已选 <b>${dispSelCount}/${dispCount}</b> 项用例。`;
+        }
+        bannerActions.innerHTML = `
+          <button type="button" class="smart-banner-btn" onclick="tableBatchAction('select_visible')">☑️ 全选当前展示 (${dispCount})</button>
+          <button type="button" class="smart-banner-btn" onclick="tableBatchAction('invert_visible')">🔄 反选当前</button>
+          ${outsideSelCount > 0 ? `<button type="button" class="smart-banner-btn" onclick="tableBatchAction('only_current_selected')">🎯 仅保留当前所选</button>` : ''}
+          <button type="button" class="smart-banner-btn" onclick="tableBatchAction('deselect_visible')">❌ 取消当前所选</button>
+        `;
+      } else {
+        if (selCount > 0) {
+          banner.style.display = 'flex';
+          bannerIcon.innerText = '⚠️';
+          bannerText.innerHTML = `当前展示中<b>未勾选任何用例</b>（但其他分类中已勾选了 <b>${selCount}</b> 项）。`;
+          bannerActions.innerHTML = `
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('select_visible')">☑️ 全选当前展示 (${dispCount})</button>
+            <button type="button" class="smart-banner-btn" onclick="tableBatchAction('clear_all')">❌ 清空全部已选</button>
+          `;
+        } else {
+          banner.style.display = 'none';
+        }
+      }
+    }
+
+    window.tableBatchAction = function(action) {
+      const menu = document.getElementById('tableSelectMenu');
+      if (menu) menu.classList.remove('show');
+
+      if (action === 'select_visible') {
+        currentDisplayedTests.forEach(t => selectedCaseIds.add(t.id));
+      } else if (action === 'deselect_visible') {
+        currentDisplayedTests.forEach(t => selectedCaseIds.delete(t.id));
+      } else if (action === 'invert_visible') {
+        currentDisplayedTests.forEach(t => {
+          if (selectedCaseIds.has(t.id)) {
+            selectedCaseIds.delete(t.id);
+          } else {
+            selectedCaseIds.add(t.id);
+          }
+        });
+      } else if (action === 'only_visible') {
+        selectedCaseIds.clear();
+        currentDisplayedTests.forEach(t => selectedCaseIds.add(t.id));
+      } else if (action === 'only_current_selected') {
+        const keep = new Set(currentDisplayedTests.filter(t => selectedCaseIds.has(t.id)).map(t => t.id));
+        selectedCaseIds = keep;
+      } else if (action === 'select_all_system') {
+        allTestCases.forEach(t => selectedCaseIds.add(t.id));
+      } else if (action === 'clear_all') {
+        selectedCaseIds.clear();
+      }
+      updateSelectionUI();
+    };
+
+    function toggleModuleSelection(cat, isChecked) {
+      const catCases = allTestCases.filter(t => t.category === cat);
+      catCases.forEach(t => {
+        if (isChecked) {
+          selectedCaseIds.add(t.id);
+        } else {
+          selectedCaseIds.delete(t.id);
+        }
+      });
+      updateSelectionUI();
+    }
+
+    function toggleAllSelection(isChecked) {
+      if (isChecked) {
+        allTestCases.forEach(t => selectedCaseIds.add(t.id));
+      } else {
+        selectedCaseIds.clear();
+      }
+      updateSelectionUI();
+    }
+
+    function toggleTableSelection(isChecked) {
+      if (isChecked) {
+        currentDisplayedTests.forEach(t => selectedCaseIds.add(t.id));
+      } else {
+        currentDisplayedTests.forEach(t => selectedCaseIds.delete(t.id));
+      }
+      updateSelectionUI();
+    }
+
+    // Test Case Loaders
+    async function loadTests() {
+      try {
+        const resp = await fetch('/api/tests');
+        const data = await resp.json();
+        allTestCases = data.tests || [];
+        stats.total = allTestCases.length;
+        const invasiveCnt = allTestCases.filter(t => t.mode === 'INVASIVE').length;
+        const nonInvasiveCnt = allTestCases.filter(t => t.mode === 'NON_INVASIVE').length;
+        document.getElementById('totalTestsCount').innerText = `${stats.total}`;
+        document.getElementById('kpiTotal').innerText = `${stats.total}`;
+        const subModesEl = document.getElementById('kpiSubModes');
+        if (subModesEl) subModesEl.innerText = `(👀 侵入 ${invasiveCnt} · 🤖 非侵入 ${nonInvasiveCnt})`;
+        
+        // Update filter buttons badge count
+        const btnInv = document.getElementById('btnFilterInvasive');
+        if (btnInv) btnInv.innerText = `👀 侵入式 (${invasiveCnt})`;
+        const btnNonInv = document.getElementById('btnFilterNonInvasive');
+        if (btnNonInv) btnNonInv.innerText = `🤖 非侵入式 (${nonInvasiveCnt})`;
+
+        // Initialize all cases selected by default
+        allTestCases.forEach(t => selectedCaseIds.add(t.id));
+
+        renderNavCategories(allTestCases);
+        renderTableRows(allTestCases);
+        updateSelectionUI();
+      } catch (err) {
+        console.error("加载测试清单失败:", err);
+      }
+    }
+
+    let currentDrawerMode = 'ALL';
+
+    window.setDrawerModeFilter = function(mode) {
+      currentDrawerMode = mode;
+      document.querySelectorAll('.drawer-mode-pill').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      renderNavCategories(allTestCases);
+      
+      // Also sync table rows
+      if (mode === 'ALL') {
+        renderTableRows(allTestCases);
+      } else if (mode === 'INVASIVE') {
+        renderTableRows(allTestCases.filter(t => t.mode === 'INVASIVE'));
+      } else if (mode === 'NON_INVASIVE') {
+        renderTableRows(allTestCases.filter(t => t.mode === 'NON_INVASIVE'));
+      }
+    };
+
+    function renderNavCategories(tests) {
+      const nav = document.getElementById('drawerNavContainer');
+      nav.innerHTML = '';
+      
+      const invCount = tests.filter(t => t.mode === 'INVASIVE').length;
+      const nonInvCount = tests.filter(t => t.mode === 'NON_INVASIVE').length;
+
+      // 1. Compact Segmented Mode Selector at Top of Drawer
+      const segWrap = document.createElement('div');
+      segWrap.style.cssText = 'display:flex; gap:4px; padding:2px 4px 10px; border-bottom:1px solid var(--g-border); margin-bottom:8px;';
+      segWrap.innerHTML = `
+        <button type="button" class="drawer-mode-pill ${currentDrawerMode === 'ALL' ? 'active' : ''}" data-mode="ALL" onclick="setDrawerModeFilter('ALL')" title="查看全部业务测试用例">全部 (${tests.length})</button>
+        <button type="button" class="drawer-mode-pill ${currentDrawerMode === 'INVASIVE' ? 'active' : ''}" data-mode="INVASIVE" onclick="setDrawerModeFilter('INVASIVE')" title="仅显示侵入式用例(大屏UI/视觉演示)">👀 侵入 (${invCount})</button>
+        <button type="button" class="drawer-mode-pill ${currentDrawerMode === 'NON_INVASIVE' ? 'active' : ''}" data-mode="NON_INVASIVE" onclick="setDrawerModeFilter('NON_INVASIVE')" title="仅显示非侵入式用例(后台API/AI验证)">🤖 静默 (${nonInvCount})</button>
+      `;
+      nav.appendChild(segWrap);
+
+      // Filter tests by selected mode for business category listing
+      let filteredTests = tests;
+      if (currentDrawerMode === 'INVASIVE') {
+        filteredTests = tests.filter(t => t.mode === 'INVASIVE');
+      } else if (currentDrawerMode === 'NON_INVASIVE') {
+        filteredTests = tests.filter(t => t.mode === 'NON_INVASIVE');
+      }
+
+      // Group strictly by Canonical Business Modules
+      const groups = {};
+      filteredTests.forEach(t => {
+        groups[t.category] = groups[t.category] || [];
+        groups[t.category].push(t);
+      });
+
+      // 'All' item
+      const allItem = document.createElement('div');
+      allItem.className = 'nav-item active';
+      allItem.innerHTML = `<span style="font-weight:600;">📑 业务用例清单</span> <span class="nav-pill">${filteredTests.length}</span>`;
+      allItem.addEventListener('click', () => {
+        document.querySelectorAll('.nav-cat-header, .nav-sub-item, .nav-item').forEach(n => n.classList.remove('active'));
+        allItem.classList.add('active');
+        switchTab('tab-cases');
+        renderTableRows(filteredTests);
+      });
+      nav.appendChild(allItem);
+
+      // Render each Pure Business Category and its Test Cases with Module-level Select All Checkbox
+      for (const [cat, list] of Object.entries(groups)) {
+        let catIcon = "📌";
+        if (cat.includes("医嘱")) catIcon = "📋";
+        else if (cat.includes("门诊")) catIcon = "🏥";
+        else if (cat.includes("住院")) catIcon = "🛏️";
+        else if (cat.includes("药房")) catIcon = "💊";
+        else if (cat.includes("病历") || cat.includes("文本") || cat.includes("数值") || cat.includes("单选") || cat.includes("控件") || cat.includes("表达式") || cat.includes("XML")) catIcon = "📝";
+        else if (cat.includes("底座") || cat.includes("接口") || cat.includes("系统") || cat.includes("巡检") || cat.includes("健康")) catIcon = "🛡️";
+
+        const catWrap = document.createElement('div');
+        catWrap.className = 'nav-cat-wrap';
+
+        // Category Header with Module-level Select All Checkbox (collapsed by default for neatness)
+        const catHeader = document.createElement('div');
+        catHeader.className = 'nav-cat-header collapsed';
+        const catTitle = cat.replace(/^[^\u4e00-\u9fa5a-zA-Z0-9]+/, '').trim();
+        catHeader.innerHTML = `
+          <div style="display:flex; align-items:center; gap:6px; overflow:hidden; flex:1; margin-right:6px;">
+            <span class="arrow">▼</span>
+            <input type="checkbox" class="cat-select-chk" data-cat="${cat}" checked title="全选/全不选【${catTitle}】全部用例">
+            <span style="flex-shrink:0;">${catIcon}</span>
+            <span class="cat-title" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${cat}">${catTitle}</span>
+          </div>
+          <span class="nav-pill">${list.length}</span>
+        `;
+
+        // Checkbox Click: Toggle all test cases for this specific module
+        const catChk = catHeader.querySelector('.cat-select-chk');
+        catChk.addEventListener('click', (e) => {
+          e.stopPropagation();
+          toggleModuleSelection(cat, e.target.checked);
+        });
+
+        // Sub List for Cases (collapsed by default)
+        const subList = document.createElement('div');
+        subList.className = 'nav-sub-list collapsed';
+
+        list.forEach(t => {
+          const subItem = document.createElement('div');
+          subItem.className = 'nav-sub-item';
+          subItem.id = `nav-sub-${t.id}`;
+          subItem.title = `${t.id} - ${t.name}`;
+          const isInv = t.mode === 'INVASIVE';
+          const modeTag = isInv
+            ? `<span style="font-size:10px; padding:0 4px; border-radius:3px; background:#fff3e0; color:#e65100; font-weight:600; flex-shrink:0;" title="侵入式(给我看)">👀</span>`
+            : `<span style="font-size:10px; padding:0 4px; border-radius:3px; background:#e8f0fe; color:#1a73e8; font-weight:600; flex-shrink:0;" title="非侵入式(AI验证)">🤖</span>`;
+
+          subItem.innerHTML = `
+            <input type="checkbox" class="sub-case-chk" data-id="${t.id}" data-cat="${cat}" ${selectedCaseIds.has(t.id) ? 'checked' : ''} title="勾选/取消勾选该用例">
+            <span class="nav-status-dot" id="nav-dot-${t.id}"></span>
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1;">${t.name}</span>
+            ${modeTag}
+          `;
+
+          // Checkbox Click: Toggle single test case selection
+          const subChk = subItem.querySelector('.sub-case-chk');
+          subChk.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (e.target.checked) {
+              selectedCaseIds.add(t.id);
+            } else {
+              selectedCaseIds.delete(t.id);
+            }
+            updateSelectionUI();
+          });
+
+          // Text Click: Auto switch to tab-cases, scroll to row, and highlight
+          subItem.addEventListener('click', (e) => {
+            e.stopPropagation();
+            document.querySelectorAll('.nav-cat-header, .nav-sub-item, .nav-item').forEach(n => n.classList.remove('active'));
+            subItem.classList.add('active');
+            catHeader.classList.add('active');
+
+            // 1. 自动切换到对应 tab 页 (用例执行清单)
+            switchTab('tab-cases');
+
+            // 2. 检查表格中是否存在此用例，若不在（如当前处于其他过滤分类下），则重新渲染完整或当前分类用例
+            let tr = document.getElementById(`row-${t.id}`);
+            if (!tr) {
+              renderTableRows(list);
+              tr = document.getElementById(`row-${t.id}`);
+            }
+
+            // 3. 平滑滚动并高亮定位 (在 #caseTableContainer 表格滚动容器内部平滑滚动)
+            if (tr) {
+              const scrollBox = document.getElementById('caseTableContainer') || document.getElementById('tab-cases');
+              if (scrollBox) {
+                const trRect = tr.getBoundingClientRect();
+                const containerRect = scrollBox.getBoundingClientRect();
+                const targetScroll = scrollBox.scrollTop + (trRect.top - containerRect.top) - 40;
+                scrollBox.scrollTo({ top: Math.max(0, targetScroll), behavior: 'smooth' });
+              }
+              tr.classList.remove('row-highlight');
+              void tr.offsetWidth;
+              tr.classList.add('row-highlight');
+            }
+          });
+
+          subList.appendChild(subItem);
+        });
+
+        // Click on category header (text/arrow): toggles sub-list & filters table & auto-switches to tab-cases!
+        catHeader.addEventListener('click', () => {
+          const isCollapsed = subList.classList.toggle('collapsed');
+          catHeader.classList.toggle('collapsed', isCollapsed);
+
+          document.querySelectorAll('.nav-cat-header, .nav-sub-item, .nav-item').forEach(n => n.classList.remove('active'));
+          catHeader.classList.add('active');
+
+          // 自动切换到用例执行清单 Tab!
+          switchTab('tab-cases');
+          renderTableRows(list);
+        });
+
+        catWrap.appendChild(catHeader);
+        catWrap.appendChild(subList);
+        nav.appendChild(catWrap);
+    }
+    }
+
+    window.collapseAllCategories = function() {
+      document.querySelectorAll('.nav-cat-wrap').forEach(wrap => {
+        const header = wrap.querySelector('.nav-cat-header');
+        const subList = wrap.querySelector('.nav-sub-list');
+        if (header) header.classList.add('collapsed');
+        if (subList) subList.classList.add('collapsed');
+      });
+    };
+
+    window.expandAllCategories = function() {
+      document.querySelectorAll('.nav-cat-wrap').forEach(wrap => {
+        const header = wrap.querySelector('.nav-cat-header');
+        const subList = wrap.querySelector('.nav-sub-list');
+        if (header) header.classList.remove('collapsed');
+        if (subList) subList.classList.remove('collapsed');
+      });
+    };
+
+    function renderTableRows(tests) {
+      currentDisplayedTests = tests || [];
+      const tbody = document.getElementById('caseTableBody');
+      tbody.innerHTML = '';
+      const countEl = document.getElementById('filteredCasesCount');
+      if (countEl) countEl.innerText = `(显示 ${tests.length} 项)`;
+
+      tests.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.id = `row-${t.id}`;
+        
+        let catBadgeStyle = "background:var(--g-surface-variant); color:var(--g-text-secondary);";
+        let catIcon = "📌";
+        if (t.category.includes("医嘱")) { catBadgeStyle = "background:#e0f2fe; color:#0369a1;"; catIcon = "📋"; }
+        else if (t.category.includes("门诊")) { catBadgeStyle = "background:#ecfdf5; color:#047857;"; catIcon = "🏥"; }
+        else if (t.category.includes("住院")) { catBadgeStyle = "background:#f3e8ff; color:#7e22ce;"; catIcon = "🛏️"; }
+        else if (t.category.includes("药房")) { catBadgeStyle = "background:#fef3c7; color:#b45309;"; catIcon = "💊"; }
+        else if (t.category.includes("病历") || t.category.includes("EMR") || t.category.includes("文本") || t.category.includes("数值") || t.category.includes("单选") || t.category.includes("控件") || t.category.includes("表达式") || t.category.includes("XML")) { catBadgeStyle = "background:#eef2ff; color:#4338ca;"; catIcon = "📝"; }
+        else if (t.category.includes("巡检") || t.category.includes("健康")) { catBadgeStyle = "background:#ecfeff; color:#0e7490;"; catIcon = "🛡️"; }
+
+        const isInvasive = t.mode === 'INVASIVE';
+        const modeBadge = isInvasive
+          ? `<span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; background:#fff3e0; color:#e65100; border:1px solid #ffe0b2; display:inline-flex; align-items:center; gap:3px;" title="【侵入式 (给我看)】自动弹出独立Chrome窗口模拟人工交互并截图">👀 侵入式</span>`
+          : `<span style="font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; background:#e8f0fe; color:#1a73e8; border:1px solid #d2e3fc; display:inline-flex; align-items:center; gap:3px;" title="【非侵入式 (AI验证)】直连后端API与数据库验证代码，完全静默零干扰">🤖 非侵入</span>`;
+
+        tr.innerHTML = `
+          <td style="text-align:center;"><input type="checkbox" class="case-chk" data-id="${t.id}" ${selectedCaseIds.has(t.id) ? 'checked' : ''}></td>
+          <td style="font-family:var(--g-mono); font-size:12px; font-weight:500; color:var(--g-text-secondary);">${t.id}</td>
+          <td style="font-weight:500;">
+            <div>${t.name}</div>
+            ${t.description ? `<div style="font-size:11px; color:var(--g-text-tertiary); margin-top:2px;">${t.description}</div>` : ''}
+          </td>
+          <td>${modeBadge}</td>
+          <td>
+            <span style="font-size:11px; font-weight:600; padding:3px 9px; border-radius:12px; display:inline-flex; align-items:center; gap:4px; ${catBadgeStyle}">
+              <span>${catIcon}</span> ${t.category}
+            </span>
+          </td>
+          <td id="duration-${t.id}" style="color:var(--g-text-tertiary); font-size:12px;">-</td>
+          <td id="status-${t.id}"><span class="status-chip pending">待执行</span></td>
+          <td style="text-align:center;">
+            <button class="g-btn g-btn-tonal" style="height:26px; font-size:11px; padding:0 10px; border-radius:13px;" onclick="runSingleCase('${t.id}')" title="单独执行该用例">▶ 执行</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Bind change event to table checkboxes
+      tbody.querySelectorAll('.case-chk').forEach(c => {
+        c.addEventListener('change', (e) => {
+          if (e.target.checked) {
+            selectedCaseIds.add(e.target.dataset.id);
+          } else {
+            selectedCaseIds.delete(e.target.dataset.id);
+          }
+          updateSelectionUI();
+        });
+      });
+
+      updateSelectionUI();
+    }
+
+    window.runSingleCase = function(testId) {
+      startExecution([testId]);
+    };
+
+    window.filterCases = function(type) {
+      document.querySelectorAll('.table-toolbar .g-btn').forEach(b => {
+        b.classList.remove('g-btn-tonal', 'active');
+        b.classList.add('g-btn-outlined');
+      });
+      if (window.event && window.event.target) {
+        window.event.target.classList.remove('g-btn-outlined');
+        window.event.target.classList.add('g-btn-tonal', 'active');
+      }
+
+      if (type === 'all') {
+        renderTableRows(allTestCases);
+      } else if (type === 'invasive') {
+        renderTableRows(allTestCases.filter(t => t.mode === 'INVASIVE'));
+      } else if (type === 'non_invasive') {
+        renderTableRows(allTestCases.filter(t => t.mode === 'NON_INVASIVE'));
+      } else if (type === 'order') {
+        renderTableRows(allTestCases.filter(t => t.category.includes('医嘱') || t.name.includes('医嘱') || t.id.includes('order')));
+      } else if (type === 'his') {
+        renderTableRows(allTestCases.filter(t => t.category.includes('门诊') || t.category.includes('住院') || t.category.includes('药房') || t.category.includes('字典') || t.category.includes('HIS')));
+      } else if (type === 'emr') {
+        renderTableRows(allTestCases.filter(t => t.category.includes('病历') || t.id.startsWith('text_') || t.id.startsWith('num_') || t.id.startsWith('choice_') || t.id.startsWith('med_') || t.id.startsWith('expr_') || t.id.startsWith('xml_')));
+      } else if (type === 'health') {
+        renderTableRows(allTestCases.filter(t => t.category.includes('健康') || t.category.includes('巡检')));
+      } else if (type === 'failed') {
+        renderTableRows(allTestCases.filter(t => {
+          const chip = document.getElementById(`status-${t.id}`);
+          return chip && chip.innerText.includes('失败');
+        }));
+      }
+    };
+
+    // Global Select All Checkboxes (Drawer & Table)
+    const chkDrawerSelectAll = document.getElementById('chkSelectAll');
+    if (chkDrawerSelectAll) {
+      chkDrawerSelectAll.addEventListener('change', (e) => {
+        toggleAllSelection(e.target.checked);
+      });
+    }
+    const chkTableSelectAll = document.getElementById('chkTableSelectAll');
+    if (chkTableSelectAll) {
+      chkTableSelectAll.addEventListener('change', (e) => {
+        toggleTableSelection(e.target.checked);
+      });
+    }
+
+    // Table Header Dropdown Controls
+    const btnTableDropdown = document.getElementById('btnTableSelectDropdown');
+    if (btnTableDropdown) {
+      btnTableDropdown.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = document.getElementById('tableSelectMenu');
+        if (menu) menu.classList.toggle('show');
+      });
+    }
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('tableSelectMenu');
+      const btn = document.getElementById('btnTableSelectDropdown');
+      if (menu && menu.classList.contains('show')) {
+        if (!menu.contains(e.target) && e.target !== btn) {
+          menu.classList.remove('show');
+        }
+      }
+    });
+
+    // Search Filter
+    document.getElementById('searchInput').addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      const filtered = allTestCases.filter(t => t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q) || t.category.toLowerCase().includes(q));
+      renderTableRows(filtered);
+    });
+
+    // Load HIS Modules Matrix
+    async function loadModules() {
+      try {
+        const resp = await fetch('/api/modules');
+        const data = await resp.json();
+        const container = document.getElementById('moduleRadarContainer');
+        container.innerHTML = '';
+
+        data.modules.forEach(g => {
+          const groupDiv = document.createElement('div');
+          groupDiv.innerHTML = `<h3 style="font-size:14px; font-weight:600; color:var(--g-blue); margin-bottom:12px;">${g.group}</h3>`;
+          const grid = document.createElement('div');
+          grid.className = 'module-grid';
+
+          g.items.forEach(m => {
+            const card = document.createElement('div');
+            card.className = 'module-card';
+            card.innerHTML = `
+              <div class="module-header">
+                <span class="module-name">${m.name}</span>
+                <span class="module-badge">Vue 3 路由</span>
+              </div>
+              <div class="module-desc">${m.desc}</div>
+              <div class="module-path">#${m.path}</div>
+            `;
+            card.addEventListener('click', () => {
+              // Open in REPL or quick test
+              document.querySelector('.tab-item[data-tab="tab-repl"]').click();
+              window.setRepl(`window.location.hash = '${m.path}'`);
+            });
+            grid.appendChild(card);
+          });
+          groupDiv.appendChild(grid);
+          container.appendChild(groupDiv);
+        });
+      } catch (e) {
+        console.error("加载HIS模块失败:", e);
+      }
+    }
+
+    // WebSocket Connection
+    function initWebSocket() {
+      const loc = window.location;
+      const wsUrl = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + loc.host + '/ws';
+      ws = new WebSocket(wsUrl);
+
+      ws.onmessage = (event) => {
+        const msg = JSON.parse(event.data);
+        handleWsEvent(msg);
+      };
+
+      ws.onclose = () => {
+        setTimeout(initWebSocket, 2000);
+      };
+    }
+
+    function handleWsEvent(msg) {
+      const logs = document.getElementById('termLogsContainer');
+      if (msg.type === 'LOG') {
+        const line = document.createElement('div');
+        line.className = `t-line ${msg.data.level}`;
+        line.innerText = msg.data.message;
+        logs.appendChild(line);
+        logs.scrollTop = logs.scrollHeight;
+        const latestEl = document.getElementById('termLatestLine');
+        if (latestEl) latestEl.innerText = msg.data.message;
+      } else if (msg.type === 'TEST_START') {
+        const chip = document.getElementById(`status-${msg.data.test_id}`);
+        if (chip) chip.innerHTML = `<span class="status-chip running">执行中...</span>`;
+        const dot = document.getElementById(`nav-dot-${msg.data.test_id}`);
+        if (dot) dot.className = 'nav-status-dot running';
+      } else if (msg.type === 'TEST_END') {
+        stats.executed++;
+        if (msg.data.status === 'PASSED') {
+          stats.passed++;
+        } else {
+          stats.failed++;
+        }
+        updateKpis();
+
+        const chip = document.getElementById(`status-${msg.data.test_id}`);
+        if (chip) {
+          if (msg.data.status === 'PASSED') {
+            chip.innerHTML = `<span class="status-chip passed">✓ 通过</span>`;
+          } else {
+            chip.innerHTML = `<span class="status-chip failed" title="${msg.data.error || ''}">✗ 失败</span>`;
+          }
+        }
+        const dot = document.getElementById(`nav-dot-${msg.data.test_id}`);
+        if (dot) dot.className = msg.data.status === 'PASSED' ? 'nav-status-dot pass' : 'nav-status-dot fail';
+        const dur = document.getElementById(`duration-${msg.data.test_id}`);
+        if (dur) dur.innerText = `${msg.data.duration_ms} ms`;
+
+        if (msg.data.screenshot_b64) {
+          const img = document.getElementById('liveImgView');
+          img.src = `data:image/jpeg;base64,${msg.data.screenshot_b64}`;
+          img.style.display = 'block';
+          document.getElementById('noImgTip').style.display = 'none';
+        }
+      } else if (msg.type === 'LOGIN_WAITING') {
+        const banner = document.getElementById('loginAlertBanner');
+        banner.style.display = 'flex';
+        banner.style.background = 'var(--g-yellow-surface)';
+        banner.style.borderColor = 'var(--g-yellow)';
+        document.getElementById('loginAlertTitle').innerText = '【方案 B: 等待手动登录】已在独立 Chrome 窗口为您打开 HIS 登录页';
+        document.getElementById('loginAlertDesc').innerText = '👉 请在弹出的 Chrome 窗口中输入您的医生工号与密码并点击【登录】。系统检测到登录后将立即开始执行用例。';
+        const timeout = msg.data.timeout || 180;
+        const elapsed = msg.data.elapsed || 0;
+        const remaining = msg.data.remaining != null ? msg.data.remaining : (timeout - elapsed);
+        const pct = Math.min(100, Math.round((elapsed / timeout) * 100));
+        const bar = document.getElementById('loginProgressBar');
+        if (bar) {
+          bar.style.width = pct + '%';
+          bar.style.background = 'var(--g-yellow)';
+        }
+        document.getElementById('loginAlertCountdown').innerText = `已等待 ${elapsed} 秒 / 剩余 ${remaining} 秒`;
+      } else if (msg.type === 'LOGIN_SUCCESS') {
+        const banner = document.getElementById('loginAlertBanner');
+        banner.style.display = 'flex';
+        banner.style.background = 'var(--g-green-surface)';
+        banner.style.borderColor = 'var(--g-green)';
+        const bar = document.getElementById('loginProgressBar');
+        if (bar) {
+          bar.style.width = '100%';
+          bar.style.background = 'var(--g-green)';
+        }
+        document.getElementById('loginAlertTitle').innerText = '🎉 登录验证通过！正在进入医生工作站执行用例...';
+        document.getElementById('loginAlertDesc').innerText = '医生会话已绑定，正在自动加载患者与医嘱录入界面...';
+        document.getElementById('loginAlertCountdown').innerText = '✓ 认证成功';
+        setTimeout(() => { banner.style.display = 'none'; }, 4000);
+      } else if (msg.type === 'RUN_FINISH') {
+        const banner = document.getElementById('loginAlertBanner');
+        if (banner) banner.style.display = 'none';
+        const stopBtn = document.getElementById('btnStop');
+        stopBtn.style.display = 'none';
+        stopBtn.disabled = false;
+        stopBtn.innerText = '⏹ 停止执行';
+        document.getElementById('btnRunSelected').disabled = false;
+        document.getElementById('btnRunAll').disabled = false;
+        if (document.getElementById('btnRunNonInvasive')) document.getElementById('btnRunNonInvasive').disabled = false;
+        if (document.getElementById('btnRunInvasive')) document.getElementById('btnRunInvasive').disabled = false;
+      }
+    }
+
+    function updateKpis() {
+      const execEl = document.getElementById('kpiExecuted');
+      if (execEl) execEl.innerText = stats.executed;
+      const passEl = document.getElementById('kpiPassed');
+      if (passEl) {
+        const rate = stats.executed > 0 ? Math.round((stats.passed / stats.executed) * 100) : 0;
+        passEl.innerText = stats.executed > 0 ? `${stats.passed} (${rate}%)` : `${stats.passed}`;
+      }
+      const failEl = document.getElementById('kpiFailed');
+      if (failEl) failEl.innerText = stats.failed;
+    }
+
+    function resetKpis() {
+      stats.executed = 0;
+      stats.passed = 0;
+      stats.failed = 0;
+      updateKpis();
+    }
+
+    // Login Mode Toggle
+    document.getElementById('loginModeSelect').addEventListener('change', (e) => {
+      document.getElementById('autoLoginFields').style.display = e.target.value === 'A' ? 'inline-flex' : 'none';
+    });
+
+    // Run Tests Action
+    async function startExecution(selectedIds, runMode = 'ALL') {
+      resetKpis();
+      document.getElementById('btnRunSelected').disabled = true;
+      document.getElementById('btnRunAll').disabled = true;
+      if (document.getElementById('btnRunNonInvasive')) document.getElementById('btnRunNonInvasive').disabled = true;
+      if (document.getElementById('btnRunInvasive')) document.getElementById('btnRunInvasive').disabled = true;
+      document.getElementById('btnStop').style.display = 'inline-flex';
+
+      const headless = document.getElementById('chkHeadless').checked;
+      const targetEnv = document.getElementById('targetEnvSelect').value;
+      const loginMode = document.getElementById('loginModeSelect').value;
+      const username = document.getElementById('autoUsername').value;
+      const password = document.getElementById('autoPassword').value;
+
+      await fetch('/api/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          selected_ids: selectedIds,
+          mode: runMode,
+          headless: headless,
+          login_mode: loginMode,
+          username: username,
+          password: password,
+          url: targetEnv + '/#/inpatient/doctor/workstation'
+        })
+      });
+    }
+
+    document.getElementById('btnRunSelected').addEventListener('click', () => {
+      let ids = Array.from(selectedCaseIds);
+      if (ids.length === 0) {
+        ids = Array.from(document.querySelectorAll('.case-chk:checked')).map(c => c.dataset.id);
+      }
+      if (ids.length === 0) return alert('请先勾选需要运行的测试用例');
+      startExecution(ids, 'ALL');
+    });
+
+    document.getElementById('btnRunAll').addEventListener('click', () => {
+      startExecution(null, 'ALL');
+    });
+
+    const btnRunNonInv = document.getElementById('btnRunNonInvasive');
+    if (btnRunNonInv) {
+      btnRunNonInv.addEventListener('click', () => {
+        switchTab('tab-cases');
+        filterCases('non_invasive');
+        const nonInvasiveIds = allTestCases.filter(t => t.mode === 'NON_INVASIVE').map(t => t.id);
+        startExecution(nonInvasiveIds, 'NON_INVASIVE');
+      });
+    }
+
+    const btnRunInv = document.getElementById('btnRunInvasive');
+    if (btnRunInv) {
+      btnRunInv.addEventListener('click', () => {
+        switchTab('tab-cases');
+        filterCases('invasive');
+        const invasiveIds = allTestCases.filter(t => t.mode === 'INVASIVE').map(t => t.id);
+        startExecution(invasiveIds, 'INVASIVE');
+      });
+    }
+
+    document.getElementById('btnRunSiteScan').addEventListener('click', () => {
+      // Filter for healthcheck suite
+      const healthIds = allTestCases.filter(t => t.category.includes('健康') || t.category.includes('巡检')).map(t => t.id);
+      document.querySelector('.tab-item[data-tab="tab-cases"]').click();
+      startExecution(healthIds, 'ALL');
+    });
+
+    // Stop Execution with instant visual feedback
+    document.getElementById('btnStop').addEventListener('click', async () => {
+      const btn = document.getElementById('btnStop');
+      btn.disabled = true;
+      btn.innerText = '正在终止...';
+      
+      const term = document.getElementById('termLogsContainer');
+      const line = document.createElement('div');
+      line.className = 't-line WARN';
+      line.innerText = '[用户操作] 已触发强制终止指令，正在关闭浏览器并释放资源...';
+      term.appendChild(line);
+      term.scrollTop = term.scrollHeight;
+
+      const banner = document.getElementById('loginAlertBanner');
+      if (banner) banner.style.display = 'none';
+
+      try {
+        await fetch('/api/stop', { method: 'POST' });
+      } catch (e) {
+        console.error("停止请求异常:", e);
+      } finally {
+        setTimeout(() => {
+          btn.style.display = 'none';
+          btn.disabled = false;
+          btn.innerText = '⏹ 停止执行';
+          document.getElementById('btnRunSelected').disabled = false;
+          document.getElementById('btnRunAll').disabled = false;
+          if (document.getElementById('btnRunNonInvasive')) document.getElementById('btnRunNonInvasive').disabled = false;
+          if (document.getElementById('btnRunInvasive')) document.getElementById('btnRunInvasive').disabled = false;
+        }, 500);
+      }
+    });
+
+    // Open Browser Window Directly
+    document.getElementById('btnOpenBrowser').addEventListener('click', async () => {
+      const term = document.getElementById('termLogsContainer');
+      const line = document.createElement('div');
+      line.className = 't-line INFO';
+      line.innerText = '[指令] 正在桌面启动并弹出独立的 Chrome 窗口...';
+      term.appendChild(line);
+      term.scrollTop = term.scrollHeight;
+      try {
+        await fetch('/api/open_browser', { method: 'POST' });
+      } catch (e) {
+        console.error(e);
+      }
+    });
+
+    // XML Inspector Actions
+    document.getElementById('btnRefreshXml').addEventListener('click', async () => {
+      const resp = await fetch('/api/xml');
+      const data = await resp.json();
+      if (data.status === 'ok') {
+        document.getElementById('xmlContentBlock').innerText = data.xml || '<!-- 当前画布无XML内容 -->';
+      } else {
+        document.getElementById('xmlContentBlock').innerText = '获取失败: ' + data.message;
+      }
+    });
+
+    document.getElementById('btnCopyXml').addEventListener('click', () => {
+      const txt = document.getElementById('xmlContentBlock').innerText;
+      navigator.clipboard.writeText(txt).then(() => alert('病历 XML 已成功复制到剪贴板'));
+    });
+
+    // REPL Actions
+    window.setRepl = function(code) {
+      document.getElementById('replEditor').value = code;
+    };
+
+    document.getElementById('btnExecRepl').addEventListener('click', async () => {
+      const code = document.getElementById('replEditor').value;
+      if (!code.trim()) return;
+      const out = document.getElementById('replResultBlock');
+      out.innerText = '正在执行...';
+      try {
+        const resp = await fetch('/api/eval', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ expression: code })
+        });
+        const res = await resp.json();
+        out.innerText = JSON.stringify(res, null, 2);
+      } catch (e) {
+        out.innerText = '执行错误: ' + e;
+      }
+    });
+
+    // Live Snapshot Refresh
+    document.getElementById('btnRefreshScreen').addEventListener('click', async () => {
+      const resp = await fetch('/api/screenshot');
+      const data = await resp.json();
+      if (data.status === 'ok') {
+        const img = document.getElementById('liveImgView');
+        img.src = data.data;
+        img.style.display = 'block';
+        document.getElementById('noImgTip').style.display = 'none';
+      }
+    });
+
+    // -------------------------------------------------------------
+    // HIS Login & Session Validator Logic (非侵入式验证)
+    // -------------------------------------------------------------
+    let liveValidatorData = null;
+    let validatorPollInterval = null;
+    let cachedOrderItems = [];
+
+    // Switch to Validator Tab via Header Button (if exists)
+    const bnv = document.getElementById('btnNavValidator');
+    if (bnv) {
+      bnv.addEventListener('click', () => {
+        const tabEl = document.querySelector('.tab-item[data-tab="tab-validator"]');
+        if (tabEl) tabEl.click();
+        checkValidatorStatus();
+      });
+    }
+
+    document.getElementById('btnTriggerValidate').addEventListener('click', () => {
+      checkValidatorStatus(true);
+    });
+
+    document.getElementById('btnValidatorOpenBrowser').addEventListener('click', async () => {
+      await fetch('/api/open_browser', { method: 'POST' });
+      setTimeout(checkValidatorStatus, 1500);
+    });
+
+    async function checkValidatorStatus(manual = false) {
+      const chip = document.getElementById('validatorGlobalChip');
+      if (manual && chip) chip.innerHTML = '● 正在请求诊断...';
+      
+      try {
+        const resp = await fetch('/api/validator/status');
+        const data = await resp.json();
+        liveValidatorData = data;
+        renderValidatorData(data);
+      } catch (err) {
+        console.error("Validator check failed:", err);
+        if (chip) {
+          chip.className = 'status-chip fail';
+          chip.innerHTML = '● 后端连接失败';
+        }
+      }
+    }
+
+    function renderValidatorData(data) {
+      const chip = document.getElementById('validatorGlobalChip');
+      const loginBadge = document.getElementById('valLoginBadge');
+      const dbBadge = document.getElementById('valDbBadge');
+
+      if (data.status === 'FAIL') {
+        if (chip) {
+          chip.className = 'status-chip fail';
+          chip.innerHTML = '● 浏览器未连接';
+        }
+        if (loginBadge) {
+          loginBadge.className = 'status-chip fail';
+          loginBadge.innerText = '未连接 Chrome';
+        }
+        document.getElementById('valRoute').innerText = data.message || '未启动 Chrome 调试通道';
+        return;
+      }
+
+      if (data.status === 'WAITING_LOGIN') {
+        if (chip) {
+          chip.className = 'status-chip pending';
+          chip.innerHTML = '● 等待在 Chrome 中登录';
+        }
+        if (loginBadge) {
+          loginBadge.className = 'status-chip pending';
+          loginBadge.innerText = '未登录';
+        }
+        const s = data.details || {};
+        document.getElementById('valRoute').innerText = s.href || '-';
+        document.getElementById('valTitle').innerText = s.title || '-';
+        document.getElementById('valTokenText').innerText = '当前未检测到 token，请在弹出的 Chrome 窗口中输入工号密码并点击【登录】';
+        return;
+      }
+
+      // Success
+      if (chip) {
+        chip.className = 'status-chip pass';
+        chip.innerHTML = '● 登录正常 (已连接 HIS 后端)';
+      }
+      if (loginBadge) {
+        loginBadge.className = 'status-chip pass';
+        loginBadge.innerText = '有效已认证';
+      }
+      if (dbBadge) {
+        dbBadge.className = 'status-chip pass';
+        dbBadge.innerText = 'Oracle 11g/19c 畅通';
+      }
+
+      const s = data.session || {};
+      const svcs = data.services || {};
+
+      document.getElementById('valUsername').innerText = s.username || 'admin';
+      const uInfo = svcs.user_info || {};
+      document.getElementById('valRole').innerText = `${uInfo.role_name || '住院医生'} (${uInfo.role_key || 'ZYYS'})`;
+      
+      const patQueue = svcs.patient_queue || {};
+      document.getElementById('valDept').innerText = `科室ID: ${patQueue.dept_id || 910092} (在院 ${patQueue.patient_count || 0} 人)`;
+      document.getElementById('valRoute').innerText = s.current_page || '-';
+      document.getElementById('valRoute').title = s.current_page || '';
+      document.getElementById('valTitle').innerText = s.page_title || '-';
+      document.getElementById('valTokenText').innerText = s.token ? `Bearer ${s.token}` : '-';
+
+      // Services
+      // 1. UserInfo
+      const svcUser = svcs.user_info || {};
+      document.getElementById('svcUserStatus').className = svcUser.status === 'PASS' ? 'status-chip pass' : 'status-chip fail';
+      document.getElementById('svcUserStatus').innerText = svcUser.status || 'PASS';
+      document.getElementById('svcUserMsg').innerText = `${svcUser.message || '通过'} (耗时 ${svcUser.elapsed_ms || 0}ms)`;
+
+      // 2. Patient Queue
+      const svcPat = svcs.patient_queue || {};
+      document.getElementById('svcPatStatus').className = svcPat.status === 'PASS' ? 'status-chip pass' : 'status-chip pending';
+      document.getElementById('svcPatStatus').innerText = svcPat.status || 'PASS';
+      document.getElementById('svcPatMsg').innerText = `${svcPat.message || '正常'} (耗时 ${svcPat.elapsed_ms || 0}ms)`;
+      const patSampleEl = document.getElementById('svcPatSamples');
+      if (svcPat.samples && svcPat.samples.length > 0) {
+        patSampleEl.innerHTML = svcPat.samples.map(p => `• 床位: ${p.bedNo} | 患者: <b>${p.patientName}</b> (住院号: ${p.inpatientNo})`).join('&nbsp;&nbsp;|&nbsp;&nbsp;');
+      } else {
+        patSampleEl.innerText = '';
+      }
+
+      // 3. Order Dict
+      const svcOrder = svcs.order_dict || {};
+      document.getElementById('svcOrderDictStatus').className = svcOrder.status === 'PASS' ? 'status-chip pass' : 'status-chip fail';
+      document.getElementById('svcOrderDictStatus').innerText = svcOrder.status || 'PASS';
+      document.getElementById('svcOrderDictMsg').innerText = `${svcOrder.message || '正常'} (耗时 ${svcOrder.elapsed_ms || 0}ms)`;
+      const sample = svcOrder.sample || {};
+      if (sample.itemName) {
+        document.getElementById('svcOrderDictSample').innerText = `示例数据: [${sample.itemId}] ${sample.itemName} ${sample.specs || ''} (单价: ¥${sample.price || 0}/${sample.packageUnit || ''})`;
+      }
+
+      // 4. Rule Engine
+      const svcRule = svcs.order_rule_service || {};
+      document.getElementById('svcRuleStatus').className = svcRule.status === 'PASS' ? 'status-chip pass' : 'status-chip pending';
+      document.getElementById('svcRuleStatus').innerText = svcRule.status || 'PASS';
+      document.getElementById('svcRuleMsg').innerText = svcRule.message || '规则引擎活跃';
+    }
+
+    // Copy Bearer & JWT
+    document.getElementById('btnCopyBearer').addEventListener('click', () => {
+      const tok = liveValidatorData?.session?.token;
+      if (!tok) return alert('当前尚未获取到 Token');
+      navigator.clipboard.writeText(`Bearer ${tok}`).then(() => alert('Bearer Token 已成功复制到剪贴板'));
+    });
+
+    document.getElementById('btnCopyJwt').addEventListener('click', () => {
+      const tok = liveValidatorData?.session?.token;
+      if (!tok) return alert('当前尚未获取到 Token');
+      navigator.clipboard.writeText(tok).then(() => alert('原始 JWT Token 已复制到剪贴板'));
+    });
+
+    // Auto-polling checkbox
+    document.getElementById('chkAutoPollValidator').addEventListener('change', (e) => {
+      if (e.target.checked) {
+        startValidatorPolling();
+      } else {
+        stopValidatorPolling();
+      }
+    });
+
+    function startValidatorPolling() {
+      stopValidatorPolling();
+      validatorPollInterval = setInterval(() => {
+        const activeTab = document.querySelector('.tab-item.active');
+        if (activeTab && activeTab.dataset.tab === 'tab-validator') {
+          checkValidatorStatus();
+        }
+      }, 5000);
+    }
+
+    function stopValidatorPolling() {
+      if (validatorPollInterval) {
+        clearInterval(validatorPollInterval);
+        validatorPollInterval = null;
+      }
+    }
+
+    // Order items search
+    async function searchOrderItems(kw = "") {
+      const classify = document.getElementById('orderClassifySelect').value;
+      const tbody = document.getElementById('orderSearchResultBody');
+      tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--g-text-secondary);">⏳ 正在通过 HIS 后端查询 Oracle 数据库...</td></tr>`;
+
+      try {
+        const resp = await fetch('/api/validator/search_order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            keyword: kw,
+            classifyType: classify,
+            pageNum: 1,
+            pageSize: 15
+          })
+        });
+        const res = await resp.json();
+        if (res.status !== 'SUCCESS') {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--g-red);">检索失败: ${res.message || '未知异常'}</td></tr>`;
+          return;
+        }
+
+        const items = res.items || [];
+        cachedOrderItems = items;
+        document.getElementById('searchResultCountBadge').innerText = `已检索到 ${res.count || items.length} 条 (Oracle 耗时 ${res.elapsed_ms || 0}ms)`;
+
+        if (items.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:24px; color:var(--g-text-tertiary);">未匹配到包含 "${kw}" 的药品或项目</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = '';
+        items.forEach((item, idx) => {
+          const tr = document.createElement('tr');
+          const typeName = item.itemSysTypeName || (item.drugType === 'Z' ? '中药' : '西药');
+          tr.innerHTML = `
+            <td style="font-family:var(--g-mono); font-weight:600; color:var(--g-blue);">${item.itemId || item.itemNo}</td>
+            <td style="font-weight:600;">${item.itemName || '-'}</td>
+            <td style="font-size:12px; color:var(--g-text-secondary);">${item.specs || '-'}</td>
+            <td style="font-weight:600; color:#b45309;">¥${item.price != null ? Number(item.price).toFixed(2) : '0.00'}</td>
+            <td style="font-size:12px;">${item.packageUnit || item.bulkUnit || '支'}</td>
+            <td style="font-family:var(--g-mono); font-size:12px; color:var(--g-text-secondary);">${item.spellCode || '-'}</td>
+            <td><span class="module-badge">${typeName}</span></td>
+            <td style="text-align:center;">
+              <button class="g-btn g-btn-tonal" style="height:24px; font-size:11px; padding:0 8px;" onclick="inspectOrderPayload(${idx})">📋 查看报文</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:20px; color:var(--g-red);">网络或接口请求错误: ${err}</td></tr>`;
+      }
+    }
+
+    window.quickSearchOrder = function(kw) {
+      document.getElementById('orderSearchInput').value = kw;
+      searchOrderItems(kw);
+    };
+
+    document.getElementById('btnSearchOrderItems').addEventListener('click', () => {
+      const kw = document.getElementById('orderSearchInput').value;
+      searchOrderItems(kw);
+    });
+
+    document.getElementById('orderSearchInput').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        searchOrderItems(e.target.value);
+      }
+    });
+
+    window.inspectOrderPayload = function(idx) {
+      const item = cachedOrderItems[idx];
+      if (!item) return;
+
+      const modal = document.getElementById('orderPayloadModal');
+      const jsonEl = document.getElementById('orderPayloadJson');
+      
+      const samplePayload = {
+        patientId: 10001,
+        inpatientNo: "000010",
+        deptId: 910092,
+        orderDoctorId: liveValidatorData?.session?.username || "admin",
+        orderType: "LONG",
+        orderClassify: item.drugType || "W",
+        items: [
+          {
+            itemId: item.itemId,
+            itemNo: item.itemNo,
+            itemName: item.itemName,
+            specs: item.specs,
+            price: item.price,
+            packageUnit: item.packageUnit,
+            dosage: item.stdDosage || 1,
+            dosageUnit: item.stdDosageUnit || "ml",
+            frequencyCode: "QD",
+            frequencyName: "每日一次",
+            usageCode: "IVGTT",
+            usageName: "静脉滴注",
+            qty: 1
+          }
+        ],
+        validateEngine: "FAITH_ORACLE_ENGINE_V2",
+        status: "READY_TO_SUBMIT"
+      };
+
+      jsonEl.innerText = JSON.stringify(samplePayload, null, 2);
+      modal.style.display = 'flex';
+    };
+
+    // -------------------------------------------------------------
+    // Role & Department Switching Hub Logic (方案 1 & 3)
+    // -------------------------------------------------------------
+    let allRolePresets = [];
+    let allAvailableRoles = [];
+
+    async function loadRolePresets() {
+      try {
+        const resp = await fetch('/api/validator/role_presets');
+        const data = await resp.json();
+        allRolePresets = data.presets || [];
+        renderRolePresetCards(allRolePresets);
+      } catch (err) {
+        console.error("Failed to load role presets:", err);
+      }
+    }
+
+    function renderRolePresetCards(presets) {
+      const container = document.getElementById('rolePresetsContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      presets.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'module-card';
+        card.style.padding = '12px 14px';
+        card.style.gap = '6px';
+        card.style.background = 'var(--g-surface)';
+        card.style.cursor = 'pointer';
+        card.style.border = '1px solid var(--g-border)';
+        card.style.transition = 'all 0.15s ease';
+
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-weight:600; font-size:13px; display:flex; align-items:center; gap:6px;">
+              <span>${p.icon}</span> <span>${p.roleName}</span>
+            </div>
+            <span class="module-badge" style="font-family:var(--g-mono); font-size:10px;">${p.roleKey}</span>
+          </div>
+          <div style="font-size:12px; color:var(--g-blue); font-weight:500;">
+            科室: ${p.deptName} (${p.deptId})
+          </div>
+          <div style="font-size:11px; color:var(--g-text-secondary); line-height:1.4;">
+            ${p.desc}
+          </div>
+          <div style="display:flex; justify-content:flex-end; margin-top:4px;">
+            <span style="font-size:11px; font-weight:600; color:var(--g-blue); background:var(--g-blue-surface); padding:2px 8px; border-radius:10px;">
+              一键切岗 ➔
+            </span>
+          </div>
+        `;
+
+        card.addEventListener('click', () => {
+          executeSwitchIdentity(p.roleId, p.deptId, p.route, `${p.icon} ${p.roleName} · ${p.deptName}`);
+        });
+
+        container.appendChild(card);
+      });
+    }
+
+    async function loadRolesDropdown() {
+      try {
+        const resp = await fetch('/api/validator/roles');
+        const data = await resp.json();
+        allAvailableRoles = data.roles || [];
+        const roleSel = document.getElementById('switchRoleSelect');
+        if (!roleSel) return;
+        roleSel.innerHTML = '<option value="">-- 请选择目标角色 (15种) --</option>';
+        allAvailableRoles.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r.roleId;
+          opt.innerText = `[${r.roleId}] ${r.roleName} (${r.roleKey})`;
+          roleSel.appendChild(opt);
+        });
+
+        roleSel.value = '15';
+        await onRoleSelected(15);
+      } catch (err) {
+        console.error("Failed to load roles:", err);
+      }
+    }
+
+    async function onRoleSelected(roleId) {
+      const deptSel = document.getElementById('switchDeptSelect');
+      if (!deptSel) return;
+      deptSel.innerHTML = '<option value="">正在加载科室...</option>';
+      try {
+        const resp = await fetch(`/api/validator/depts?roleId=${roleId}`);
+        const data = await resp.json();
+        const depts = data.depts || [];
+        deptSel.innerHTML = '';
+        depts.forEach(d => {
+          const opt = document.createElement('option');
+          opt.value = d.deptId;
+          opt.innerText = `${d.deptName} (代码: ${d.deptId} / 类型: ${d.deptType || '-'})`;
+          deptSel.appendChild(opt);
+        });
+
+        const preset = allRolePresets.find(p => p.roleId === Number(roleId));
+        if (preset) {
+          document.getElementById('switchRouteInput').value = preset.route;
+          if (preset.deptId) deptSel.value = String(preset.deptId);
+        } else {
+          document.getElementById('switchRouteInput').value = '#/index';
+        }
+      } catch (err) {
+        console.error("Failed to load depts:", err);
+      }
+    }
+
+    document.getElementById('switchRoleSelect').addEventListener('change', (e) => {
+      const rid = e.target.value;
+      if (rid) onRoleSelected(rid);
+    });
+
+    async function executeSwitchIdentity(roleId, deptId, targetRoute, label = "") {
+      const fb = document.getElementById('switchFeedback');
+      if (fb) fb.innerText = `正在切换身份至 [${label || roleId}]...`;
+
+      try {
+        const resp = await fetch('/api/validator/switch_identity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roleId: Number(roleId),
+            deptId: Number(deptId),
+            targetRoute: targetRoute || ""
+          })
+        });
+        const res = await resp.json();
+        if (res.status === 'SUCCESS') {
+          if (fb) {
+            fb.style.color = 'var(--g-green)';
+            fb.innerText = `✓ 切换成功！浏览器正在载入工作站...`;
+          }
+          const badge = document.getElementById('switchStatusBadge');
+          if (badge) {
+            badge.style.display = 'inline-block';
+            badge.innerText = `已切换至: ${label || roleId}`;
+          }
+          setTimeout(() => {
+            checkValidatorStatus();
+            if (fb) fb.innerText = '';
+          }, 3000);
+        } else {
+          if (fb) {
+            fb.style.color = 'var(--g-red)';
+            fb.innerText = `切换失败: ${res.message || '未知错误'}`;
+          }
+        }
+      } catch (err) {
+        if (fb) {
+          fb.style.color = 'var(--g-red)';
+          fb.innerText = `请求异常: ${err}`;
+        }
+      }
+    }
+
+    document.getElementById('btnExecuteSwitch').addEventListener('click', () => {
+      const roleId = document.getElementById('switchRoleSelect').value;
+      const deptId = document.getElementById('switchDeptSelect').value;
+      const route = document.getElementById('switchRouteInput').value;
+      if (!roleId || !deptId) return alert('请先选择角色和科室');
+      const roleName = document.getElementById('switchRoleSelect').selectedOptions[0]?.text;
+      const deptName = document.getElementById('switchDeptSelect').selectedOptions[0]?.text;
+      executeSwitchIdentity(roleId, deptId, route, `${roleName} · ${deptName}`);
+    });
+
+    document.getElementById('btnExecutePreset').addEventListener('click', async () => {
+      const roleId = document.getElementById('switchRoleSelect').value;
+      const deptId = document.getElementById('switchDeptSelect').value;
+      const route = document.getElementById('switchRouteInput').value;
+      if (!roleId || !deptId) return alert('请先选择角色和科室');
+      
+      const fb = document.getElementById('switchFeedback');
+      if (fb) fb.innerText = '正在预置身份缓存...';
+
+      try {
+        const resp = await fetch('/api/validator/preset_identity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            roleId: Number(roleId),
+            deptId: Number(deptId),
+            targetRoute: route || ""
+          })
+        });
+        const res = await resp.json();
+        if (res.status === 'SUCCESS') {
+          if (fb) {
+            fb.style.color = 'var(--g-green)';
+            fb.innerText = `✓ 预置成功！下次在 Chrome 中登录将直接进入此岗位！`;
+          }
+        } else {
+          if (fb) {
+            fb.style.color = 'var(--g-red)';
+            fb.innerText = res.message;
+          }
+        }
+      } catch (err) {
+        if (fb) {
+          fb.style.color = 'var(--g-red)';
+          fb.innerText = `异常: ${err}`;
+        }
+      }
+    });
+
+    // Keyboard shortcut / for search
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        document.getElementById('searchInput').focus();
+      }
+    });
+
+    // Initialize
+    async function initPlatform() {
+      await loadTests();
+      await loadModules();
+      initWebSocket();
+      checkValidatorStatus();
+      startValidatorPolling();
+      searchOrderItems("丹参");
+      await loadRolePresets();
+      await loadRolesDropdown();
+    }
+
+    initPlatform();
+  </script>
+</body>
+</html>
