@@ -1938,15 +1938,18 @@
           </div>
         </div>
 
-        <!-- Headless / Execution Options -->
-        <div style="border-top:1px dashed var(--g-border); padding-top:14px; display:flex; flex-direction:column; gap:10px;">
+        <!-- Headless / Browser Display Options -->
+        <div style="border-top:1px dashed var(--g-border); padding-top:14px; display:flex; flex-direction:column; gap:8px;">
           <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block;">
-            🛡️ 运行模式与选项
+            🖥️ 界面验证专属显示选项 (与接口层【后台验证】不同)
           </label>
           <label style="font-size:13px; color:var(--g-text-primary); display:inline-flex; align-items:center; gap:8px; cursor:pointer;">
             <input type="checkbox" id="chkHeadless" style="width:16px; height:16px;">
-            <span>静默无头运行 (Headless，不弹出可见浏览器窗口，速度更快)</span>
+            <span>界面测试无头化 (Headless，执行 UI 自动化时不弹 Chrome 桌面窗口)</span>
           </label>
+          <div style="font-size:11.5px; color:var(--g-text-tertiary); line-height:1.5; background:var(--g-surface-variant); padding:6px 10px; border-radius:6px;">
+            💡 <strong>区别说明</strong>：顶部的【⚡ 后台验证】是纯 HTTP 接口与数据库验证（完全不启 Chrome，毫秒级）；而此处的【无头模式】仅控制【🖥️ 界面验证】时是否在屏幕上弹出真实的 Chrome 操作画面。
+          </div>
         </div>
 
         <!-- Batch Execution -->
