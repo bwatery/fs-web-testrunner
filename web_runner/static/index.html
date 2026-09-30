@@ -3723,6 +3723,10 @@
       const wsUrl = (loc.protocol === 'https:' ? 'wss://' : 'ws://') + loc.host + '/ws';
       ws = new WebSocket(wsUrl);
 
+      ws.onopen = () => {
+        syncRunnerStatus();
+      };
+
       ws.onmessage = (event) => {
         const msg = JSON.parse(event.data);
         handleWsEvent(msg);
@@ -3807,15 +3811,19 @@
         document.getElementById('loginAlertDesc').innerText = '医生会话已绑定，正在自动加载患者与医嘱录入界面...';
         document.getElementById('loginAlertCountdown').innerText = '✓ 认证成功';
         setTimeout(() => { banner.style.display = 'none'; }, 4000);
-      } else if (msg.type === 'RUN_FINISH') {
+      } else if (msg.type === 'RUN_END' || msg.type === 'RUN_FINISH') {
         const banner = document.getElementById('loginAlertBanner');
         if (banner) banner.style.display = 'none';
         const stopBtn = document.getElementById('btnStop');
-        stopBtn.style.display = 'none';
-        stopBtn.disabled = false;
-        stopBtn.innerText = '⏹ 停止执行';
-        document.getElementById('btnRunSelected').disabled = false;
-        document.getElementById('btnRunAll').disabled = false;
+        if (stopBtn) {
+          stopBtn.style.display = 'none';
+          stopBtn.disabled = false;
+          stopBtn.innerText = '⏹ 停止执行';
+        }
+        const btnRunSel = document.getElementById('btnRunSelected');
+        if (btnRunSel) btnRunSel.disabled = false;
+        const btnRunAll = document.getElementById('btnRunAll');
+        if (btnRunAll) btnRunAll.disabled = false;
 
         const failCount = stats.failed || 0;
         const passCount = stats.passed || 0;
@@ -3919,7 +3927,7 @@
       const password = document.getElementById('autoPassword').value;
 
       try {
-        await fetch('/api/run', {
+        const resp = await fetch('/api/run', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -3932,8 +3940,18 @@
             url: targetEnv + '/#/inpatient/doctor/workstation'
           })
         });
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          showToast(`启动失败: ${errData.error || resp.statusText}`, 'danger', '无法启动测试', 4000);
+          document.getElementById('btnRunSelected').disabled = false;
+          document.getElementById('btnRunAll').disabled = false;
+          document.getElementById('btnStop').style.display = 'none';
+        }
       } catch (err) {
-        showToast(`启动测试异常: ${err}`, 'danger', '启动失败', 4000);
+        showToast(`启动测试网络异常: ${err}`, 'danger', '启动失败', 4000);
+        document.getElementById('btnRunSelected').disabled = false;
+        document.getElementById('btnRunAll').disabled = false;
+        document.getElementById('btnStop').style.display = 'none';
       }
     }
 
@@ -5683,12 +5701,35 @@
       }
     });
 
+    // Synchronize test execution button state with server
+    async function syncRunnerStatus() {
+      try {
+        const resp = await fetch('/api/status');
+        const data = await resp.json();
+        const btnRunSel = document.getElementById('btnRunSelected');
+        const btnRunAll = document.getElementById('btnRunAll');
+        const stopBtn = document.getElementById('btnStop');
+        if (data.is_running) {
+          if (btnRunSel) btnRunSel.disabled = true;
+          if (btnRunAll) btnRunAll.disabled = true;
+          if (stopBtn) stopBtn.style.display = 'inline-flex';
+        } else {
+          if (btnRunSel) btnRunSel.disabled = false;
+          if (btnRunAll) btnRunAll.disabled = false;
+          if (stopBtn) stopBtn.style.display = 'none';
+        }
+      } catch (err) {
+        console.warn("Status sync failed:", err);
+      }
+    }
+
     // Initialize
     async function initPlatform() {
       await loadEnvironmentStatus();
       await loadBusinessRules();
       await loadTests();
       await loadModules();
+      await syncRunnerStatus();
       initWebSocket();
       checkValidatorStatus();
       startValidatorPolling();

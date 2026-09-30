@@ -80,7 +80,13 @@ class TestEngine:
 
     def init_environment(self, url: Optional[str] = None) -> bool:
         """Start browser and prepare FSWriter instance for invasive UI testing."""
+        from fs_web_testrunner.core.offline_sandbox import get_environment_status
+        is_mock = get_environment_status().get("is_mock", False)
+
         target_url = url or EMR_DESIGNER_URL
+        if is_mock and ("192.168.1.198" in str(target_url)):
+            target_url = "http://127.0.0.1:8989/static/index.html"
+
         if not self.browser or not self.browser.is_alive():
             self.log(None, f"启动浏览器 (Headless={self.headless}, 登录模式={self.login_mode})...")
             self.browser = BrowserDriver(headless=self.headless)
@@ -232,6 +238,7 @@ class TestEngine:
         finally:
             self._is_running = False
             self._broadcast("RUN_END", {"results_count": len(self.results)})
+            self._broadcast("RUN_FINISH", {"results_count": len(self.results)})
 
         return self.results
 

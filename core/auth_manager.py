@@ -58,6 +58,17 @@ class AuthManager:
             self._log("✓ 检测到浏览器已有有效登录凭证，直接复用当前会话！", "SUCCESS")
             return True
 
+        from fs_web_testrunner.core.offline_sandbox import get_environment_status
+        env_status = get_environment_status()
+        if env_status.get("is_mock"):
+            self._log("💻 [离线沙盒模式] 检测到处于离线免库沙盒环境，自动注入仿真登录凭据，跳过内网网络等待！", "SUCCESS")
+            mock_tok = "eyJhbGciOiJIUzUxMiJ9.mock_sandbox_token.sign"
+            try:
+                self.browser.evaluate(f"sessionStorage.setItem('shop-vite-token', '{mock_tok}');")
+            except Exception:
+                pass
+            return True
+
         curr_url = self.browser.get_current_url()
         if "/login" not in curr_url:
             self.browser.navigate("http://192.168.1.198:8088/#/login")

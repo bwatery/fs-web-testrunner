@@ -14,7 +14,7 @@ ENV/
 *.log
 scratch/
 reports/test_run_*.json
-reports/screenshots/fail_*.png
+reports/screenshots/*.png
 
 # OS generated files
 Thumbs.db
