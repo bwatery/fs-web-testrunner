@@ -366,6 +366,20 @@ async def get_his_modules():
 class EnvSwitchRequest(BaseModel):
     mode: str  # "MOCK", "LIVE", "AUTO"
 
+class RuleCreateRequest(BaseModel):
+    id: Optional[str] = None
+    domain: str = "inpatient"
+    domain_name: Optional[str] = None
+    name: str
+    severity: str = "BLOCK"
+    severity_name: Optional[str] = None
+    trigger_phase: Optional[str] = ""
+    target_api_table: Optional[str] = ""
+    summary: str
+    detail: Optional[str] = ""
+    parameters: Optional[Dict[str, Any]] = None
+    enabled: bool = True
+
 class RuleUpdateRequest(BaseModel):
     name: Optional[str] = None
     severity: Optional[str] = None
@@ -404,6 +418,15 @@ async def get_rules_endpoint(domain: Optional[str] = None):
         "rules": rules_mgr.get_all_rules(domain)
     }
 
+@app.post("/api/rules")
+async def create_rule_endpoint(req: RuleCreateRequest):
+    try:
+        new_rule = rules_mgr.add_rule(req.dict())
+        broadcast_sync({"type": "rule_create", "rule": new_rule})
+        return {"status": "ok", "rule": new_rule}
+    except Exception as e:
+        return JSONResponse(status_code=400, content={"error": str(e)})
+
 @app.get("/api/rules/{rule_id}")
 async def get_single_rule_endpoint(rule_id: str):
     r = rules_mgr.get_rule_by_id(rule_id)
@@ -419,6 +442,14 @@ async def update_rule_endpoint(rule_id: str, req: RuleUpdateRequest):
         return {"status": "ok", "rule": updated}
     except Exception as e:
         return JSONResponse(status_code=400, content={"error": str(e)})
+
+@app.delete("/api/rules/{rule_id}")
+async def delete_rule_endpoint(rule_id: str):
+    success = rules_mgr.delete_rule(rule_id)
+    if not success:
+        return JSONResponse(status_code=404, content={"error": f"Rule {rule_id} not found"})
+    broadcast_sync({"type": "rule_delete", "rule_id": rule_id})
+    return {"status": "ok", "message": f"Rule {rule_id} deleted"}
 
 @app.post("/api/rules/{rule_id}/verify")
 async def verify_single_rule_endpoint(rule_id: str):

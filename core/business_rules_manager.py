@@ -567,6 +567,68 @@ class BusinessRulesManager:
         self._save()
         return rule
 
+    def add_rule(self, rule_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Creates and persists a new business rule."""
+        rule_id = rule_data.get("id")
+        domain = rule_data.get("domain", "inpatient").lower()
+        if not rule_id:
+            prefix = "RULE_IP_" if domain == "inpatient" else ("RULE_OP_" if domain == "outpatient" else "RULE_NEW_")
+            count = sum(1 for r in self._rules if r["id"].startswith(prefix)) + 1
+            rule_id = f"{prefix}{count:02d}"
+            while self.get_rule_by_id(rule_id):
+                count += 1
+                rule_id = f"{prefix}{count:02d}"
+        else:
+            rule_id = rule_id.strip().upper()
+            if self.get_rule_by_id(rule_id):
+                raise ValueError(f"规则编号 {rule_id} 已存在，请更换规则标识")
+
+        domain_name_map = {
+            "inpatient": "🛏️ 住院业务",
+            "outpatient": "🏥 门诊业务",
+            "pharmacy": "💊 药房药库",
+            "emr": "📝 电子病历",
+            "charge": "💰 计费财务",
+            "system": "🛡️ 系统底座"
+        }
+        domain_name = rule_data.get("domain_name") or domain_name_map.get(domain, "🛡️ 综合规则")
+        severity = rule_data.get("severity", "BLOCK").upper()
+        severity_name = "🚨 硬性阻断门禁" if severity == "BLOCK" else "⚠️ 业务预警规范"
+
+        new_rule = {
+            "id": rule_id,
+            "domain": domain,
+            "domain_name": domain_name,
+            "name": rule_data.get("name", "未命名业务规则").strip(),
+            "severity": severity,
+            "severity_name": severity_name,
+            "trigger_phase": rule_data.get("trigger_phase", "全院业务操作环节").strip(),
+            "target_api_table": rule_data.get("target_api_table", "N/A").strip(),
+            "summary": rule_data.get("summary", "").strip(),
+            "detail": rule_data.get("detail", "").strip(),
+            "parameters": rule_data.get("parameters") or {},
+            "enabled": rule_data.get("enabled", True),
+            "is_custom": True,
+            "test_id": f"custom_{rule_id.lower()}",
+            "last_verify_status": "NONE",
+            "last_verify_time": "",
+            "last_verify_duration_ms": 0,
+            "last_verify_log": []
+        }
+
+        self._rules.append(new_rule)
+        self._save()
+        return new_rule
+
+    def delete_rule(self, rule_id: str) -> bool:
+        """Deletes a rule by ID."""
+        for i, r in enumerate(self._rules):
+            if r["id"] == rule_id:
+                self._rules.pop(i)
+                self._save()
+                return True
+        return False
+
     def reset_to_defaults(self) -> List[Dict[str, Any]]:
         """Resets rules back to default catalog."""
         self._rules = [r.copy() for r in DEFAULT_RULES]

@@ -1256,60 +1256,246 @@
       border-radius: var(--g-radius-sm);
       background: var(--g-surface-variant);
       gap: 12px;
+    }
+
     /* Business Rules Center Styles */
+    /* =========================================================================
+       📋 Enterprise Business Rule Card Styling (全新业务规则卡片架构)
+       ========================================================================= */
     .rule-card {
       background: var(--g-surface);
       border: 1px solid var(--g-border);
-      border-radius: var(--g-radius-md);
-      padding: 16px 20px;
+      border-radius: 12px;
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
       gap: 12px;
-      box-shadow: var(--g-shadow-1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
       transition: all 0.2s ease;
       position: relative;
     }
     .rule-card:hover {
-      box-shadow: var(--g-shadow-2);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
       border-color: var(--g-blue);
       transform: translateY(-1px);
+    }
+    .rule-card.disabled-rule {
+      opacity: 0.65;
+      background: var(--g-surface-variant);
+    }
+
+    /* Card Top Header */
+    .rule-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--g-border-subtle);
+    }
+    .rule-card-badges {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .rule-id-pill {
+      font-family: var(--g-mono);
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 7px;
+      background: var(--g-surface-variant);
+      color: var(--g-text-primary);
+      border: 1px solid var(--g-border);
+      border-radius: 4px;
+      letter-spacing: 0.5px;
     }
     .rule-badge {
       font-size: 11px;
       font-weight: 600;
       padding: 2px 8px;
-      border-radius: var(--g-radius-full);
+      border-radius: 12px;
       display: inline-flex;
       align-items: center;
       gap: 4px;
     }
     .rule-badge-ip { background: #e8f0fe; color: #1a73e8; }
     .rule-badge-op { background: #e6f4ea; color: #1e8e3e; }
-    .rule-badge-block { background: #fce8e6; color: #d93025; }
-    .rule-badge-warn { background: #fef7e0; color: #b06000; }
-    .rule-quote-box {
+    .rule-badge-pharma { background: #fef7e0; color: #b06000; }
+    .rule-badge-emr { background: #f3e8fd; color: #8430ce; }
+    .rule-badge-charge { background: #e0f2fe; color: #0284c7; }
+    .rule-badge-custom { background: #f1f3f4; color: #3c4043; border: 1px solid var(--g-border); }
+    .rule-badge-block { background: #fce8e6; color: #d93025; font-weight: 700; }
+    .rule-badge-warn { background: #fef7e0; color: #b06000; font-weight: 600; }
+
+    /* Card Switch */
+    .rule-card-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .rule-toggle-label {
+      font-size: 11.5px;
+      color: var(--g-text-secondary);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+
+    /* Card Title */
+    .rule-card-title {
+      font-size: 14.5px;
+      font-weight: 600;
+      color: var(--g-text-primary);
+      line-height: 1.4;
+      margin: 0;
+    }
+
+    /* Core Rule Callout */
+    .rule-core-callout {
       background: var(--g-surface-variant);
       border-left: 3.5px solid var(--g-blue);
-      border-radius: 0 var(--g-radius-sm) var(--g-radius-sm) 0;
+      border-radius: 0 6px 6px 0;
       padding: 8px 12px;
-      font-size: 12.5px;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .rule-core-callout .callout-icon {
+      font-size: 13px;
+      line-height: 1.3;
+      flex-shrink: 0;
+    }
+    .rule-core-callout .callout-text {
+      font-size: 12px;
       line-height: 1.5;
       color: var(--g-text-primary);
+      font-weight: 500;
+    }
+
+    /* Meta Grid (Trigger Phase & Target Table/API) */
+    .rule-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 5px;
+      background: var(--g-surface);
+      border: 1px solid var(--g-border-subtle);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11.5px;
+    }
+    .rule-meta-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      line-height: 1.4;
+    }
+    .rule-meta-label {
+      color: var(--g-text-tertiary);
+      font-weight: 600;
+      font-size: 11px;
+      flex-shrink: 0;
+      width: 65px;
+    }
+    .rule-meta-val {
+      color: var(--g-text-secondary);
+      word-break: break-all;
+    }
+    .rule-meta-code {
+      font-family: var(--g-mono);
+      background: rgba(0,0,0,0.04);
+      padding: 1px 5px;
+      border-radius: 3px;
+      color: var(--g-text-primary);
+      font-size: 11px;
+    }
+    [data-theme="dark"] .rule-meta-code {
+      background: rgba(255,255,255,0.08);
+    }
+
+    /* Parameter Chips Wrap */
+    .rule-params-wrap {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      padding: 2px 0;
+    }
+    .rule-params-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--g-text-tertiary);
+      flex-shrink: 0;
     }
     .rule-param-pill {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      background: rgba(0,0,0,0.04);
-      border: 1px solid var(--g-border-subtle);
-      border-radius: var(--g-radius-sm);
-      padding: 2px 6px;
-      font-family: var(--g-mono);
+      background: var(--g-surface);
+      border: 1px solid var(--g-border);
+      border-radius: 4px;
+      padding: 2px 7px;
       font-size: 11px;
+      font-family: var(--g-mono);
       color: var(--g-text-secondary);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .rule-param-pill .p-key {
+      color: var(--g-blue);
+      font-weight: 600;
+      margin-right: 3px;
+    }
+    .rule-param-pill .p-val {
+      color: var(--g-text-primary);
     }
     [data-theme="dark"] .rule-param-pill {
       background: rgba(255,255,255,0.05);
+    }
+
+    /* Accordion Details */
+    .rule-details-box {
+      font-size: 12px;
+      color: var(--g-text-secondary);
+      border-top: 1px dashed var(--g-border-subtle);
+      padding-top: 6px;
+    }
+    .rule-details-box summary {
+      cursor: pointer;
+      color: var(--g-blue);
+      font-size: 11.5px;
+      font-weight: 500;
+      outline: none;
+      user-select: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: color 0.15s;
+    }
+    .rule-details-box summary:hover {
+      color: var(--g-blue-hover);
+    }
+    .rule-details-content {
+      margin-top: 6px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      background: var(--g-surface-variant);
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-size: 11.5px;
+      color: var(--g-text-primary);
+    }
+
+    /* Card Footer */
+    .rule-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--g-border-subtle);
+      padding-top: 10px;
+      margin-top: auto;
+      gap: 8px;
     }
     .rule-status-chip {
       font-size: 11.5px;
@@ -1826,6 +2012,9 @@
               </div>
             </div>
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+              <button class="g-btn g-btn-primary" id="btnOpenCreateRuleModal" style="font-weight:600; background:#1e8e3e; border:none; box-shadow:0 1px 3px rgba(30,142,62,0.3);" title="新增一条临床或财务自定义业务规则与约束门禁">
+                ➕ 新增业务规则
+              </button>
               <button class="g-btn g-btn-primary" id="btnVerifyAllRules" style="font-weight:600; box-shadow:0 1px 3px rgba(26,115,232,0.3);">
                 ⚡ 一键全规则自动化验收
               </button>
@@ -1950,6 +2139,93 @@
                 <div style="display:flex; gap:8px;">
                   <button type="button" class="g-btn g-btn-tonal" onclick="document.getElementById('ruleEditModal').style.display='none'">取消</button>
                   <button type="submit" class="g-btn g-btn-primary" style="font-weight:600;">💾 保存规则配置</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Rule Create Modal (➕ 新增业务规则) -->
+        <div id="ruleCreateModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(2px);">
+          <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); width:90%; max-width:680px; max-height:90vh; overflow-y:auto; padding:24px; box-shadow:var(--g-shadow-2); display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--g-border); padding-bottom:12px;">
+              <div style="font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px;">
+                <span>➕</span>
+                <span>新增临床/财务业务规则与门禁</span>
+              </div>
+              <button class="icon-btn" onclick="document.getElementById('ruleCreateModal').style.display='none'">✕</button>
+            </div>
+
+            <form id="ruleCreateForm" style="display:flex; flex-direction:column; gap:14px;">
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">规则编号 (留空自动生成)</label>
+                  <input type="text" id="createRuleId" class="target-select" style="width:100%; padding:6px 10px;" placeholder="例如: RULE_IP_09 或 RULE_OP_09">
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">业务归属领域 *</label>
+                  <select id="createRuleDomain" class="target-select" style="width:100%; padding:6px 10px;">
+                    <option value="inpatient">🛏️ 住院业务</option>
+                    <option value="outpatient" selected>🏥 门诊业务</option>
+                    <option value="pharmacy">💊 药房药库</option>
+                    <option value="emr">📝 电子病历</option>
+                    <option value="charge">💰 计费财务</option>
+                    <option value="system">🛡️ 系统底座</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 2fr 1fr; gap:12px;">
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">规则名称 *</label>
+                  <input type="text" id="createRuleName" class="target-select" style="width:100%; padding:6px 10px;" placeholder="例如: 门诊实名认证自费退号拦截规则" required>
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">门禁级别</label>
+                  <select id="createRuleSeverity" class="target-select" style="width:100%; padding:6px 10px;">
+                    <option value="BLOCK" selected>🚨 硬性阻断门禁 (BLOCK)</option>
+                    <option value="WARN">⚠️ 业务预警规范 (WARN)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">触发环节 (Trigger Phase)</label>
+                  <input type="text" id="createRulePhase" class="target-select" style="width:100%; padding:6px 10px;" placeholder="例如: 门诊收费处 / 挂号退费注销">
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">涉及接口与数据库字段</label>
+                  <input type="text" id="createRuleTarget" class="target-select" style="width:100%; padding:6px 10px;" placeholder="例如: FIN_OP_REGISTER.STATUS, VALID_FLAG">
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">一句话核心业务规则 (Summary) *</label>
+                <input type="text" id="createRuleSummary" class="target-select" style="width:100%; padding:6px 10px;" placeholder="例如: 患者名下存在未结清或未退款处方时，收费处强行拦截退号" required>
+              </div>
+
+              <div>
+                <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">规则详细临床背景与痛点说明 (Detail)</label>
+                <textarea id="createRuleDetail" class="target-select" style="width:100%; height:85px; padding:8px 10px; font-size:12px; line-height:1.5; resize:vertical;" placeholder="【临床痛点】说明...&#10;【规则核心】1. ...&#10;2. ..."></textarea>
+              </div>
+
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+                  <label style="font-size:12px; font-weight:600; color:var(--g-text-secondary);">动态控制参数 (JSON 格式)</label>
+                  <span style="font-size:11px; color:var(--g-blue); cursor:pointer;" onclick="formatCreateJsonParams()">✨ 格式化 JSON</span>
+                </div>
+                <textarea id="createRuleParams" class="target-select" style="width:100%; height:75px; padding:8px 10px; font-family:var(--g-mono); font-size:11.5px; resize:vertical;" placeholder='{"enforceCheck": true, "maxCount": 3}'></textarea>
+              </div>
+
+              <div style="display:flex; align-items:center; justify-content:space-between; padding-top:4px;">
+                <label style="font-size:12.5px; font-weight:600; color:var(--g-text-primary); display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="createRuleEnabled" checked style="width:16px; height:16px;">
+                  <span>立即启用此规则门禁</span>
+                </label>
+                <div style="display:flex; gap:8px;">
+                  <button type="button" class="g-btn g-btn-tonal" onclick="document.getElementById('ruleCreateModal').style.display='none'">取消</button>
+                  <button type="submit" class="g-btn g-btn-primary" style="font-weight:600; background:#1e8e3e; border:none;">➕ 确认新增规则</button>
                 </div>
               </div>
             </form>
@@ -3075,6 +3351,8 @@
         document.getElementById('btnRunAll').disabled = false;
         if (document.getElementById('btnRunNonInvasive')) document.getElementById('btnRunNonInvasive').disabled = false;
         if (document.getElementById('btnRunInvasive')) document.getElementById('btnRunInvasive').disabled = false;
+      } else if (msg.type.startsWith('rule_') || msg.type === 'env_change') {
+        handleRuleSocketEvent(msg);
       }
     }
 
@@ -3938,8 +4216,19 @@
 
       container.innerHTML = filtered.map(r => {
         const isIP = r.domain === 'inpatient';
+        const isOP = r.domain === 'outpatient';
+        const isPharma = r.domain === 'pharmacy';
+        const isEMR = r.domain === 'emr';
+        const isCharge = r.domain === 'charge';
+        
+        let domainClass = 'rule-badge-custom';
+        if (isIP) domainClass = 'rule-badge-ip';
+        else if (isOP) domainClass = 'rule-badge-op';
+        else if (isPharma) domainClass = 'rule-badge-pharma';
+        else if (isEMR) domainClass = 'rule-badge-emr';
+        else if (isCharge) domainClass = 'rule-badge-charge';
+
         const isBlock = r.severity === 'BLOCK';
-        const domainClass = isIP ? 'rule-badge-ip' : 'rule-badge-op';
         const severityClass = isBlock ? 'rule-badge-block' : 'rule-badge-warn';
         
         let statusChipHtml = '';
@@ -3953,64 +4242,81 @@
 
         const params = r.parameters || {};
         const paramPills = Object.entries(params).map(([k, v]) => {
-          return `<span class="rule-param-pill"><b>${k}</b>: ${v}</span>`;
-        }).join(' ');
+          const displayVal = (typeof v === 'object') ? JSON.stringify(v) : v;
+          return `<span class="rule-param-pill"><span class="p-key">${k}</span>: <span class="p-val">${displayVal}</span></span>`;
+        }).join('');
+
+        const isCustom = !!r.is_custom;
 
         return `
-          <div class="rule-card" id="card_${r.id}">
+          <div class="rule-card ${r.enabled === false ? 'disabled-rule' : ''}" id="card_${r.id}">
             <!-- Header Row -->
-            <div style="display:flex; justify-content:space-between; align-items:center;">
-              <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
-                <span class="rule-badge" style="background:var(--g-surface-variant); color:var(--g-text-primary); font-family:var(--g-mono); font-weight:700;">${r.id}</span>
-                <span class="rule-badge ${domainClass}">${r.domain_name || (isIP ? '🛏️ 住院业务' : '🏥 门诊业务')}</span>
-                <span class="rule-badge ${severityClass}">${r.severity_name || (isBlock ? '🚨 硬性门禁' : '⚠️ 预警规范')}</span>
+            <div class="rule-card-header">
+              <div class="rule-card-badges">
+                <span class="rule-id-pill">${r.id}</span>
+                <span class="rule-badge ${domainClass}">${r.domain_name || '🛡️ 业务规则'}</span>
+                <span class="rule-badge ${severityClass}">${r.severity_name || (isBlock ? '🚨 阻断门禁' : '⚠️ 预警规范')}</span>
               </div>
-              <label style="font-size:12px; display:inline-flex; align-items:center; gap:4px; cursor:pointer;" title="开启/停用此规则">
-                <input type="checkbox" onchange="toggleRuleEnabled('${r.id}', this.checked)" ${r.enabled !== false ? 'checked' : ''} style="width:15px; height:15px; accent-color:var(--g-blue);">
-                <span style="font-size:11.5px; color:var(--g-text-secondary);">${r.enabled !== false ? '已激活' : '已停用'}</span>
-              </label>
+              <div class="rule-card-toggle">
+                <label class="rule-toggle-label" title="开启/停用此规则">
+                  <input type="checkbox" onchange="toggleRuleEnabled('${r.id}', this.checked)" ${r.enabled !== false ? 'checked' : ''} style="width:15px; height:15px; accent-color:var(--g-blue);">
+                  <span>${r.enabled !== false ? '已激活' : '已停用'}</span>
+                </label>
+                ${isCustom ? `
+                  <button class="icon-btn btn-rule-del" onclick="deleteRule('${r.id}')" title="删除此自定义规则" style="width:24px; height:24px; font-size:12px; color:var(--g-red); margin-left:4px;">
+                    🗑️
+                  </button>
+                ` : ''}
+              </div>
             </div>
 
             <!-- Title -->
-            <div style="font-size:14.5px; font-weight:600; color:var(--g-text-primary); line-height:1.4;">
+            <h4 class="rule-card-title">
               ${r.name}
+            </h4>
+
+            <!-- Core Rule Callout -->
+            <div class="rule-core-callout">
+              <span class="callout-icon">💡</span>
+              <span class="callout-text">${r.summary || ''}</span>
             </div>
 
-            <!-- Target Meta -->
-            <div style="font-size:11.5px; color:var(--g-text-secondary); display:flex; flex-direction:column; gap:3px;">
-              <div><b>📍 触发环节:</b> ${r.trigger_phase || '全流程'}</div>
-              <div><b>🎯 涉及目标:</b> <code style="font-family:var(--g-mono); background:var(--g-surface-variant); padding:1px 5px; border-radius:3px; font-size:11px;">${r.target_api_table || 'N/A'}</code></div>
+            <!-- Meta Grid (Trigger & Target) -->
+            <div class="rule-meta-grid">
+              <div class="rule-meta-row">
+                <span class="rule-meta-label">⚡ 触发环节</span>
+                <span class="rule-meta-val">${r.trigger_phase || '全流程'}</span>
+              </div>
+              <div class="rule-meta-row">
+                <span class="rule-meta-label">🎯 涉及目标</span>
+                <span class="rule-meta-val"><code class="rule-meta-code">${r.target_api_table || 'N/A'}</code></span>
+              </div>
             </div>
 
-            <!-- Summary Quote Banner -->
-            <div class="rule-quote-box">
-              “${r.summary || ''}”
-            </div>
-
-            <!-- Details Collapsible -->
-            <details style="font-size:12px; color:var(--g-text-secondary); border-top:1px dashed var(--g-border-subtle); padding-top:6px;">
-              <summary style="cursor:pointer; color:var(--g-blue); font-weight:500; outline:none; user-select:none;">📖 查看临床背景与规范全文</summary>
-              <div style="margin-top:8px; line-height:1.6; white-space:pre-wrap; background:var(--g-surface-variant); padding:10px 12px; border-radius:var(--g-radius-sm); font-size:11.5px;">${r.detail || '暂无详细描述'}</div>
-            </details>
-
-            <!-- Parameters -->
+            <!-- Parameters Section -->
             ${Object.keys(params).length > 0 ? `
-              <div style="display:flex; align-items:center; gap:5px; flex-wrap:wrap; margin-top:2px;">
-                <span style="font-size:11px; color:var(--g-text-tertiary); font-weight:600;">控制参数:</span>
+              <div class="rule-params-wrap">
+                <span class="rule-params-title">⚙️ 控制参数:</span>
                 ${paramPills}
               </div>
             ` : ''}
 
+            <!-- Details Collapsible -->
+            <details class="rule-details-box">
+              <summary>📖 查看临床背景与规范说明</summary>
+              <div class="rule-details-content">${r.detail || '暂无详细描述'}</div>
+            </details>
+
             <!-- Footer Actions -->
-            <div style="display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--g-border-subtle); padding-top:10px; margin-top:auto;">
+            <div class="rule-card-footer">
               <div>
                 ${statusChipHtml}
               </div>
               <div style="display:flex; align-items:center; gap:6px;">
-                <button class="g-btn g-btn-tonal" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="verifySingleRule('${r.id}', this)" title="现场执行该规则断言测试">
+                <button class="g-btn g-btn-tonal btn-rule-verify" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="verifySingleRule('${r.id}', this)" title="现场执行该规则断言测试">
                   ▶️ 现场校验
                 </button>
-                <button class="g-btn g-btn-outlined" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="openEditRuleModal('${r.id}')" title="在线调整此规则参数与规范">
+                <button class="g-btn g-btn-outlined btn-rule-edit" style="padding:4px 10px; font-size:11.5px; height:26px;" onclick="openEditRuleModal('${r.id}')" title="在线调整此规则参数与规范">
                   ⚙️ 维护
                 </button>
                 ${(r.last_verify_log && r.last_verify_log.length > 0) ? `
@@ -4234,9 +4540,142 @@
       document.getElementById('ruleLogModal').style.display = 'flex';
     }
 
+    // =========================================================================
+    // ➕ Create & Delete Business Rule Handlers
+    // =========================================================================
+    const btnOpenCreateRuleModalEl = document.getElementById('btnOpenCreateRuleModal');
+    if (btnOpenCreateRuleModalEl) {
+      btnOpenCreateRuleModalEl.addEventListener('click', () => {
+        openCreateRuleModal();
+      });
+    }
+
+    function openCreateRuleModal() {
+      const domain = document.getElementById('createRuleDomain').value || 'outpatient';
+      const prefix = domain === 'inpatient' ? 'RULE_IP_' : (domain === 'outpatient' ? 'RULE_OP_' : 'RULE_CUSTOM_');
+      let count = allBusinessRules.filter(r => r.id && r.id.startsWith(prefix)).length + 1;
+      let suggestedId = `${prefix}${count < 10 ? '0' : ''}${count}`;
+      while (allBusinessRules.some(r => r.id === suggestedId)) {
+        count++;
+        suggestedId = `${prefix}${count < 10 ? '0' : ''}${count}`;
+      }
+
+      document.getElementById('createRuleId').value = suggestedId;
+      document.getElementById('createRuleName').value = '';
+      document.getElementById('createRulePhase').value = '';
+      document.getElementById('createRuleTarget').value = '';
+      document.getElementById('createRuleSummary').value = '';
+      document.getElementById('createRuleDetail').value = '';
+      document.getElementById('createRuleParams').value = '{\n  "enforceGate": true,\n  "maxThreshold": 5\n}';
+      document.getElementById('createRuleEnabled').checked = true;
+
+      document.getElementById('ruleCreateModal').style.display = 'flex';
+    }
+
+    const createDomainEl = document.getElementById('createRuleDomain');
+    if (createDomainEl) {
+      createDomainEl.addEventListener('change', (e) => {
+        const domain = e.target.value;
+        const prefix = domain === 'inpatient' ? 'RULE_IP_' : (domain === 'outpatient' ? 'RULE_OP_' : 'RULE_CUSTOM_');
+        let count = allBusinessRules.filter(r => r.id && r.id.startsWith(prefix)).length + 1;
+        let suggestedId = `${prefix}${count < 10 ? '0' : ''}${count}`;
+        while (allBusinessRules.some(r => r.id === suggestedId)) {
+          count++;
+          suggestedId = `${prefix}${count < 10 ? '0' : ''}${count}`;
+        }
+        document.getElementById('createRuleId').value = suggestedId;
+      });
+    }
+
+    function formatCreateJsonParams() {
+      const ta = document.getElementById('createRuleParams');
+      try {
+        const parsed = JSON.parse(ta.value);
+        ta.value = JSON.stringify(parsed, null, 2);
+      } catch (err) {
+        alert("JSON 语法有误，无法格式化: " + err);
+      }
+    }
+
+    const ruleCreateFormEl = document.getElementById('ruleCreateForm');
+    if (ruleCreateFormEl) {
+      ruleCreateFormEl.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        let params = {};
+        const paramsText = document.getElementById('createRuleParams').value.trim();
+        if (paramsText) {
+          try {
+            params = JSON.parse(paramsText);
+          } catch (err) {
+            alert("控制参数必须为有效的 JSON 格式！");
+            return;
+          }
+        }
+
+        const domainVal = document.getElementById('createRuleDomain').value;
+        const domainNames = {
+          inpatient: '🛏️ 住院业务',
+          outpatient: '🏥 门诊业务',
+          pharmacy: '💊 药房药库',
+          emr: '📝 电子病历',
+          charge: '💰 计费财务',
+          system: '🛡️ 系统底座'
+        };
+
+        const payload = {
+          id: document.getElementById('createRuleId').value.trim() || undefined,
+          domain: domainVal,
+          domain_name: domainNames[domainVal] || '🛡️ 综合规则',
+          name: document.getElementById('createRuleName').value.trim(),
+          severity: document.getElementById('createRuleSeverity').value,
+          trigger_phase: document.getElementById('createRulePhase').value.trim(),
+          target_api_table: document.getElementById('createRuleTarget').value.trim(),
+          summary: document.getElementById('createRuleSummary').value.trim(),
+          detail: document.getElementById('createRuleDetail').value.trim(),
+          parameters: params,
+          enabled: document.getElementById('createRuleEnabled').checked
+        };
+
+        try {
+          const resp = await fetch('/api/rules', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          const res = await resp.json();
+          if (res.status === 'ok') {
+            document.getElementById('ruleCreateModal').style.display = 'none';
+            await loadBusinessRules();
+            alert(`🎉 新增业务规则 [${res.rule.id}] 成功并已持久化保存！支持立即点击【现场校验】验证规则生效。`);
+          } else {
+            alert(`新增规则失败: ${res.error || '未知错误'}`);
+          }
+        } catch (err) {
+          alert(`网络异常: ${err}`);
+        }
+      });
+    }
+
+    // 🗑️ Delete Rule
+    async function deleteRule(ruleId) {
+      if (!confirm(`确定要彻底删除业务规则 [${ruleId}] 吗？`)) return;
+      try {
+        const resp = await fetch(`/api/rules/${ruleId}`, { method: 'DELETE' });
+        const res = await resp.json();
+        if (res.status === 'ok') {
+          await loadBusinessRules();
+          alert(`✓ 规则 [${ruleId}] 已成功删除`);
+        } else {
+          alert(`删除失败: ${res.error || '未知错误'}`);
+        }
+      } catch (err) {
+        alert(`删除异常: ${err}`);
+      }
+    }
+
     // WebSocket event handler for rule live events
     function handleRuleSocketEvent(msg) {
-      if (msg.type === 'rule_verify_done' || msg.type === 'rule_update') {
+      if (msg.type === 'rule_verify_done' || msg.type === 'rule_update' || msg.type === 'rule_create' || msg.type === 'rule_delete') {
         loadBusinessRules();
       } else if (msg.type === 'env_change') {
         loadEnvironmentStatus();

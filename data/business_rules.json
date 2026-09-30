@@ -13,24 +13,14 @@
     "parameters": {
       "inheritFromDraft": true,
       "syncGroupStartTime": true,
-      "defaultHour": "11:45:00"
+      "defaultHour": "11:30:00"
     },
     "enabled": true,
     "test_id": "rule_01_order_start_time_inheritance",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:23",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_IP_01] 医嘱开立与开始时间自动继承规则",
-      "📌 触发环节: 住院医生工作站 (CPOE) / 长期与临时医嘱录入",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 步骤 1: 模拟医生开立首条长嘱【生理氯化钠溶液 500ml】(开始时间: 2026-09-30 08:00:00)...",
-      "👉 步骤 2: 医生点击【+ 新增】，开立第二条长嘱【注射用头孢曲松钠 2.0g】...",
-      "✓ 医嘱开始时间成功继承: 2026-09-30 08:00:00 (与上一条暂存医嘱完全一致)",
-      "👉 步骤 3: 模拟修改同组主药开始时间为 2026-09-30 09:30:00...",
-      "✓ 同组辅药联动更新开始时间: 2026-09-30 09:30:00",
-      "✅ 【校验通过】业务规则 [RULE_IP_01] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_IP_02",
@@ -54,20 +44,10 @@
     },
     "enabled": true,
     "test_id": "rule_02_grouped_order_consistency",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:23",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_IP_02] 同组输液医嘱频次与用法强一致性规则",
-      "📌 触发环节: 住院医生工作站 / 成组输液医嘱校验保存",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验同组输液规则：主药与辅药的给药途径与频次一致性...",
-      "测试合规成组配对: 主药[静脉滴注/QD] + 辅药[静脉滴注/QD]",
-      "✓ 合规成组通过！",
-      "测试冲突成组拦截: 尝试将口服/TID药品混入静脉输液...",
-      "✓ 成功触发成组用法与频次冲突硬性拦截门禁！",
-      "✅ 【校验通过】业务规则 [RULE_IP_02] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_IP_03",
@@ -87,19 +67,10 @@
     },
     "enabled": true,
     "test_id": "rule_inpatient_herb_isolation",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:23",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_IP_03] 中西药物理隔离与草药付数煎服法规则",
-      "📌 触发环节: 住院医生工作站 / 中草药处方开立",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验草药处方付数(1-30付)与煎服法必填约束...",
-      "✓ 合规草药处方校验通过: 柴胡 7付 (常规水煎)",
-      "✓ 成功拦截付数小于1付的非法中草药医嘱！",
-      "✓ 成功拦截缺失煎服法的草药医嘱！",
-      "✅ 【校验通过】业务规则 [RULE_IP_03] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_IP_04",
@@ -119,20 +90,10 @@
     },
     "enabled": true,
     "test_id": "rule_inpatient_skin_test_gate",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:23",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_IP_04] 抗菌药物皮试闭环强制拦截规则",
-      "📌 触发环节: 医生开嘱 / 护士核对执行 / 中心药房摆药",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验皮试目录药品强制闭环与执行阻断...",
-      "检测到高敏皮试目录药品: 注射用青霉素钠 80万单位 (SKIN_TEST_FLAG=1)",
-      "✓ 未出皮试结果时，护士站核对与药房摆药成功拦截！",
-      "✓ 皮试结果为阳性(+)时，系统强制禁止执行该高敏抗菌药！",
-      "✓ 皮试结果录入为阴性(-)时，护士站与摆药机正常放行打签！",
-      "✅ 【校验通过】业务规则 [RULE_IP_04] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_IP_05",
@@ -157,21 +118,10 @@
     },
     "enabled": true,
     "test_id": "rule_03_order_state_machine_transition",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:23",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_IP_05] 医嘱生命周期单向状态机流转法则",
-      "📌 触发环节: 医生站 / 护士站 / 药房 / 计费全链条",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验医嘱单向状态机: SV ➔ SB ➔ VF ➔ ET ➔ ST...",
-      "✓ 允许合法单向跃迁: SV ➔ SB",
-      "✓ 允许合法单向跃迁: SB ➔ VF",
-      "✓ 允许合法单向跃迁: VF ➔ ET",
-      "✓ 允许合法单向跃迁: ET ➔ ST",
-      "✓ 成功阻断已核对(VF)医嘱向暂存(SV)逆向回滚与篡改！",
-      "✅ 【校验通过】业务规则 [RULE_IP_05] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_IP_06",
@@ -191,17 +141,10 @@
     },
     "enabled": true,
     "test_id": "rule_inpatient_prepay_warning",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:23",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_IP_06] 预交金余额与欠费警戒线动态防护规则",
-      "📌 触发环节: 住院护士站 / 医生站开嘱 / 住院记账",
-      "🛡️ 门禁级别: ⚠️ 业务预警规范",
-      "👉 校验预交金动态监控与欠费预警阈值...",
-      "✓ 当前患者预交金余额 (200.0元) 低于警戒线 (500.0元)，系统实时触发黄色预警催缴！",
-      "✅ 【校验通过】业务规则 [RULE_IP_06] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_IP_07",
@@ -220,18 +163,10 @@
     },
     "enabled": true,
     "test_id": "rule_04_drug_return_before_fee_refund",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:23",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_IP_07] 先退药后退费实物与财务严格分离冲正规则",
-      "📌 触发环节: 住院药房 (退药入库) ➔ 住院收费处 (费用冲正)",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验先退药后退费实物分离门禁...",
-      "✓ 药房尚未确认实物退药入库 (RETURN_FLAG='0')，住院收费处退费申请强行阻断！",
-      "✓ 药房完成实物验收入库 (RETURN_FLAG='1')，住院收费处成功发起费用红字冲正！",
-      "✅ 【校验通过】业务规则 [RULE_IP_07] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_IP_08",
@@ -253,17 +188,10 @@
     },
     "enabled": true,
     "test_id": "rule_05_discharge_settlement_prerequisites",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:23",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_IP_08] 出院登记与出院结算“五前置”强拦截规则",
-      "📌 触发环节: 住院护士站 (出院登记) / 住院收费处 (出院结算)",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验出院结算五大前置门禁拦截...",
-      "✓ 检测到 2 条未停长期医嘱，出院结算硬性阻断生效！",
-      "✅ 【校验通过】业务规则 [RULE_IP_08] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_OP_01",
@@ -283,20 +211,10 @@
     },
     "enabled": true,
     "test_id": "outpatient_rule_01_idcard_verification",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:23",
-    "last_verify_duration_ms": 21,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_OP_01] 患者建档证件算法与主索引防重门禁",
-      "📌 触发环节: 门诊建档 / 客户中心发卡 / 患者主索引注册",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 执行 18 位身份证 GB 11643-1999 校验码防伪算法断言...",
-      "✓ 校验码算法拦截成功: 非法号码 [440104199001015670] 被阻断",
-      "✓ 校验码算法放行成功: 合规号码 [440104****5671] 校验通过",
-      "HIS 后端实测响应: Code=400, Resp={\"code\": 400, \"msg\": \"非法身份证号码：校验位错误（期望 1，实际 0）！\"}",
-      "✓ 【现场接口实测】HIS 后端微服务强阻断非法身份证建档！",
-      "✅ 【校验通过】业务规则 [RULE_OP_01] 约束断言完全符合预期！"
-    ]
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
+    "last_verify_duration_ms": 0,
+    "last_verify_log": []
   },
   {
     "id": "RULE_OP_02",
@@ -316,20 +234,10 @@
     },
     "enabled": true,
     "test_id": "outpatient_rule_02_registration_two_phase",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:24",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_OP_02] 门诊挂号两阶段结算与0元平账规则",
-      "📌 触发环节: 门诊挂号收费处 / 现场挂号与预约取号",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验业务规则 [RULE_OP_02] 参数契约与门禁配置...",
-      "  ● 检查配置项: enforcePreBalanceBeforeBalance = True",
-      "  ● 检查配置项: allowZeroAmountBalancing = True",
-      "  ● 检查配置项: lockScheduleQuotaTimeoutSec = 120",
-      "✓ 规则参数结构完整且处于启用激活状态！",
-      "✅ 【校验通过】业务规则 [RULE_OP_02] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_OP_03",
@@ -349,20 +257,10 @@
     },
     "enabled": true,
     "test_id": "outpatient_rule_03_triage_queue_sync",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:24",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_OP_03] 待诊队列调度与接诊上下文Bar同步规则",
-      "📌 触发环节: 分诊台 / 门诊医生站待诊队列 / 叫号接诊",
-      "🛡️ 门禁级别: ⚠️ 业务流程规范",
-      "👉 校验业务规则 [RULE_OP_03] 参数契约与门禁配置...",
-      "  ● 检查配置项: autoSyncPatientBar = True",
-      "  ● 检查配置项: preventMultipleDoctorLock = True",
-      "  ● 检查配置项: showAllergyAlert = True",
-      "✓ 规则参数结构完整且处于启用激活状态！",
-      "✅ 【校验通过】业务规则 [RULE_OP_03] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_OP_04",
@@ -382,19 +280,10 @@
     },
     "enabled": true,
     "test_id": "outpatient_rule_04_no_diagnosis_blocked",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:24",
-    "last_verify_duration_ms": 8,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_OP_04] 无主诊断强行阻断开嘱门禁（临床铁律）",
-      "📌 触发环节: 门诊医生工作站 / 西药、中药、诊疗处置医嘱保存",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 执行临床硬性门禁规则断言: 校验开立医嘱前必须存在有效主诊断...",
-      "✓ 临床无主诊断阻断生效: 成功拦截未下诊断开嘱行为, 提示='当前就诊诊次不存在有效主诊断，请先录入诊断信息！'",
-      "HIS 医生站实测响应: Code=400, Msg=当前就诊诊次不存在有效主诊断，请先录入诊断信息！",
-      "✓ 【现场接口实测】HIS 医生站后端服务返回诊断阻断: 当前就诊诊次不存在有效主诊断，请先录入诊断信息！",
-      "✅ 【校验通过】业务规则 [RULE_OP_04] 约束断言完全符合预期！"
-    ]
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
+    "last_verify_duration_ms": 0,
+    "last_verify_log": []
   },
   {
     "id": "RULE_OP_05",
@@ -414,20 +303,10 @@
     },
     "enabled": true,
     "test_id": "outpatient_rule_05_charge_two_phase",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:24",
-    "last_verify_duration_ms": 1,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_OP_05] 门诊划价预结算与正式结算发票生成",
-      "📌 触发环节: 门诊收费处 / 处方划价收费结算",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验业务规则 [RULE_OP_05] 参数契约与门禁配置...",
-      "  ● 检查配置项: twoPhaseCheckoutRequired = True",
-      "  ● 检查配置项: autoTransitionOrderState = True",
-      "  ● 检查配置项: generateOfficialReceiptNo = True",
-      "✓ 规则参数结构完整且处于启用激活状态！",
-      "✅ 【校验通过】业务规则 [RULE_OP_05] 约束断言完全符合预期！"
-    ]
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
+    "last_verify_duration_ms": 0,
+    "last_verify_log": []
   },
   {
     "id": "RULE_OP_06",
@@ -447,20 +326,10 @@
     },
     "enabled": true,
     "test_id": "outpatient_rule_06_dispensed_order_refund_blocked",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:24",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_OP_06] 已执行/已发药门诊医嘱退费硬性拦截",
-      "📌 触发环节: 门诊收费处 (退费申请与冲正) / 门诊药房 / 医技科室",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验业务规则 [RULE_OP_06] 参数契约与门禁配置...",
-      "  ● 检查配置项: blockRefundIfDispensed = True",
-      "  ● 检查配置项: blockRefundIfExecuted = True",
-      "  ● 检查配置项: requireReturnApplication = True",
-      "✓ 规则参数结构完整且处于启用激活状态！",
-      "✅ 【校验通过】业务规则 [RULE_OP_06] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   },
   {
     "id": "RULE_OP_07",
@@ -480,20 +349,10 @@
     },
     "enabled": true,
     "test_id": "outpatient_rule_07_reg_cancel_prerequisites",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:24",
-    "last_verify_duration_ms": 6,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_OP_07] 挂号退号前置零未结费与号源回滚门禁",
-      "📌 触发环节: 门诊挂号收费处 / 挂号注销与退号",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 执行财务退号安全前置门禁断言: 核验退款支付明细与未退费处方阻断...",
-      "✓ 拦截存在未退费处方的退号操作: '名下存在 1 条未退费处方，严禁退号！'",
-      "✓ 拦截缺失退款支付明细的退号操作: '退款支付明细不能为空！'",
-      "HIS 退号接口实测响应: Code=400, Msg=退号请求缺失退款支付明细，无法平账！",
-      "✓ 【现场接口实测】HIS 退号服务阻断空明细请求: 退号请求缺失退款支付明细，无法平账！",
-      "✅ 【校验通过】业务规则 [RULE_OP_07] 约束断言完全符合预期！"
-    ]
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
+    "last_verify_duration_ms": 0,
+    "last_verify_log": []
   },
   {
     "id": "RULE_OP_08",
@@ -517,19 +376,9 @@
     },
     "enabled": true,
     "test_id": "outpatient_rule_08_order_state_machine",
-    "last_verify_status": "PASSED",
-    "last_verify_time": "2026-09-30 19:28:24",
+    "last_verify_status": "NONE",
+    "last_verify_time": "",
     "last_verify_duration_ms": 0,
-    "last_verify_log": [
-      "🚀 开始执行业务规则断言校验: [RULE_OP_08] 门诊医嘱全生命周期单向状态机流转法则",
-      "📌 触发环节: 医生站 ➔ 收费处 ➔ 药房 ➔ 退款全流程",
-      "🛡️ 门禁级别: 🚨 硬性阻断门禁",
-      "👉 校验业务规则 [RULE_OP_08] 参数契约与门禁配置...",
-      "  ● 检查配置项: enforceRedInkBalancing = True",
-      "  ● 检查配置项: immutableSettledOrders = True",
-      "  ● 检查配置项: stateSequence = ['SV', 'FE', 'CC']",
-      "✓ 规则参数结构完整且处于启用激活状态！",
-      "✅ 【校验通过】业务规则 [RULE_OP_08] 约束断言完全符合预期！"
-    ]
+    "last_verify_log": []
   }
 ]
