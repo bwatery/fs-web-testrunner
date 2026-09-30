@@ -1787,9 +1787,106 @@
       background: #fbc02d;
       color: #000;
     }
+    /* 🍞 Google Floating Toast / Bubble Notification System */
+    #toastContainer {
+      position: fixed;
+      top: 64px;
+      right: 24px;
+      z-index: 100000;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+      max-width: 420px;
+      width: calc(100vw - 48px);
+    }
+    .g-toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--g-surface);
+      color: var(--g-text-primary);
+      border-radius: var(--g-radius-md);
+      box-shadow: 0 4px 18px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.08);
+      border: 1px solid var(--g-border);
+      border-left: 4px solid var(--g-blue);
+      font-size: 13px;
+      line-height: 1.4;
+      animation: toastSlideIn 0.22s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+      transition: all 0.22s ease;
+      cursor: pointer;
+    }
+    .g-toast.hide {
+      opacity: 0;
+      transform: translateY(-12px) scale(0.95);
+    }
+    .g-toast-icon {
+      font-size: 16px;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .g-toast-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .g-toast-title {
+      font-weight: 600;
+      font-size: 12.5px;
+      color: var(--g-text-primary);
+    }
+    .g-toast-desc {
+      font-size: 12px;
+      color: var(--g-text-secondary);
+      word-break: break-word;
+    }
+    .g-toast-close {
+      opacity: 0.5;
+      font-size: 13px;
+      cursor: pointer;
+      padding: 0 2px;
+      color: var(--g-text-tertiary);
+      transition: opacity 0.15s;
+    }
+    .g-toast-close:hover {
+      opacity: 1;
+      color: var(--g-text-primary);
+    }
+    .g-toast.toast-info {
+      border-left-color: var(--g-blue);
+    }
+    .g-toast.toast-success {
+      border-left-color: var(--g-green);
+    }
+    .g-toast.toast-warning {
+      border-left-color: var(--g-yellow);
+    }
+    .g-toast.toast-danger {
+      border-left-color: var(--g-red);
+    }
+    .g-toast.toast-run {
+      border-left-color: #0b57d0;
+    }
+    @keyframes toastSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.94);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
   </style>
 </head>
 <body>
+
+  <!-- Floating Toast Notifications Container -->
+  <div id="toastContainer"></div>
 
   <!-- Google App Header -->
   <header>
@@ -1821,14 +1918,8 @@
     <div class="top-actions">
       <!-- Group 1: 核心执行操作 -->
       <div class="action-btn-group" title="测试执行模式">
-        <button class="g-btn g-btn-ai" id="btnRunNonInvasive" title="⚡ 后台验证：完全静默、不弹窗口、直连后端与数据库，毫秒级快速验证业务逻辑与契约">
-          <span>⚡ 后台验证</span>
-        </button>
-        <button class="g-btn g-btn-demo" id="btnRunInvasive" title="🖥️ 界面验证：自动弹出 Chrome 窗口、高亮模拟点击交互、直观核验页面并自动截图">
-          <span>🖥️ 界面验证</span>
-        </button>
-        <button class="g-btn g-btn-primary" id="btnRunSelected" title="仅执行当前勾选的用例">
-          <span>▶ 运行选中</span>
+        <button class="g-btn g-btn-primary" id="btnRunSelected" title="执行当前勾选的测试用例">
+          <span>▶ 运行选中用例</span>
         </button>
         <button class="g-btn g-btn-danger" id="btnStop" style="display:none;" title="强制终止当前正在运行的测试">
           <span>⏹ 停止</span>
@@ -2790,6 +2881,62 @@
   </div>
 
   <script>
+    // 🍞 Floating Toast / Bubble Notification Helper
+    function showToast(message, type = 'info', title = null, duration = 3200) {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `g-toast toast-${type}`;
+
+      const iconMap = {
+        info: 'ℹ️',
+        success: '✅',
+        warning: '⚠️',
+        danger: '❌',
+        run: '🚀',
+        stop: '⏹️',
+        env: '⚡',
+        role: '🎯',
+        copy: '📋'
+      };
+      const icon = iconMap[type] || '🔔';
+
+      const esc = (s) => (s == null ? '' : String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'));
+      toast.innerHTML = `
+        <span class="g-toast-icon">${icon}</span>
+        <div class="g-toast-content">
+          ${title ? `<div class="g-toast-title">${esc(title)}</div>` : ''}
+          <div class="g-toast-desc">${esc(message)}</div>
+        </div>
+        <span class="g-toast-close" title="关闭">✕</span>
+      `;
+
+      const closeBtn = toast.querySelector('.g-toast-close');
+      let timer = null;
+      const dismiss = () => {
+        if (timer) clearTimeout(timer);
+        toast.classList.add('hide');
+        setTimeout(() => {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 220);
+      };
+
+      if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dismiss();
+        });
+      }
+      toast.addEventListener('click', dismiss);
+
+      container.appendChild(toast);
+
+      if (duration > 0) {
+        timer = setTimeout(dismiss, duration);
+      }
+    }
+
     // State
     let allTestCases = [];
     let currentFilter = 'all';
@@ -3669,8 +3816,17 @@
         stopBtn.innerText = '⏹ 停止执行';
         document.getElementById('btnRunSelected').disabled = false;
         document.getElementById('btnRunAll').disabled = false;
-        if (document.getElementById('btnRunNonInvasive')) document.getElementById('btnRunNonInvasive').disabled = false;
-        if (document.getElementById('btnRunInvasive')) document.getElementById('btnRunInvasive').disabled = false;
+
+        const failCount = stats.failed || 0;
+        const passCount = stats.passed || 0;
+        const total = stats.executed || 0;
+        if (total > 0) {
+          if (failCount > 0) {
+            showToast(`测试执行完毕：共 ${total} 项，通过 ${passCount} 项，失败 ${failCount} 项`, 'warning', '测试执行完成', 5000);
+          } else {
+            showToast(`测试执行完毕：共 ${total} 项全部通过！🎉`, 'success', '测试执行成功', 4500);
+          }
+        }
       } else if (msg.type.startsWith('rule_') || msg.type === 'env_change') {
         handleRuleSocketEvent(msg);
       }
@@ -3751,9 +3907,10 @@
       resetKpis();
       document.getElementById('btnRunSelected').disabled = true;
       document.getElementById('btnRunAll').disabled = true;
-      if (document.getElementById('btnRunNonInvasive')) document.getElementById('btnRunNonInvasive').disabled = true;
-      if (document.getElementById('btnRunInvasive')) document.getElementById('btnRunInvasive').disabled = true;
       document.getElementById('btnStop').style.display = 'inline-flex';
+
+      const count = selectedIds ? selectedIds.length : (allTestCases.length || '全量');
+      showToast(`已开始执行测试任务（${count} 项用例）...`, 'run', '测试已启动', 3500);
 
       const headless = document.getElementById('chkHeadless').checked;
       const targetEnv = document.getElementById('targetEnvSelect').value;
@@ -3761,19 +3918,23 @@
       const username = document.getElementById('autoUsername').value;
       const password = document.getElementById('autoPassword').value;
 
-      await fetch('/api/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          selected_ids: selectedIds,
-          mode: runMode,
-          headless: headless,
-          login_mode: loginMode,
-          username: username,
-          password: password,
-          url: targetEnv + '/#/inpatient/doctor/workstation'
-        })
-      });
+      try {
+        await fetch('/api/run', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            selected_ids: selectedIds,
+            mode: runMode,
+            headless: headless,
+            login_mode: loginMode,
+            username: username,
+            password: password,
+            url: targetEnv + '/#/inpatient/doctor/workstation'
+          })
+        });
+      } catch (err) {
+        showToast(`启动测试异常: ${err}`, 'danger', '启动失败', 4000);
+      }
     }
 
     document.getElementById('btnRunSelected').addEventListener('click', () => {
@@ -3781,40 +3942,25 @@
       if (ids.length === 0) {
         ids = Array.from(document.querySelectorAll('.case-chk:checked')).map(c => c.dataset.id);
       }
-      if (ids.length === 0) return alert('请先勾选需要运行的测试用例');
+      if (ids.length === 0) {
+        showToast('请先勾选需要运行的测试用例！', 'warning', '未勾选用例', 3000);
+        return;
+      }
       startExecution(ids, 'ALL');
     });
 
     document.getElementById('btnRunAll').addEventListener('click', () => {
       const modal = document.getElementById('runSettingsModal');
       if (modal) modal.style.display = 'none';
+      showToast('正在启动全量测试用例（50+ 项）...', 'run', '全量执行', 3500);
       startExecution(null, 'ALL');
     });
-
-    const btnRunNonInv = document.getElementById('btnRunNonInvasive');
-    if (btnRunNonInv) {
-      btnRunNonInv.addEventListener('click', () => {
-        switchTab('tab-cases');
-        filterCases('non_invasive');
-        const nonInvasiveIds = allTestCases.filter(t => t.mode === 'NON_INVASIVE').map(t => t.id);
-        startExecution(nonInvasiveIds, 'NON_INVASIVE');
-      });
-    }
-
-    const btnRunInv = document.getElementById('btnRunInvasive');
-    if (btnRunInv) {
-      btnRunInv.addEventListener('click', () => {
-        switchTab('tab-cases');
-        filterCases('invasive');
-        const invasiveIds = allTestCases.filter(t => t.mode === 'INVASIVE').map(t => t.id);
-        startExecution(invasiveIds, 'INVASIVE');
-      });
-    }
 
     document.getElementById('btnRunSiteScan').addEventListener('click', () => {
       // Filter for healthcheck suite
       const healthIds = allTestCases.filter(t => t.category.includes('健康') || t.category.includes('巡检')).map(t => t.id);
       document.querySelector('.tab-item[data-tab="tab-cases"]').click();
+      showToast(`已启动全院业务模块体检（共 ${healthIds.length} 项巡检）...`, 'run', '全院体检巡检', 3500);
       startExecution(healthIds, 'ALL');
     });
 
@@ -3823,6 +3969,7 @@
       const btn = document.getElementById('btnStop');
       btn.disabled = true;
       btn.innerText = '正在终止...';
+      showToast('已向后台发送停止指令，正在安全关闭并释放资源...', 'warning', '测试终止中', 3500);
       
       const term = document.getElementById('termLogsContainer');
       const line = document.createElement('div');
@@ -3845,14 +3992,13 @@
           btn.innerText = '⏹ 停止执行';
           document.getElementById('btnRunSelected').disabled = false;
           document.getElementById('btnRunAll').disabled = false;
-          if (document.getElementById('btnRunNonInvasive')) document.getElementById('btnRunNonInvasive').disabled = false;
-          if (document.getElementById('btnRunInvasive')) document.getElementById('btnRunInvasive').disabled = false;
         }, 500);
       }
     });
 
     // Open Browser Window Directly
     document.getElementById('btnOpenBrowser').addEventListener('click', async () => {
+      showToast('正在启动并弹出独立的 Chrome 窗口...', 'info', '启动浏览器', 3000);
       const term = document.getElementById('termLogsContainer');
       const line = document.createElement('div');
       line.className = 't-line INFO';
@@ -3879,7 +4025,7 @@
 
     document.getElementById('btnCopyXml').addEventListener('click', () => {
       const txt = document.getElementById('xmlContentBlock').innerText;
-      navigator.clipboard.writeText(txt).then(() => alert('病历 XML 已成功复制到剪贴板'));
+      navigator.clipboard.writeText(txt).then(() => showToast('病历 XML 数据已成功复制到剪贴板！', 'copy', '复制成功', 2500));
     });
 
     // REPL Actions
@@ -4062,14 +4208,14 @@
     // Copy Bearer & JWT
     document.getElementById('btnCopyBearer').addEventListener('click', () => {
       const tok = liveValidatorData?.session?.token;
-      if (!tok) return alert('当前尚未获取到 Token');
-      navigator.clipboard.writeText(`Bearer ${tok}`).then(() => alert('Bearer Token 已成功复制到剪贴板'));
+      if (!tok) return showToast('当前尚未获取到 Token，请先完成登录认证', 'warning', '暂无凭证');
+      navigator.clipboard.writeText(`Bearer ${tok}`).then(() => showToast('Bearer Token 已成功复制到剪贴板！', 'copy', '复制成功', 2500));
     });
 
     document.getElementById('btnCopyJwt').addEventListener('click', () => {
       const tok = liveValidatorData?.session?.token;
-      if (!tok) return alert('当前尚未获取到 Token');
-      navigator.clipboard.writeText(tok).then(() => alert('原始 JWT Token 已复制到剪贴板'));
+      if (!tok) return showToast('当前尚未获取到 Token，请先完成登录认证', 'warning', '暂无凭证');
+      navigator.clipboard.writeText(tok).then(() => showToast('原始 JWT Token 已成功复制到剪贴板！', 'copy', '复制成功', 2500));
     });
 
     // Auto-polling checkbox
@@ -4339,6 +4485,7 @@
         });
         const res = await resp.json();
         if (res.status === 'SUCCESS') {
+          showToast(`身份已切换至: ${label || roleId}`, 'role', '换岗成功', 3500);
           if (fb) {
             fb.style.color = 'var(--g-green)';
             fb.innerText = `✓ 切换成功！浏览器正在载入工作站...`;
@@ -4353,12 +4500,14 @@
             if (fb) fb.innerText = '';
           }, 3000);
         } else {
+          showToast(`换岗失败: ${res.message || '未知错误'}`, 'danger', '切换失败', 4000);
           if (fb) {
             fb.style.color = 'var(--g-red)';
             fb.innerText = `切换失败: ${res.message || '未知错误'}`;
           }
         }
       } catch (err) {
+        showToast(`换岗请求异常: ${err}`, 'danger', '请求异常', 4000);
         if (fb) {
           fb.style.color = 'var(--g-red)';
           fb.innerText = `请求异常: ${err}`;
@@ -4370,7 +4519,7 @@
       const roleId = document.getElementById('switchRoleSelect').value;
       const deptId = document.getElementById('switchDeptSelect').value;
       const route = document.getElementById('switchRouteInput').value;
-      if (!roleId || !deptId) return alert('请先选择角色和科室');
+      if (!roleId || !deptId) return showToast('请先选择角色和科室！', 'warning', '操作提示');
       const roleName = document.getElementById('switchRoleSelect').selectedOptions[0]?.text;
       const deptName = document.getElementById('switchDeptSelect').selectedOptions[0]?.text;
       executeSwitchIdentity(roleId, deptId, route, `${roleName} · ${deptName}`);
@@ -4380,8 +4529,10 @@
       const roleId = document.getElementById('switchRoleSelect').value;
       const deptId = document.getElementById('switchDeptSelect').value;
       const route = document.getElementById('switchRouteInput').value;
-      if (!roleId || !deptId) return alert('请先选择角色和科室');
+      if (!roleId || !deptId) return showToast('请先选择角色和科室！', 'warning', '操作提示');
       
+      const roleName = document.getElementById('switchRoleSelect').selectedOptions[0]?.text;
+      const deptName = document.getElementById('switchDeptSelect').selectedOptions[0]?.text;
       const fb = document.getElementById('switchFeedback');
       if (fb) fb.innerText = '正在预置身份缓存...';
 
@@ -4397,17 +4548,20 @@
         });
         const res = await resp.json();
         if (res.status === 'SUCCESS') {
+          showToast(`已成功预设下次登录身份: ${roleName} · ${deptName}`, 'role', '预设已保存', 3500);
           if (fb) {
             fb.style.color = 'var(--g-green)';
             fb.innerText = `✓ 预置成功！下次在 Chrome 中登录将直接进入此岗位！`;
           }
         } else {
+          showToast(`预设身份失败: ${res.message || '未知错误'}`, 'danger', '预设失败', 4000);
           if (fb) {
             fb.style.color = 'var(--g-red)';
             fb.innerText = res.message;
           }
         }
       } catch (err) {
+        showToast(`预设请求异常: ${err}`, 'danger', '请求异常', 4000);
         if (fb) {
           fb.style.color = 'var(--g-red)';
           fb.innerText = `异常: ${err}`;
@@ -4455,9 +4609,9 @@
           });
           const res = await resp.json();
           await loadEnvironmentStatus();
-          alert(`✅ 已切换运行模式: ${res.mode_name}\n${res.message || ''}`);
+          showToast(`已切换运行模式: ${res.mode_name}`, 'env', '环境模式变更', 3500);
         } catch (err) {
-          alert(`模式切换失败: ${err}`);
+          showToast(`模式切换失败: ${err}`, 'danger', '切换失败', 4000);
         }
       });
     }
@@ -5170,14 +5324,16 @@
         btnElement.innerHTML = '⏳ 校验中...';
         btnElement.disabled = true;
       }
+      showToast(`正在批量校验分组 [${domain}] 规则...`, 'run', '分组校验启动', 2500);
       try {
         const rulesToVerify = allBusinessRules.filter(r => (r.domain || 'other') === domain && r.enabled !== false);
         for (const r of rulesToVerify) {
           await fetch(`/api/rules/${r.id}/verify`, { method: 'POST' });
         }
         await loadBusinessRules();
+        showToast(`分组 [${domain}] 规则校验完成！`, 'success', '校验完成', 3000);
       } catch (err) {
-        alert(`校验分组规则失败: ${err}`);
+        showToast(`校验分组规则失败: ${err}`, 'danger', '校验失败', 4000);
       } finally {
         if (btnElement) {
           btnElement.innerHTML = origText;
@@ -5193,6 +5349,7 @@
         btnElement.innerHTML = '⏳ 校验中...';
         btnElement.disabled = true;
       }
+      showToast(`正在现场执行规则 [${ruleId}] 断言测试...`, 'run', '单项校验', 2000);
 
       try {
         const resp = await fetch(`/api/rules/${ruleId}/verify`, { method: 'POST' });
@@ -5200,16 +5357,17 @@
         if (data.status === 'ok') {
           const res = data.result;
           await loadBusinessRules();
-          // Show quick log toast or dialog if failed
-          if (res.status === 'FAILED') {
-            alert(`❌ 规则 [${ruleId}] 校验未通过:\n${res.error || ''}`);
+          if (res.status === 'PASSED') {
+            showToast(`规则 [${ruleId}] 校验通过！耗时 ${res.duration_ms || 0}ms`, 'success', '校验通过', 3500);
+          } else if (res.status === 'FAILED') {
+            showToast(`规则 [${ruleId}] 校验未通过: ${res.error || ''}`, 'danger', '校验失败', 5000);
             viewRuleLogs(ruleId);
           }
         } else {
-          alert(`校验异常: ${data.error || '未知错误'}`);
+          showToast(`校验异常: ${data.error || '未知错误'}`, 'danger', '校验异常', 4000);
         }
       } catch (err) {
-        alert(`网络异常: ${err}`);
+        showToast(`网络请求异常: ${err}`, 'danger', '网络异常', 4000);
       } finally {
         if (btnElement) {
           btnElement.innerHTML = origText;
@@ -5224,17 +5382,42 @@
       btnVerifyAllRulesEl.addEventListener('click', async () => {
         btnVerifyAllRulesEl.innerHTML = '⏳ 正在全量自动化验收 16 条规则...';
         btnVerifyAllRulesEl.disabled = true;
+        showToast('已启动全院 16 项业务规则全量自动化验收...', 'run', '全规则验收启动', 3000);
 
         try {
           const resp = await fetch('/api/rules/verify_all', { method: 'POST' });
           const data = await resp.json();
           await loadBusinessRules();
-          alert(`🎉 业务规则全自动化验收完成！\n通过率: ${data.passed} / ${data.total} 条\n失败数: ${data.failed} 条`);
+          showToast(`业务规则自动化验收完成！通过率: ${data.passed} / ${data.total} 条，失败 ${data.failed} 条`, data.failed > 0 ? 'warning' : 'success', '验收完成', 5000);
         } catch (err) {
-          alert(`全规则校验异常: ${err}`);
+          showToast(`全规则校验异常: ${err}`, 'danger', '校验异常', 4000);
         } finally {
           btnVerifyAllRulesEl.innerHTML = '⚡ 一键全规则自动化验收';
           btnVerifyAllRulesEl.disabled = false;
+        }
+      });
+    }
+
+    // Refresh & Reset Rules Buttons
+    const btnRefreshRulesEl = document.getElementById('btnRefreshRules');
+    if (btnRefreshRulesEl) {
+      btnRefreshRulesEl.addEventListener('click', async () => {
+        await loadBusinessRules();
+        showToast('业务规则与指标数据已刷新！', 'info', '刷新完成', 2000);
+      });
+    }
+
+    const btnResetRulesEl = document.getElementById('btnResetRules');
+    if (btnResetRulesEl) {
+      btnResetRulesEl.addEventListener('click', async () => {
+        if (!confirm('确定要恢复系统预设的标准 16 条业务规则吗？自定义规则将被清除。')) return;
+        try {
+          const resp = await fetch('/api/rules/reset', { method: 'POST' });
+          const data = await resp.json();
+          await loadBusinessRules();
+          showToast('已成功恢复系统出厂 16 条标准业务规则！', 'success', '重置成功', 3500);
+        } catch (err) {
+          showToast(`恢复默认异常: ${err}`, 'danger', '重置失败', 4000);
         }
       });
     }
@@ -5280,8 +5463,9 @@
       try {
         const parsed = JSON.parse(ta.value);
         ta.value = JSON.stringify(parsed, null, 2);
+        showToast('JSON 格式校验通过并已美化格式！', 'success', '格式化成功', 2000);
       } catch (err) {
-        alert("JSON 语法有误，无法格式化: " + err);
+        showToast("JSON 语法有误，无法格式化: " + err, 'warning', '格式错误', 3500);
       }
     }
 
@@ -5294,7 +5478,7 @@
         try {
           params = JSON.parse(document.getElementById('editRuleParams').value || '{}');
         } catch (err) {
-          alert("控制参数必须为有效的 JSON 格式！");
+          showToast("控制参数必须为有效的 JSON 格式！", 'warning', '参数格式错误', 3500);
           return;
         }
 
@@ -5319,12 +5503,12 @@
           if (res.status === 'ok') {
             document.getElementById('ruleEditModal').style.display = 'none';
             await loadBusinessRules();
-            alert(`✓ 业务规则 [${ruleId}] 配置已更新并持久化保存！`);
+            showToast(`业务规则 [${ruleId}] 配置已更新并持久化保存！`, 'success', '规则保存成功', 3500);
           } else {
-            alert(`保存失败: ${res.error}`);
+            showToast(`保存失败: ${res.error}`, 'danger', '保存失败', 4000);
           }
         } catch (err) {
-          alert(`网络异常: ${err}`);
+          showToast(`网络异常: ${err}`, 'danger', '请求异常', 4000);
         }
       });
     }
@@ -5400,8 +5584,9 @@
       try {
         const parsed = JSON.parse(ta.value);
         ta.value = JSON.stringify(parsed, null, 2);
+        showToast('JSON 格式校验通过并已美化格式！', 'success', '格式化成功', 2000);
       } catch (err) {
-        alert("JSON 语法有误，无法格式化: " + err);
+        showToast("JSON 语法有误，无法格式化: " + err, 'warning', '格式错误', 3500);
       }
     }
 
@@ -5415,7 +5600,7 @@
           try {
             params = JSON.parse(paramsText);
           } catch (err) {
-            alert("控制参数必须为有效的 JSON 格式！");
+            showToast("控制参数必须为有效的 JSON 格式！", 'warning', '参数格式错误', 3500);
             return;
           }
         }
@@ -5454,12 +5639,12 @@
           if (res.status === 'ok') {
             document.getElementById('ruleCreateModal').style.display = 'none';
             await loadBusinessRules();
-            alert(`🎉 新增业务规则 [${res.rule.id}] 成功并已持久化保存！支持立即点击【现场校验】验证规则生效。`);
+            showToast(`新增业务规则 [${res.rule.id}] 成功并已持久化保存！`, 'success', '规则创建成功', 4000);
           } else {
-            alert(`新增规则失败: ${res.error || '未知错误'}`);
+            showToast(`新增规则失败: ${res.error || '未知错误'}`, 'danger', '创建失败', 4000);
           }
         } catch (err) {
-          alert(`网络异常: ${err}`);
+          showToast(`网络异常: ${err}`, 'danger', '请求异常', 4000);
         }
       });
     }
@@ -5472,12 +5657,12 @@
         const res = await resp.json();
         if (res.status === 'ok') {
           await loadBusinessRules();
-          alert(`✓ 规则 [${ruleId}] 已成功删除`);
+          showToast(`规则 [${ruleId}] 已成功删除！`, 'info', '删除成功', 3000);
         } else {
-          alert(`删除失败: ${res.error || '未知错误'}`);
+          showToast(`删除失败: ${res.error || '未知错误'}`, 'danger', '删除失败', 4000);
         }
       } catch (err) {
-        alert(`删除异常: ${err}`);
+        showToast(`删除异常: ${err}`, 'danger', '请求异常', 4000);
       }
     }
 
