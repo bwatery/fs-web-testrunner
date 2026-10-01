@@ -29,6 +29,11 @@
         name: '调试工具',
         defaultTab: 'tab-xml',
         tabs: ['tab-xml', 'tab-repl', 'tab-screen']
+      },
+      'domain-ai': {
+        name: 'AI 智能体',
+        defaultTab: 'tab-ai-hub',
+        tabs: ['tab-ai-hub', 'tab-ai-playground', 'tab-ai-deploy']
       }
     };
 
@@ -37,7 +42,8 @@
       'domain-tests': 'tab-cases',
       'domain-rules': 'tab-rules',
       'domain-auth': 'tab-validator',
-      'domain-devtools': 'tab-xml'
+      'domain-devtools': 'tab-xml',
+      'domain-ai': 'tab-ai-hub'
     };
 
     // Drawer Collapse/Expand Management

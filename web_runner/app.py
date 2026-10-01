@@ -18,6 +18,7 @@ from fs_web_testrunner.web_runner.routers import (
     validator_router,
     system_router,
     ws_router,
+    ai_router,
 )
 
 logger = get_logger("app")
@@ -40,6 +41,7 @@ def create_app() -> FastAPI:
     application.include_router(validator_router)
     application.include_router(system_router)
     application.include_router(ws_router)
+    application.include_router(ai_router)
 
     @application.on_event("startup")
     async def on_startup():
