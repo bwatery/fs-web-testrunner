@@ -96,17 +96,21 @@
 // =========================================================================
 const btnOpenDiskLogs = document.getElementById('btnOpenDiskLogs');
 const diskLogsModal = document.getElementById('diskLogsModal');
+const diskLogsModalDialog = document.getElementById('diskLogsModalDialog');
 const diskLogSourceSelect = document.getElementById('diskLogSourceSelect');
 const diskLogLimitSelect = document.getElementById('diskLogLimitSelect');
 const diskLogContent = document.getElementById('diskLogContent');
 const diskLogMetaInfo = document.getElementById('diskLogMetaInfo');
 const btnRefreshDiskLogs = document.getElementById('btnRefreshDiskLogs');
 const btnClearDiskLogs = document.getElementById('btnClearDiskLogs');
+const btnToggleLogWrap = document.getElementById('btnToggleLogWrap');
+const btnToggleLogFullscreen = document.getElementById('btnToggleLogFullscreen');
+const btnCopyDiskLogs = document.getElementById('btnCopyDiskLogs');
 
 async function reloadDiskLogsView() {
   if (!diskLogContent) return;
   const source = diskLogSourceSelect ? diskLogSourceSelect.value : 'app';
-  const limit = diskLogLimitSelect ? parseInt(diskLogLimitSelect.value, 10) : 100;
+  const limit = diskLogLimitSelect ? parseInt(diskLogLimitSelect.value, 10) : 200;
   diskLogContent.textContent = '正在读取本地磁盘日志文件...';
 
   try {
@@ -161,16 +165,89 @@ if (btnRefreshDiskLogs) {
   });
 }
 
+let isLogWrapped = false;
+if (btnToggleLogWrap && diskLogContent) {
+  btnToggleLogWrap.addEventListener('click', () => {
+    isLogWrapped = !isLogWrapped;
+    if (isLogWrapped) {
+      diskLogContent.style.whiteSpace = 'pre-wrap';
+      diskLogContent.style.wordBreak = 'break-all';
+      btnToggleLogWrap.textContent = '换行: 开';
+      btnToggleLogWrap.classList.add('g-btn-filled');
+      btnToggleLogWrap.classList.remove('g-btn-tonal');
+    } else {
+      diskLogContent.style.whiteSpace = 'pre';
+      diskLogContent.style.wordBreak = 'normal';
+      btnToggleLogWrap.textContent = '换行: 关';
+      btnToggleLogWrap.classList.remove('g-btn-filled');
+      btnToggleLogWrap.classList.add('g-btn-tonal');
+    }
+  });
+}
+
+let isLogFullscreen = false;
+if (btnToggleLogFullscreen && diskLogsModalDialog) {
+  btnToggleLogFullscreen.addEventListener('click', () => {
+    isLogFullscreen = !isLogFullscreen;
+    if (isLogFullscreen) {
+      diskLogsModalDialog.style.width = '98vw';
+      diskLogsModalDialog.style.maxWidth = '98vw';
+      diskLogsModalDialog.style.height = '96vh';
+      diskLogsModalDialog.style.maxHeight = '96vh';
+      if (diskLogContent) {
+        diskLogContent.style.maxHeight = 'calc(96vh - 165px)';
+        diskLogContent.style.minHeight = 'calc(96vh - 165px)';
+      }
+      btnToggleLogFullscreen.title = '退出全屏 (还原窗口)';
+    } else {
+      diskLogsModalDialog.style.width = '95%';
+      diskLogsModalDialog.style.maxWidth = '1160px';
+      diskLogsModalDialog.style.height = '';
+      diskLogsModalDialog.style.maxHeight = '90vh';
+      if (diskLogContent) {
+        diskLogContent.style.maxHeight = '540px';
+        diskLogContent.style.minHeight = '300px';
+      }
+      btnToggleLogFullscreen.title = '切换全屏/常规尺寸';
+    }
+  });
+}
+
+if (btnCopyDiskLogs && diskLogContent) {
+  btnCopyDiskLogs.addEventListener('click', async () => {
+    const text = diskLogContent.textContent || '';
+    if (!text || text.includes('暂无日志记录')) {
+      showToast('当前没有可复制的日志内容', 'warning', '复制提示', 2000);
+      return;
+    }
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      showToast(`已复制 ${text.split('\n').length} 行日志到剪贴板`, 'success', '复制成功', 2000);
+    } catch (e) {
+      showToast('复制日志失败: ' + e, 'danger', '复制失败', 2500);
+    }
+  });
+}
+
 if (btnClearDiskLogs) {
   btnClearDiskLogs.addEventListener('click', async () => {
     if (!confirm('确定要清空本地磁盘中的所有日志记录吗？')) return;
     try {
       const res = await clearDiskLogs();
-      if (res.status === 'ok' || res.status === 'success') {
+      if (res && (res.status === 'ok' || res.status === 'success' || (res.message && res.message.includes('成功')))) {
         showToast('本地磁盘日志已清空', 'success', '清空成功', 2000);
         reloadDiskLogsView();
       } else {
-        showToast(`清空失败: ${res.message}`, 'danger', '清空失败', 3000);
+        showToast(`清空失败: ${res ? res.message : '未知错误'}`, 'danger', '清空失败', 3000);
       }
     } catch (err) {
       showToast(`清空异常: ${err}`, 'danger', '清空异常', 3000);

@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>HIS WebRunner - 医院信息系统全栈自动化测试平台</title>
   <!-- Google Material Design 3 Modular CSS Architecture -->
-  <link rel="stylesheet" href="/static/css/variables.css?v=2.1.0">
-  <link rel="stylesheet" href="/static/css/layout.css?v=2.1.0">
-  <link rel="stylesheet" href="/static/css/components.css?v=2.1.0">
-  <link rel="stylesheet" href="/static/css/cases.css?v=2.1.0">
-  <link rel="stylesheet" href="/static/css/validator.css?v=2.1.0">
-  <link rel="stylesheet" href="/static/css/rules.css?v=2.1.0">
-  <link rel="stylesheet" href="/static/css/ai.css?v=2.1.0">
+  <link rel="stylesheet" href="/static/css/variables.css?v=2.2.0">
+  <link rel="stylesheet" href="/static/css/layout.css?v=2.2.0">
+  <link rel="stylesheet" href="/static/css/components.css?v=2.2.0">
+  <link rel="stylesheet" href="/static/css/cases.css?v=2.2.0">
+  <link rel="stylesheet" href="/static/css/validator.css?v=2.2.0">
+  <link rel="stylesheet" href="/static/css/rules.css?v=2.2.0">
+  <link rel="stylesheet" href="/static/css/ai.css?v=2.2.0">
 </head>
 <body>
 
@@ -1814,20 +1814,24 @@
 
   <!-- Local Persistent Disk Logs Viewer Modal -->
   <div id="diskLogsModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.55); z-index:99999; align-items:center; justify-content:center; backdrop-filter:blur(2px);">
-    <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); width:92%; max-width:860px; max-height:88vh; overflow-y:auto; padding:22px; box-shadow:var(--g-shadow-2); display:flex; flex-direction:column; gap:14px;">
+    <div id="diskLogsModalDialog" style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); width:95%; max-width:1160px; max-height:90vh; overflow-y:auto; padding:22px; box-shadow:var(--g-shadow-2); display:flex; flex-direction:column; gap:14px; transition:all 0.2s ease;">
       <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--g-border); padding-bottom:12px;">
         <div style="font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px;">
           <span style="display:inline-flex; align-items:center; gap:6px;">
             <svg class="ui-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
             本地持久化日志查看器 (Local Disk Logs)
           </span>
+          <span class="badge" style="background:var(--g-surface-variant); color:var(--g-text-secondary); font-size:11px;">单行整齐对齐</span>
         </div>
-        <button class="icon-btn" onclick="document.getElementById('diskLogsModal').style.display='none'"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button class="icon-btn" id="btnToggleLogFullscreen" title="切换全屏/常规尺寸" style="width:30px; height:30px;"><svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg></button>
+          <button class="icon-btn" onclick="document.getElementById('diskLogsModal').style.display='none'" style="width:30px; height:30px;"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+        </div>
       </div>
 
       <!-- Controls Toolbar -->
       <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-        <div style="display:flex; align-items:center; gap:10px;">
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
           <label style="font-size:12px; color:var(--g-text-secondary); font-weight:500;">选择日志源:</label>
           <select id="diskLogSourceSelect" class="g-btn" style="height:28px; padding:0 8px; font-size:12px; background:var(--g-surface); border:1px solid var(--g-border); color:var(--g-text-primary);">
             <option value="app">全局应用日志 (app.log)</option>
@@ -1837,19 +1841,23 @@
           <label style="font-size:12px; color:var(--g-text-secondary); font-weight:500;">展示条数:</label>
           <select id="diskLogLimitSelect" class="g-btn" style="height:28px; padding:0 8px; font-size:12px; background:var(--g-surface); border:1px solid var(--g-border); color:var(--g-text-primary);">
             <option value="50">最新 50 条</option>
-            <option value="100" selected>最新 100 条</option>
-            <option value="200">最新 200 条</option>
+            <option value="100">最新 100 条</option>
+            <option value="200" selected>最新 200 条</option>
             <option value="500">最新 500 条</option>
+            <option value="1000">最新 1000 条</option>
+            <option value="3000">查看全量日志 (3000条)</option>
           </select>
         </div>
         <div style="display:flex; align-items:center; gap:8px;">
+          <button class="g-btn g-btn-tonal" id="btnToggleLogWrap" style="height:28px; font-size:12px;" title="在单行整齐模式与自动换行模式之间切换">换行: 关</button>
+          <button class="g-btn g-btn-tonal" id="btnCopyDiskLogs" style="height:28px; font-size:12px;">复制全部</button>
           <button class="g-btn g-btn-tonal" id="btnRefreshDiskLogs" style="height:28px; font-size:12px;">刷新</button>
           <button class="g-btn g-btn-outlined" id="btnClearDiskLogs" style="height:28px; font-size:12px; color:var(--g-red);">清空日志</button>
         </div>
       </div>
 
       <!-- Log Output Container -->
-      <pre id="diskLogContent" style="background:#1e1e1e; color:#d4d4d4; font-family:var(--g-mono); font-size:12px; padding:14px; border-radius:6px; min-height:280px; max-height:480px; overflow:auto; line-height:1.6; white-space:pre-wrap; word-break:break-all; margin:0;"></pre>
+      <pre id="diskLogContent" style="background:#1e1e1e; color:#d4d4d4; font-family:var(--g-mono); font-size:12px; padding:14px; border-radius:6px; min-height:300px; max-height:540px; overflow:auto; line-height:1.6; white-space:pre; margin:0;"></pre>
 
       <!-- Footer with file metadata -->
       <div style="display:flex; justify-content:space-between; align-items:center; font-size:11.5px; color:var(--g-text-tertiary); border-top:1px solid var(--g-border-subtle); padding-top:10px;">
@@ -1860,17 +1868,17 @@
   </div>
 
   <!-- Modular Enterprise JavaScript Architecture -->
-  <script src="/static/js/icons.js?v=2.1.0"></script>
-  <script src="/static/js/toast.js?v=2.1.0"></script>
-  <script src="/static/js/state.js?v=2.1.0"></script>
-  <script src="/static/js/system.js?v=2.1.0"></script>
-  <script src="/static/js/terminal.js?v=2.1.0"></script>
-  <script src="/static/js/cases.js?v=2.1.0"></script>
-  <script src="/static/js/workstations.js?v=2.1.0"></script>
-  <script src="/static/js/execution.js?v=2.1.0"></script>
-  <script src="/static/js/validator.js?v=2.1.0"></script>
-  <script src="/static/js/rules.js?v=2.1.0"></script>
-  <script src="/static/js/ai.js?v=2.1.0"></script>
-  <script src="/static/js/app.js?v=2.1.0"></script>
+  <script src="/static/js/icons.js?v=2.2.0"></script>
+  <script src="/static/js/toast.js?v=2.2.0"></script>
+  <script src="/static/js/state.js?v=2.2.0"></script>
+  <script src="/static/js/system.js?v=2.2.0"></script>
+  <script src="/static/js/terminal.js?v=2.2.0"></script>
+  <script src="/static/js/cases.js?v=2.2.0"></script>
+  <script src="/static/js/workstations.js?v=2.2.0"></script>
+  <script src="/static/js/execution.js?v=2.2.0"></script>
+  <script src="/static/js/validator.js?v=2.2.0"></script>
+  <script src="/static/js/rules.js?v=2.2.0"></script>
+  <script src="/static/js/ai.js?v=2.2.0"></script>
+  <script src="/static/js/app.js?v=2.2.0"></script>
 </body>
 </html>

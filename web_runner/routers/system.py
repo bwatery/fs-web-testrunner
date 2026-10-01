@@ -237,7 +237,7 @@ async def eval_sandbox(req: EvalRequest):
 async def get_logs_endpoint(
     type: Optional[str] = Query(None),
     log_type: Optional[str] = Query(None),
-    limit: int = Query(150, ge=1, le=1000)
+    limit: int = Query(200, ge=1, le=5000)
 ):
     """Read recent N lines of logs from local rotating log files on disk."""
     selected_type = log_type or type or "app"
