@@ -27,7 +27,8 @@ def create_app() -> FastAPI:
     application = FastAPI(
         title="HIS WebRunner - 医院信息系统全栈自动化测试平台",
         description="基于 Chrome CDP、REST API 与 Oracle 数据库的多模态自动化验收与规则治理平台",
-        version="2.0.0"
+        version="2.0.0",
+        servers=[{"url": "http://127.0.0.1:8989", "description": "HIS WebRunner 本地执行引擎"}]
     )
 
     static_dir = Path(__file__).resolve().parent / "static"

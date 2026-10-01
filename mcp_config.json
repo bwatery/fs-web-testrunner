@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "his-testrunner": {
+      "command": "python",
+      "args": [
+        "D:\\CSsoft\\AI\\googleAntiGravity\\cliProject\\fs_web_testrunner\\mcp_server.py"
+      ],
+      "env": {
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}

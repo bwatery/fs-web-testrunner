@@ -1,0 +1,209 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "HIS WebRunner AI 自动化质检工具箱",
+    "description": "专为 Dify、扣子 Coze、FastGPT 等智能体平台打造的医院信息系统自动化测试与质量巡检工具集。",
+    "version": "2.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:8989",
+      "description": "HIS WebRunner 本地执行服务"
+    }
+  ],
+  "paths": {
+    "/api/run": {
+      "post": {
+        "operationId": "his_run_tests",
+        "summary": "启动自动化测试",
+        "description": "触发 HIS 自动化测试任务。可运行全量用例，或指定特定工作站（如 PHARMACY, INPATIENT_DOCTOR），或指定具体用例 ID 列表。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "mode": {
+                    "type": "string",
+                    "enum": ["ALL", "INVASIVE", "NON_INVASIVE"],
+                    "default": "ALL",
+                    "description": "测试模式：ALL(全量), INVASIVE(页面实测), NON_INVASIVE(接口直测)"
+                  },
+                  "workstation": {
+                    "type": "string",
+                    "description": "可选。指定六大工作站之一：INPATIENT_DOCTOR(住院工作站), OUTPATIENT_DOCTOR(门诊工作站), PHARMACY(药房系统), OUTPATIENT_BILLING(门诊收费), INPATIENT_BILLING(住院收费), INPATIENT_NURSE(住院护士)"
+                  },
+                  "selected_ids": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "description": "可选。指定要执行的具体测试用例 ID 列表"
+                  },
+                  "headless": {
+                    "type": "boolean",
+                    "default": true,
+                    "description": "是否后台静默运行（无窗口）。智能体自动化调用建议设为 true"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "测试启动成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string" },
+                    "total": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/status": {
+      "get": {
+        "operationId": "his_get_status",
+        "summary": "获取测试执行进度与结果汇总",
+        "description": "查询当前或最近一次自动化测试任务的执行状态、通过率、失败用例列表及详细错误堆栈。",
+        "responses": {
+          "200": {
+            "description": "执行状态与用例详情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "is_running": { "type": "boolean" },
+                    "current_index": { "type": "integer" },
+                    "total_count": { "type": "integer" },
+                    "passed_count": { "type": "integer" },
+                    "failed_count": { "type": "integer" },
+                    "results": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "test_id": { "type": "string" },
+                          "name": { "type": "string" },
+                          "status": { "type": "string" },
+                          "error": { "type": "string" },
+                          "duration_ms": { "type": "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/stop": {
+      "post": {
+        "operationId": "his_stop_tests",
+        "summary": "紧急终止测试",
+        "description": "强制终止当前正在运行的自动化测试任务并安全释放浏览器与数据库连接资源。",
+        "responses": {
+          "200": { "description": "终止指令已下发" }
+        }
+      }
+    },
+    "/api/workstations": {
+      "get": {
+        "operationId": "his_get_workstations",
+        "summary": "获取六大工作站测试矩阵与通过率",
+        "description": "查询住院医生站、门诊医生站、药房系统、门诊收费、住院收费、住院护士 6 大工作站的测试统计与模块通过率。",
+        "responses": {
+          "200": { "description": "工作站测试矩阵详情" }
+        }
+      }
+    },
+    "/api/rules/verify_all": {
+      "post": {
+        "operationId": "his_verify_all_rules",
+        "summary": "一键校验全院16条核心临床与业务规则",
+        "description": "批量执行全院 16 条业务规则全流程校验，包括抗菌药物分级、出院带药限额、同组频次互斥、麻精药品双签名等规则。",
+        "responses": {
+          "200": { "description": "规则校验结果列表" }
+        }
+      }
+    },
+    "/api/validator/switch_identity": {
+      "post": {
+        "operationId": "his_switch_identity",
+        "summary": "切换当前会话的角色与科室身份",
+        "description": "在不需要人工登出的情况下，平滑置换浏览器会话身份为指定科室与角色（如住院医生、病区护士、门诊药师、收费员）。",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role_code": {
+                    "type": "string",
+                    "description": "目标角色代码：INPATIENT_DOCTOR(住院医生), OUTPATIENT_DOCTOR(门诊医生), PHARMACIST(药剂师), NURSE(护士), CHARGER(收费员)"
+                  },
+                  "dept_code": {
+                    "type": "string",
+                    "description": "可选。目标科室代码（如 1001-心血管内科）"
+                  }
+                },
+                "required": ["role_code"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "身份切换成功" }
+        }
+      }
+    },
+    "/api/logs": {
+      "get": {
+        "operationId": "his_get_logs",
+        "summary": "读取测试系统底层磁盘日志",
+        "description": "读取本地持久化日志，用于 AI 智能排查、堆栈回溯和测试失败根因分析。",
+        "parameters": [
+          {
+            "name": "source",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["app", "test_engine", "rules"],
+              "default": "app"
+            },
+            "description": "日志源：app(应用日志), test_engine(测试引擎日志), rules(业务规则日志)"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 50 },
+            "description": "读取最新日志行数"
+          }
+        ],
+        "responses": {
+          "200": { "description": "日志行数据" }
+        }
+      }
+    },
+    "/api/environment/test_connectivity": {
+      "post": {
+        "operationId": "his_diagnose_connectivity",
+        "summary": "诊断目标 HIS 环境与网络连通性",
+        "description": "自动对配置的目标系统前端地址、后端 API 及 Oracle 数据库进行连通性探测诊断。",
+        "responses": {
+          "200": { "description": "连通性检测详情" }
+        }
+      }
+    }
+  }
+}
