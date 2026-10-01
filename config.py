@@ -77,5 +77,5 @@ CDP_PORT = int(os.getenv("CDP_PORT", "9222"))
 CDP_HOST = "127.0.0.1"
 
 # Web TestRunner Dashboard Configuration
-WEB_RUNNER_HOST = "127.0.0.1"
+WEB_RUNNER_HOST = "0.0.0.0"
 WEB_RUNNER_PORT = 8989

@@ -1,5 +1,6 @@
 @echo off
 chcp 65001 >nul
+cd /d "%~dp0"
 title HIS WebRunner - 医院信息系统自动化测试平台
 echo ========================================================
 echo   HIS WebRunner 自动化测试控制台正在启动...
