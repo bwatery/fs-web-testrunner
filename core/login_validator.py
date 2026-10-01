@@ -12,6 +12,13 @@ import requests
 from typing import Dict, Any, Optional, List
 from fs_web_testrunner.config import CDP_HOST, CDP_PORT
 from fs_web_testrunner.core import offline_sandbox
+from fs_web_testrunner.core.env_config import env_config
+
+def _api(path: str) -> str:
+    base = env_config.get_api_gateway_url().rstrip("/")
+    if not path.startswith("/"):
+        path = "/" + path
+    return f"{base}{path}"
 
 class LoginValidator:
     def __init__(self, cdp_port: int = CDP_PORT):
@@ -28,7 +35,7 @@ class LoginValidator:
             tabs = tabs_resp.json()
             page = next((t for t in tabs if t.get("type") == "page"), None)
             if not page:
-                return {"is_connected": False, "error": "未检测到已打开的 Chrome 页面，请先点击【🌐 弹出独立浏览器】"}
+                return {"is_connected": False, "error": "未检测到已打开的 Chrome 页面，请先点击【弹出独立浏览器】"}
 
             import websocket
             ws = websocket.create_connection(page["webSocketDebuggerUrl"], timeout=4)
@@ -130,7 +137,7 @@ class LoginValidator:
         t_user = time.time()
         try:
             r_user = requests.get(
-                "http://192.168.1.198:8081/userInfo",
+                _api("/userInfo"),
                 headers=headers,
                 timeout=4
             )
@@ -175,7 +182,7 @@ class LoginValidator:
         t_patient = time.time()
         try:
             r_pat = requests.post(
-                "http://192.168.1.198:8081/faith/medical/inpatient/ward/patient/list",
+                _api("/faith/medical/inpatient/ward/patient/list"),
                 headers=headers,
                 json={"deptId": dept_id},
                 timeout=4
@@ -217,7 +224,7 @@ class LoginValidator:
         t0 = time.time()
         try:
             r1 = requests.post(
-                "http://192.168.1.198:8081/faith/medical/inpatient/order/item/list",
+                _api("/faith/medical/inpatient/order/item/list"),
                 headers=headers,
                 json={"pageNum": 1, "pageSize": 5, "classifyType": "W"},
                 timeout=4
@@ -257,7 +264,7 @@ class LoginValidator:
         t1 = time.time()
         try:
             r2 = requests.post(
-                "http://192.168.1.198:8081/faith/medical/inpatient/order/list",
+                _api("/faith/medical/inpatient/order/list"),
                 headers=headers,
                 json={"pageNum": 1, "pageSize": 1},
                 timeout=3
@@ -292,7 +299,7 @@ class LoginValidator:
             t0 = time.time()
             fetch_size = max(page_size, 50) if keyword else page_size
             r = requests.post(
-                "http://192.168.1.198:8081/faith/medical/inpatient/order/item/list",
+                _api("/faith/medical/inpatient/order/item/list"),
                 headers=headers,
                 json={"pageNum": page_num, "pageSize": fetch_size, "classifyType": classify_type},
                 timeout=4
@@ -352,7 +359,7 @@ class LoginValidator:
 
         return {
             "status": "SUCCESS" if all_passed else "WARN",
-            "message": f"🎉 登录验证通过！HIS 后端医嘱接口与 Oracle 数据库连接全部正常！(当前角色: {role_name})" if all_passed else "已登录，但部分业务接口存在异常",
+            "message": f"登录验证通过！HIS 后端医嘱接口与 Oracle 数据库连接全部正常！(当前角色: {role_name})" if all_passed else "已登录，但部分业务接口存在异常",
             "session": {
                 "username": session.get("username"),
                 "token_preview": token[:40] + "...",
@@ -375,7 +382,7 @@ class LoginValidator:
             "roleKey": "MZYS",
             "deptId": 910073,
             "deptName": "内科门诊",
-            "icon": "🏥",
+            "icon": "clinic",
             "route": "#/outpatient/doctor",
             "desc": "门诊接诊、处方开立与诊断树录入"
         },
@@ -385,7 +392,7 @@ class LoginValidator:
             "roleKey": "MZSF",
             "deptId": 2,
             "deptName": "收费处",
-            "icon": "💰",
+            "icon": "charge",
             "route": "#/outpatient/charge",
             "desc": "门诊处方划价收费与结算发票打印"
         },
@@ -395,7 +402,7 @@ class LoginValidator:
             "roleKey": "MZSF",
             "deptId": 910084,
             "deptName": "门诊收费处",
-            "icon": "📝",
+            "icon": "document",
             "route": "#/outpatient/registration",
             "desc": "排班号源选择与现场门诊挂号"
         },
@@ -405,7 +412,7 @@ class LoginValidator:
             "roleKey": "MZYF",
             "deptId": 910125,
             "deptName": "西药房",
-            "icon": "💊",
+            "icon": "pill",
             "route": "#/pharmacy/outpatient",
             "desc": "门诊处方调配与窗口扫码发药"
         },
@@ -415,7 +422,7 @@ class LoginValidator:
             "roleKey": "ZYYS",
             "deptId": 910092,
             "deptName": "内一科",
-            "icon": "🛏️",
+            "icon": "bed",
             "route": "#/inpatient/doctor/workstation",
             "desc": "在院患者床位管理、长临医嘱开立与下达"
         },
@@ -425,7 +432,7 @@ class LoginValidator:
             "roleKey": "ZYHS",
             "deptId": 910131,
             "deptName": "内一科病区",
-            "icon": "💉",
+            "icon": "activity",
             "route": "#/inpatient/nurse",
             "desc": "床位分配、医嘱执行批处理与体征录入"
         },
@@ -435,7 +442,7 @@ class LoginValidator:
             "roleKey": "YKGL",
             "deptId": 910129,
             "deptName": "西药库",
-            "icon": "📦",
+            "icon": "database",
             "route": "#/pharmacy/stock",
             "desc": "全院药品入库验收、出库调拨与盘点"
         },
@@ -445,7 +452,7 @@ class LoginValidator:
             "roleKey": "EMRADMIN",
             "deptId": 10072,
             "deptName": "信息科",
-            "icon": "📄",
+            "icon": "document",
             "route": "#/emr/templatesrecords/emrDesigner",
             "desc": "病历模板制作、数据元管理与编辑器设计"
         },
@@ -455,7 +462,7 @@ class LoginValidator:
             "roleKey": "ADMIN",
             "deptId": 10072,
             "deptName": "信息科",
-            "icon": "🔧",
+            "icon": "shield",
             "route": "#/index",
             "desc": "全院权限字典维护与职工参数设置"
         }
@@ -471,7 +478,7 @@ class LoginValidator:
         if token:
             try:
                 r = requests.get(
-                    "http://192.168.1.198:8081/role",
+                    _api("/role"),
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=3
                 )
@@ -508,7 +515,7 @@ class LoginValidator:
         if token:
             try:
                 r = requests.get(
-                    f"http://192.168.1.198:8081/dept?roleId={role_id}",
+                    _api(f"/dept?roleId={role_id}"),
                     headers={"Authorization": f"Bearer {token}"},
                     timeout=3
                 )
@@ -540,84 +547,116 @@ class LoginValidator:
 
     def switch_identity_in_browser(self, role_id: int, dept_id: int, target_route: str = "") -> Dict[str, Any]:
         """Perform seamless identity exchange via CDP in the live Chrome browser."""
+        from fs_web_testrunner.core.offline_sandbox import get_environment_status
+        is_mock = get_environment_status().get("is_mock", False)
+
         try:
             tabs_resp = requests.get(
                 f"http://{CDP_HOST}:{self.cdp_port}/json",
-                timeout=2,
+                timeout=1 if is_mock else 2,
                 proxies={"http": None, "https": None}
             )
             tabs = tabs_resp.json()
             page = next((t for t in tabs if t.get("type") == "page"), None)
             if not page:
+                if is_mock:
+                    return {
+                        "status": "SUCCESS",
+                        "message": f"【离线沙盒】已快速置换为角色 [{role_id}] 与科室 [{dept_id}] (免内网模拟)",
+                        "details": {"success": True, "roleId": role_id, "deptId": dept_id}
+                    }
                 return {"status": "FAIL", "message": "未连接到 Chrome 浏览器"}
 
             import websocket
-            ws = websocket.create_connection(page["webSocketDebuggerUrl"], timeout=5)
+            ws = websocket.create_connection(page["webSocketDebuggerUrl"], timeout=2 if is_mock else 5)
 
             # Map default route for this role if not provided
             if not target_route:
                 preset = next((p for p in self.ROLE_PRESETS if p["roleId"] == role_id), None)
                 target_route = preset["route"] if preset else "#/index"
 
-            js_code = f"""(async () => {{
-                const token = sessionStorage.getItem('shop-vite-token');
-                const roleId = {role_id};
-                const deptId = {dept_id};
-                const targetRoute = '{target_route}';
+            if is_mock:
+                # In offline mock mode: directly inject mock token without waiting for unreachable 192.168.1.198
+                js_code = f"""(() => {{
+                    let cache = {{}};
+                    try {{ cache = JSON.parse(localStorage.getItem('userRoleDeptCache') || '{{}}'); }} catch(e) {{}}
+                    cache["1"] = cache["1"] || {{}};
+                    cache["1"][String({role_id})] = {dept_id};
+                    localStorage.setItem('userRoleDeptCache', JSON.stringify(cache));
+                    localStorage.removeItem('caughtRoutes');
+                    sessionStorage.setItem('shop-vite-token', 'mock_token_role_{role_id}');
+                    return {{
+                        success: true,
+                        roleId: {role_id},
+                        deptId: {dept_id},
+                        targetRoute: '{target_route}',
+                        exchanged: true,
+                        is_mock: true
+                    }};
+                }})()"""
+            else:
+                exchange_api = _api('/exchangeLogin')
+                frontend_base = env_config.get_frontend_url().rstrip('/')
+                clean_route = target_route.lstrip('/')
+                js_code = f"""(async () => {{
+                    const token = sessionStorage.getItem('shop-vite-token');
+                    const roleId = {role_id};
+                    const deptId = {dept_id};
+                    const targetRoute = '{clean_route}';
 
-                // 1. Update localStorage userRoleDeptCache
-                let cache = {{}};
-                try {{ cache = JSON.parse(localStorage.getItem('userRoleDeptCache') || '{{}}'); }} catch(e) {{}}
-                cache["1"] = cache["1"] || {{}};
-                cache["1"][String(roleId)] = deptId;
-                localStorage.setItem('userRoleDeptCache', JSON.stringify(cache));
+                    // 1. Update localStorage userRoleDeptCache
+                    let cache = {{}};
+                    try {{ cache = JSON.parse(localStorage.getItem('userRoleDeptCache') || '{{}}'); }} catch(e) {{}}
+                    cache["1"] = cache["1"] || {{}};
+                    cache["1"][String(roleId)] = deptId;
+                    localStorage.setItem('userRoleDeptCache', JSON.stringify(cache));
 
-                // 2. Clear visited routes to prevent 404
-                localStorage.removeItem('caughtRoutes');
+                    // 2. Clear visited routes to prevent 404
+                    localStorage.removeItem('caughtRoutes');
 
-                // 3. Exchange Token via backend if currently logged in
-                let exchanged = false;
-                if (token) {{
-                    try {{
-                        const resp = await fetch('http://192.168.1.198:8081/exchangeLogin', {{
-                            method: 'POST',
-                            headers: {{
-                                'Content-Type': 'application/json',
-                                'Authorization': 'Bearer ' + token
-                            }},
-                            body: JSON.stringify({{ roleId: roleId, deptId: deptId }})
-                        }});
-                        const res = await resp.json();
-                        if (res.code === 200 && res.data) {{
-                            sessionStorage.setItem('shop-vite-token', res.data);
-                            exchanged = true;
-                        }}
-                    }} catch(e) {{}}
-                }}
+                    // 3. Exchange Token via backend if currently logged in
+                    let exchanged = false;
+                    if (token) {{
+                        try {{
+                            const resp = await fetch('{exchange_api}', {{
+                                method: 'POST',
+                                headers: {{
+                                    'Content-Type': 'application/json',
+                                    'Authorization': 'Bearer ' + token
+                                }},
+                                body: JSON.stringify({{ roleId: roleId, deptId: deptId }})
+                            }});
+                            const res = await resp.json();
+                            if (res.code === 200 && res.data) {{
+                                sessionStorage.setItem('shop-vite-token', res.data);
+                                exchanged = true;
+                            }}
+                        }} catch(e) {{}}
+                    }}
 
-                // 4. Redirect smoothly to target workstation route
-                const fullUrl = 'http://192.168.1.198:8088/' + targetRoute;
-                window.location.href = fullUrl;
-                window.location.reload();
+                    // 4. Redirect smoothly to target workstation route
+                    const fullUrl = '{frontend_base}/' + targetRoute;
+                    window.location.href = fullUrl;
+                    window.location.reload();
 
-                return {{
-                    success: true,
-                    roleId: roleId,
-                    deptId: deptId,
-                    targetRoute: targetRoute,
-                    exchanged: exchanged
-                }};
-            }})()"""
+                    return {{
+                        success: true,
+                        roleId: roleId,
+                        deptId: deptId,
+                        targetRoute: targetRoute,
+                        exchanged: exchanged
+                    }};
+                }})()"""
 
             ws.send(json.dumps({
                 "id": 99,
                 "method": "Runtime.evaluate",
-                "params": {"expression": js_code, "awaitPromise": True, "returnByValue": True}
+                "params": {"expression": js_code, "awaitPromise": not is_mock, "returnByValue": True}
             }))
 
             start_t = time.time()
             res_val = {}
-            while time.time() - start_t < 4:
+            while time.time() - start_t < (1.5 if is_mock else 4):
                 raw = ws.recv()
                 msg = json.loads(raw)
                 if msg.get("id") == 99:
@@ -627,23 +666,38 @@ class LoginValidator:
 
             return {
                 "status": "SUCCESS",
-                "message": f"🎉 身份切换成功！已切换至角色 [{role_id}] 与科室 [{dept_id}]，浏览器正在加载目标工作站",
+                "message": f"身份切换成功！已切换至角色 [{role_id}] 与科室 [{dept_id}]" + (" (离线沙盒仿真)" if is_mock else "，浏览器正在加载目标工作站"),
                 "details": res_val
             }
         except Exception as e:
+            if is_mock:
+                return {
+                    "status": "SUCCESS",
+                    "message": f"【离线沙盒】已快速置换为角色 [{role_id}] 与科室 [{dept_id}] (免内网模拟)",
+                    "details": {"success": True, "roleId": role_id, "deptId": dept_id}
+                }
             return {"status": "ERROR", "message": f"切换角色科室失败: {e}"}
 
     def preset_login_identity(self, role_id: int, dept_id: int, target_route: str = "") -> Dict[str, Any]:
         """Pre-set role and department cache in Chrome before login."""
+        from fs_web_testrunner.core.offline_sandbox import get_environment_status
+        is_mock = get_environment_status().get("is_mock", False)
+
         try:
             tabs_resp = requests.get(
                 f"http://{CDP_HOST}:{self.cdp_port}/json",
-                timeout=2,
+                timeout=1 if is_mock else 2,
                 proxies={"http": None, "https": None}
             )
             tabs = tabs_resp.json()
             page = next((t for t in tabs if t.get("type") == "page"), None)
             if not page:
+                if is_mock:
+                    return {
+                        "status": "SUCCESS",
+                        "message": f"【离线沙盒】预设登录身份成功: 角色 [{role_id}], 科室 [{dept_id}] (免内网模拟)",
+                        "details": {"roleId": role_id, "deptId": dept_id}
+                    }
                 return {"status": "FAIL", "message": "未连接到 Chrome 浏览器"}
 
             import websocket
@@ -669,7 +723,7 @@ class LoginValidator:
 
             return {
                 "status": "SUCCESS",
-                "message": f"✓ 预置成功！已锁定角色 [{role_id}] + 科室 [{dept_id}]，下次登录将以此身份直接进入工作站"
+                "message": f"预置成功！已锁定角色 [{role_id}] + 科室 [{dept_id}]，下次登录将以此身份直接进入工作站"
             }
         except Exception as e:
             return {"status": "ERROR", "message": f"预置身份失败: {e}"}

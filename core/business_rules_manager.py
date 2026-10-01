@@ -27,10 +27,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_IP_01",
         "domain": "inpatient",
-        "domain_name": "🛏️ 住院业务",
+        "domain_name": "住院业务",
         "name": "医嘱开立与开始时间自动继承规则",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "住院医生工作站 (CPOE) / 长期与临时医嘱录入",
         "target_api_table": "MED_IP_ORDER.START_TIME, ORDER_STATE='SV'",
         "summary": "新增医嘱行时开始时间严格跟随上一条暂存医嘱开始时间；同组输液子医嘱与主药强联动",
@@ -57,10 +57,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_IP_02",
         "domain": "inpatient",
-        "domain_name": "🛏️ 住院业务",
+        "domain_name": "住院业务",
         "name": "同组输液医嘱频次与用法强一致性规则",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "住院医生工作站 / 成组输液医嘱校验保存",
         "target_api_table": "MED_IP_ORDER.FREQ_ID, MED_IP_ORDER.USAGE_ID, GROUP_NO",
         "summary": "同组输液主药与辅药的给药途径与执行频次必须强制一致，严禁混搭",
@@ -86,10 +86,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_IP_03",
         "domain": "inpatient",
-        "domain_name": "🛏️ 住院业务",
+        "domain_name": "住院业务",
         "name": "中西药物理隔离与草药付数煎服法规则",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "住院医生工作站 / 中草药处方开立",
         "target_api_table": "MED_IP_ORDER.DOSE_COUNT, BOIL_WAY, ORDER_TYPE",
         "summary": "中草药饮片处方必须独立开立，强制录入付数(1-30付)与煎服法，单位必须为g",
@@ -115,10 +115,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_IP_04",
         "domain": "inpatient",
-        "domain_name": "🛏️ 住院业务",
+        "domain_name": "住院业务",
         "name": "抗菌药物皮试闭环强制拦截规则",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "医生开嘱 / 护士核对执行 / 中心药房摆药",
         "target_api_table": "MED_IP_ORDER.SKIN_TEST_FLAG, SKIN_TEST_RESULT='-'",
         "summary": "皮试目录药品需皮试时自动衍生皮试医嘱；护士核对与药房摆药严格拦截无阴性结果主药",
@@ -145,10 +145,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_IP_05",
         "domain": "inpatient",
-        "domain_name": "🛏️ 住院业务",
+        "domain_name": "住院业务",
         "name": "医嘱生命周期单向状态机流转法则",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "医生站 / 护士站 / 药房 / 计费全链条",
         "target_api_table": "MED_IP_ORDER.ORDER_STATE (SV->SB->VF->ET->ST/CN)",
         "summary": "医嘱状态单向推进不可逆；已核对(VF)及后续状态严禁前台直接修改或物理删除",
@@ -174,10 +174,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_IP_06",
         "domain": "inpatient",
-        "domain_name": "🛏️ 住院业务",
+        "domain_name": "住院业务",
         "name": "预交金余额与欠费警戒线动态防护规则",
         "severity": "WARN",
-        "severity_name": "⚠️ 业务预警规范",
+        "severity_name": "业务预警规范",
         "trigger_phase": "住院护士站 / 医生站开嘱 / 住院记账",
         "target_api_table": "FIN_IP_PREPAY.BALANCE, FIN_IP_FEE_DETAIL",
         "summary": "实时计算在院费用与预交金差额，低于警戒阈值弹窗催缴并限制贵重自费医嘱",
@@ -203,10 +203,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_IP_07",
         "domain": "inpatient",
-        "domain_name": "🛏️ 住院业务",
+        "domain_name": "住院业务",
         "name": "先退药后退费实物与财务严格分离冲正规则",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "住院药房 (退药入库) ➔ 住院收费处 (费用冲正)",
         "target_api_table": "PHA_IP_RETURN.RETURN_FLAG='1', FIN_IP_FEE_DETAIL",
         "summary": "药房未完成实物退药验收入库前，住院收费处强制阻断记账红字退款",
@@ -231,10 +231,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_IP_08",
         "domain": "inpatient",
-        "domain_name": "🛏️ 住院业务",
+        "domain_name": "住院业务",
         "name": "出院登记与出院结算“五前置”强拦截规则",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "住院护士站 (出院登记) / 住院收费处 (出院结算)",
         "target_api_table": "MED_IP_ORDER, PHA_IP_RETURN, FIN_IP_SETTLEMENT",
         "summary": "未停长期医嘱、未执行临时医嘱、未确认退药单时，出院结算执行硬拦截阻断",
@@ -268,10 +268,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_OP_01",
         "domain": "outpatient",
-        "domain_name": "🏥 门诊业务",
+        "domain_name": "门诊业务",
         "name": "患者建档证件算法与主索引防重门禁",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "门诊建档 / 客户中心发卡 / 患者主索引注册",
         "target_api_table": "POST /faith/patient/save, PAT_PATIENT",
         "summary": "身份证类型强制执行18位校验码算法，非法证件阻断；其他类型豁免算法并防重",
@@ -297,10 +297,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_OP_02",
         "domain": "outpatient",
-        "domain_name": "🏥 门诊业务",
+        "domain_name": "门诊业务",
         "name": "门诊挂号两阶段结算与0元平账规则",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "门诊挂号收费处 / 现场挂号与预约取号",
         "target_api_table": "POST .../register/preBalance -> balance, FIN_OP_REGISTER",
         "summary": "挂号依附有效排班，先预结算锁定号额后确认出票，免费特惠号自动0元平账",
@@ -326,10 +326,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_OP_03",
         "domain": "outpatient",
-        "domain_name": "🏥 门诊业务",
+        "domain_name": "门诊业务",
         "name": "待诊队列调度与接诊上下文Bar同步规则",
         "severity": "WARN",
-        "severity_name": "⚠️ 业务流程规范",
+        "severity_name": "业务流程规范",
         "trigger_phase": "分诊台 / 门诊医生站待诊队列 / 叫号接诊",
         "target_api_table": "GET .../unSeen/list, POST .../seenInfo/update, GET .../barInfo",
         "summary": "挂号自动分发目标科室待诊队列，叫号驱动isSeen跃迁并挂载患者顶部上下文Bar",
@@ -355,10 +355,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_OP_04",
         "domain": "outpatient",
-        "domain_name": "🏥 门诊业务",
+        "domain_name": "门诊业务",
         "name": "无主诊断强行阻断开嘱门禁（临床铁律）",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "门诊医生工作站 / 西药、中药、诊疗处置医嘱保存",
         "target_api_table": "POST /faith/medical/outpatient/order/tipsBeforeSave, save",
         "summary": "开立处方医嘱前强制核验就诊主诊断；若无有效主诊断，系统硬性拦截阻断保存",
@@ -384,10 +384,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_OP_05",
         "domain": "outpatient",
-        "domain_name": "🏥 门诊业务",
+        "domain_name": "门诊业务",
         "name": "门诊划价预结算与正式结算发票生成",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "门诊收费处 / 处方划价收费结算",
         "target_api_table": "POST .../charge/save/preBalance -> balance, FIN_OP_BALANCE",
         "summary": "汇聚未结项目两阶段结算，核算医保自付额后正式出票，同步驱动医嘱SV➔FE",
@@ -413,10 +413,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_OP_06",
         "domain": "outpatient",
-        "domain_name": "🏥 门诊业务",
+        "domain_name": "门诊业务",
         "name": "已执行/已发药门诊医嘱退费硬性拦截",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "门诊收费处 (退费申请与冲正) / 门诊药房 / 医技科室",
         "target_api_table": "POST .../charge/apply/refund/apply, PHA_OP_DISPENSE",
         "summary": "药房已发药或医技已确认执行的门诊医嘱，收费处严禁直接退款，必须先实物退药/取消执行",
@@ -442,10 +442,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_OP_07",
         "domain": "outpatient",
-        "domain_name": "🏥 门诊业务",
+        "domain_name": "门诊业务",
         "name": "挂号退号前置零未结费与号源回滚门禁",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "门诊挂号收费处 / 挂号注销与退号",
         "target_api_table": "POST .../register/cancel, FIN_OP_REGISTER.VALID_FLAG='0'",
         "summary": "名下存在未退费处方时强制阻断退号；退号成功后资金平账退款且排班号源实时释放回滚",
@@ -471,10 +471,10 @@ DEFAULT_RULES: List[Dict[str, Any]] = [
     {
         "id": "RULE_OP_08",
         "domain": "outpatient",
-        "domain_name": "🏥 门诊业务",
+        "domain_name": "门诊业务",
         "name": "门诊医嘱全生命周期单向状态机流转法则",
         "severity": "BLOCK",
-        "severity_name": "🚨 硬性阻断门禁",
+        "severity_name": "硬性阻断门禁",
         "trigger_phase": "医生站 ➔ 收费处 ➔ 药房 ➔ 退款全流程",
         "target_api_table": "MED_OP_ORDER.ORDER_STATE (SV->FE->CC), FIN_OP_RECEIPT",
         "summary": "医嘱状态单向推进：SV(暂存)➔FE(已收费)➔CC(已退费)，红字对冲平衡，严禁物理删除",
@@ -560,9 +560,9 @@ class BusinessRulesManager:
         
         if "severity" in updates:
             if updates["severity"] == "BLOCK":
-                rule["severity_name"] = "🚨 硬性阻断门禁"
+                rule["severity_name"] = "硬性阻断门禁"
             else:
-                rule["severity_name"] = "⚠️ 业务预警规范"
+                rule["severity_name"] = "业务预警规范"
         
         self._save()
         return rule
@@ -584,16 +584,16 @@ class BusinessRulesManager:
                 raise ValueError(f"规则编号 {rule_id} 已存在，请更换规则标识")
 
         domain_name_map = {
-            "inpatient": "🛏️ 住院业务",
-            "outpatient": "🏥 门诊业务",
-            "pharmacy": "💊 药房药库",
-            "emr": "📝 电子病历",
-            "charge": "💰 计费财务",
-            "system": "🛡️ 系统底座"
+            "inpatient": "住院业务",
+            "outpatient": "门诊业务",
+            "pharmacy": "药房药库",
+            "emr": "电子病历",
+            "charge": "计费财务",
+            "system": "系统底座"
         }
-        domain_name = rule_data.get("domain_name") or domain_name_map.get(domain, "🛡️ 综合规则")
+        domain_name = rule_data.get("domain_name") or domain_name_map.get(domain, "综合规则")
         severity = rule_data.get("severity", "BLOCK").upper()
-        severity_name = "🚨 硬性阻断门禁" if severity == "BLOCK" else "⚠️ 业务预警规范"
+        severity_name = "硬性阻断门禁" if severity == "BLOCK" else "业务预警规范"
 
         new_rule = {
             "id": rule_id,

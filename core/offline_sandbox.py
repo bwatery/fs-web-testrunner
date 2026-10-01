@@ -405,8 +405,25 @@ class MockHISBackend:
 _MOCK_BACKEND = MockHISBackend()
 
 
-def _is_intranet_available(host: str = "192.168.1.198", port: int = 8081, timeout: float = 0.8) -> bool:
-    """Fast check whether the hospital intranet microservice is reachable."""
+from fs_web_testrunner.core.env_config import env_config
+from urllib.parse import urlparse
+
+def _get_target_host_port():
+    gw = env_config.get_api_gateway_url()
+    try:
+        parsed = urlparse(gw)
+        host = parsed.hostname or "192.168.1.198"
+        port = parsed.port or (443 if parsed.scheme == "https" else 8081)
+        return host, port
+    except Exception:
+        return "192.168.1.198", 8081
+
+def _is_intranet_available(host: Optional[str] = None, port: Optional[int] = None, timeout: float = 0.8) -> bool:
+    """Fast check whether the target microservice host/port is reachable."""
+    if host is None or port is None:
+        def_host, def_port = _get_target_host_port()
+        host = host or def_host
+        port = port or def_port
     try:
         s = socket.create_connection((host, port), timeout=timeout)
         s.close()
@@ -416,23 +433,27 @@ def _is_intranet_available(host: str = "192.168.1.198", port: int = 8081, timeou
 
 
 def _patched_requests_get(url, *args, **kwargs):
-    if _IS_MOCK_ACTIVE and ("192.168.1.198" in url or "localhost:8081" in url):
+    gw_url = env_config.get_api_gateway_url()
+    gw_netloc = urlparse(gw_url).netloc
+    if _IS_MOCK_ACTIVE and (gw_netloc in url or "192.168.1.198" in url or "localhost:8081" in url or "mock-api" in url):
         return _MOCK_BACKEND.dispatch("GET", url, params=kwargs.get("params"), headers=kwargs.get("headers"))
     try:
         return _REAL_REQUESTS_GET(url, *args, **kwargs)
     except Exception as e:
-        if _CURRENT_MODE in ("AUTO", "MOCK") and ("192.168.1.198" in str(url) or "192.168.1.199" in str(url)):
+        if _CURRENT_MODE in ("AUTO", "MOCK") and (gw_netloc in str(url) or "192.168.1.198" in str(url) or "192.168.1.199" in str(url)):
             return _MOCK_BACKEND.dispatch("GET", url, params=kwargs.get("params"), headers=kwargs.get("headers"))
         raise e
 
 
 def _patched_requests_post(url, *args, **kwargs):
-    if _IS_MOCK_ACTIVE and ("192.168.1.198" in url or "localhost:8081" in url):
+    gw_url = env_config.get_api_gateway_url()
+    gw_netloc = urlparse(gw_url).netloc
+    if _IS_MOCK_ACTIVE and (gw_netloc in url or "192.168.1.198" in url or "localhost:8081" in url or "mock-api" in url):
         return _MOCK_BACKEND.dispatch("POST", url, json_data=kwargs.get("json"), headers=kwargs.get("headers"))
     try:
         return _REAL_REQUESTS_POST(url, *args, **kwargs)
     except Exception as e:
-        if _CURRENT_MODE in ("AUTO", "MOCK") and ("192.168.1.198" in str(url) or "192.168.1.199" in str(url)):
+        if _CURRENT_MODE in ("AUTO", "MOCK") and (gw_netloc in str(url) or "192.168.1.198" in str(url) or "192.168.1.199" in str(url)):
             return _MOCK_BACKEND.dispatch("POST", url, json_data=kwargs.get("json"), headers=kwargs.get("headers"))
         raise e
 
@@ -490,16 +511,19 @@ def auto_configure_environment() -> Dict[str, Any]:
     If left intranet (timeout/unreachable), seamlessly switches to MOCK offline mode!
     """
     global _CURRENT_MODE, _IS_MOCK_ACTIVE
-    is_live = _is_intranet_available("192.168.1.198", 8081, timeout=0.8)
+    host, port = _get_target_host_port()
+    is_live = _is_intranet_available(host, port, timeout=0.8)
+    adaptive_strategy = env_config.get_adaptive_strategy()
     if is_live:
         activate_live_mode()
         _CURRENT_MODE = "LIVE"
         return {
             "mode": "LIVE",
-            "mode_name": "🌐 内网直连模式",
+            "mode_name": "🌐 目标环境直连模式",
             "is_mock": False,
             "intranet_available": True,
-            "message": "已检测到医院内网连接，全链路直连 live Oracle 数据库与 HIS 微服务"
+            "offline_adaptive_strategy": adaptive_strategy,
+            "message": f"已检测到目标环境 ({host}:{port}) 连通，全链路直连数据库与微服务"
         }
     else:
         activate_offline_mode()
@@ -509,18 +533,27 @@ def auto_configure_environment() -> Dict[str, Any]:
             "mode_name": "💻 离线沙盒模式 (免内网/免数据库依赖)",
             "is_mock": True,
             "intranet_available": False,
-            "message": "已离开医院内网，已全自动切换至【离线沙盒模式】！内嵌高仿真 Mock 引擎与 Oracle 虚拟事务，测试 100% 顺畅执行！"
+            "offline_adaptive_strategy": adaptive_strategy,
+            "message": f"目标服务 ({host}:{port}) 不可达，已自动切换至【离线沙盒模式】！内嵌高仿真 Mock 引擎与 Oracle 虚拟事务，自适应策略={adaptive_strategy}。"
         }
 
 
 def get_environment_status() -> Dict[str, Any]:
     """Returns current execution mode details."""
+    host, port = _get_target_host_port()
+    conf = env_config.get_config()
+    adaptive_strategy = env_config.get_adaptive_strategy()
+    oracle_cfg = conf.get("oracle", {})
     return {
         "mode": _CURRENT_MODE,
-        "mode_name": "💻 离线沙盒模式 (免内网/免数据库依赖)" if _IS_MOCK_ACTIVE else "🌐 内网直连模式",
+        "mode_name": "💻 离线沙盒模式 (免内网/免数据库依赖)" if _IS_MOCK_ACTIVE else "🌐 目标环境直连模式",
         "is_mock": _IS_MOCK_ACTIVE,
-        "intranet_ip": "192.168.1.198:8081",
-        "oracle_dsn": "192.168.1.199:1521/orcl"
+        "intranet_available": not _IS_MOCK_ACTIVE,
+        "intranet_ip": f"{host}:{port}",
+        "oracle_dsn": f"{oracle_cfg.get('host', '192.168.1.199')}:{oracle_cfg.get('port', 1521)}/{oracle_cfg.get('service_name', 'orcl')}",
+        "frontend_base_url": env_config.get_frontend_url(),
+        "api_gateway_url": env_config.get_api_gateway_url(),
+        "offline_adaptive_strategy": adaptive_strategy
     }
 
 # Auto-detect on import

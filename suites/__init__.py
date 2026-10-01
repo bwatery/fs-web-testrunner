@@ -55,3 +55,7 @@ def register_all_suites(engine: "TestEngine"):
     from .test_suite_outpatient_full_lifecycle import register_tests as r_op_lifecycle
     r_op_lifecycle(engine)
 
+    # 9. 医院六大核心工作站模块测试套件 (住院工作站、门诊工作站、药房、门诊收费、住院收费、住院护士)
+    from .test_suite_workstations_modular import register_workstation_modular_tests
+    register_workstation_modular_tests(engine)
+

@@ -28,10 +28,31 @@ SCREENSHOTS_DIR = REPORTS_DIR / "screenshots"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
 
-# EMR Target URLs
-EMR_DESIGNER_URL = os.getenv("EMR_DESIGNER_URL", "http://192.168.1.198:8088/#/emr/templatesrecords/emrDesigner")
-EMR_BASE_URL = os.getenv("EMR_BASE_URL", "http://192.168.1.198:8088")
-EMR_API_URL = os.getenv("EMR_API_URL", "http://192.168.1.198:8081")
+# Dynamic Target Environment Configuration
+from fs_web_testrunner.core.env_config import env_config
+
+def get_emr_designer_url() -> str:
+    return env_config.get_emr_designer_url()
+
+def get_emr_base_url() -> str:
+    return env_config.get_frontend_url()
+
+def get_emr_api_url() -> str:
+    return env_config.get_api_gateway_url()
+
+EMR_DESIGNER_URL = env_config.get_emr_designer_url()
+EMR_BASE_URL = env_config.get_frontend_url()
+EMR_API_URL = env_config.get_api_gateway_url()
+
+def __getattr__(name):
+    if name == "EMR_DESIGNER_URL":
+        return env_config.get_emr_designer_url()
+    if name == "EMR_BASE_URL":
+        return env_config.get_frontend_url()
+    if name == "EMR_API_URL":
+        return env_config.get_api_gateway_url()
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
 
 # Default Test Credentials (if login is required)
 DEFAULT_USERNAME = os.getenv("EMR_TEST_USER", "admin")
