@@ -1,0 +1,993 @@
+{
+ "meta": {
+  "started": "2026-10-10 18:34:24",
+  "gateway": "http://192.168.1.198:8081",
+  "env": "sandbox",
+  "created_text": "本次造数：患者 0 条 · 挂号 0 条 · 收费 0 条 · 药房摆药 0 条 · 药房发药 0 条 · 作废/退费 0 条"
+ },
+ "summary": {
+  "通过": 0,
+  "失败": 24,
+  "阻塞": 0,
+  "跳过": 3,
+  "未执行": 39,
+  "总计": 66,
+  "created_data": {
+   "run_id": "20261010_183423_2554",
+   "患者": 0,
+   "挂号": 0,
+   "收费": 0,
+   "药房摆药": 0,
+   "药房发药": 0,
+   "药房退药": 0,
+   "作废": 0,
+   "退费": 0,
+   "医嘱": 0,
+   "未登记写接口": 0,
+   "未登记接口清单": [],
+   "总写记录数": 0
+  },
+  "created_text": "本次造数：患者 0 条 · 挂号 0 条 · 收费 0 条 · 药房摆药 0 条 · 药房发药 0 条 · 作废/退费 0 条"
+ },
+ "results": [
+  {
+   "case_id": "L0-010",
+   "title": "医保三大目录对照与限价",
+   "status": "失败",
+   "note": "执行异常: TypeError: 'NoneType' object is not subscriptable",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L2-105",
+   "title": "医生站·附材与用量重算",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L2-107",
+   "title": "医生站·医嘱删除与关联清理",
+   "status": "未执行",
+   "note": "库里没有「既有主诊断又有医嘱」的门诊就诊，开医嘱会被前置校验拦住",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L4-048",
+   "title": "临嘱专项校验",
+   "status": "未执行",
+   "note": "库中无青霉素过敏且有效关联住院登记的患者样本",
+   "evidence": {
+    "防空跑观测": {
+     "过敏患者样本数": 0
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-001",
+   "title": "护理文书·体温单录入与曲线绘制",
+   "status": "未执行",
+   "note": "库里没有体温单记录，无法核对",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-002",
+   "title": "体温单跨日连续性与数据引用",
+   "status": "未执行",
+   "note": "库中无满足住院≥3天且有体温单记录的患者样本",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-003",
+   "title": "护理文书·一般护理记录单录入与签名",
+   "status": "未执行",
+   "note": "库里没有护理记录单明细，无法核对",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-004",
+   "title": "护理文书·出入量与护理措施记录",
+   "status": "未执行",
+   "note": "库里没有出入量总结行，无法核对合计",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-005",
+   "title": "护理记录与医嘱、体温单数据一致性",
+   "status": "未执行",
+   "note": "库中仅 0 名患者同时具备护理记录、医嘱与体温单，样本不足无法开展三方一致性校验",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-006",
+   "title": "护理文书·护理记录修改留痕",
+   "status": "未执行",
+   "note": "库里没有护理记录留痕数据，无法核对",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-008",
+   "title": "住院文书·既往史与过敏史引用",
+   "status": "失败",
+   "note": "执行异常: TypeError: 'NoneType' object is not subscriptable",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-010",
+   "title": "住院文书·上级医师审核首次病程",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-011",
+   "title": "住院文书·日常病程记录书写",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-012",
+   "title": "住院文书·上级医师查房记录",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-013",
+   "title": "住院文书·会诊意见与疑难病例讨论",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-014",
+   "title": "住院文书·术前讨论与术前小结",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-015",
+   "title": "住院文书·手术记录书写与归档",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-016",
+   "title": "住院文书·术后首次病程与术后记录",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.5,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-019",
+   "title": "住院文书·病案首页生成与编码",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-020",
+   "title": "模板与元素·结构化模板与元素引用",
+   "status": "失败",
+   "note": "执行异常: TypeError: 'NoneType' object is not subscriptable",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-021",
+   "title": "模板与元素·模板权限与版本管理",
+   "status": "失败",
+   "note": "执行异常: TypeError: 'NoneType' object is not subscriptable",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-022",
+   "title": "模板与元素·既往病历引用与复制",
+   "status": "失败",
+   "note": "元素引用查询接口异常: {'msg': '请求访问：/emr/recordItem/queryPageWithCitation，认证失败，无法访问系统资源', 'code': 401}",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 18.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-023",
+   "title": "模板与元素·专科病历模板覆盖",
+   "status": "未执行",
+   "note": "库里没有能解析出名称的临床科室模板授权，无法核对专科覆盖",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-024",
+   "title": "签名与留痕·医师签名与时间戳",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-025",
+   "title": "签名与留痕·签名权限与上级审签",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-026",
+   "title": "签名与留痕·已签名病历修改与解锁",
+   "status": "失败",
+   "note": "执行异常: AttributeError: '_MockCursor' object has no attribute 'description'",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L5-027",
+   "title": "病历封存与解封",
+   "status": "未执行",
+   "note": "防空跑拦截：测试患者就诊 549 (masterId=2099829419513024513) 在 EMR_RECORD_MASTER 中不存在",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-028",
+   "title": "病历归档与调阅授权",
+   "status": "未执行",
+   "note": "EMR_RECORD_MASTER 库中无归档、封存或调阅状态记录，缺少真实流转样本",
+   "evidence": {
+    "防空跑观测": {
+     "主记录流转样本数": 0
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-036",
+   "title": "病历文书·EMR与HIS/LIS/PACS数据一致性",
+   "status": "未执行",
+   "note": "库里只有 0 名患者同时具备有效病历与医嘱，样本太少，构不成有意义的跨系统一致性核对",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L5-037",
+   "title": "数据一致性·病历内容检索与结构化查询",
+   "status": "失败",
+   "note": "执行异常: TypeError: 'NoneType' object is not subscriptable",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L6-001",
+   "title": "收费处新患者建档（办卡）",
+   "status": "跳过",
+   "note": "本用例需通过接口真实新建门诊患者。默认不执行 —— 用户 2026-10-10 反馈「门诊新增患者的先别测试了；插入了一堆垃圾数据」（前三轮回归累计插入 175 条、且无挂号）。如需验证：设 FS_ALLOW_CREATE_PATIENT=1 单独运行，跑完自行清理。",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-002",
+   "title": "多方式患者查询与回填",
+   "status": "未执行",
+   "note": "库中没有可用于查询验证的患者",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.5,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-004",
+   "title": "患者管理·作废卡号与启动卡号",
+   "status": "未执行",
+   "note": "库里没有可用于作废/启动校验的测试患者",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-005",
+   "title": "患者管理·底部挂号列表联动与补打条码",
+   "status": "未执行",
+   "note": "库里没有带挂号的测试患者，无法核对底部挂号列表联动",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-008",
+   "title": "排班双击联动与左侧筛选",
+   "status": "失败",
+   "note": "执行异常: TypeError: cannot unpack non-iterable NoneType object",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L6-009",
+   "title": "门诊挂号·挂号时新建患者（临时办档）",
+   "status": "跳过",
+   "note": "本用例需通过接口真实新建门诊患者。默认不执行 —— 用户 2026-10-10 反馈「门诊新增患者的先别测试了；插入了一堆垃圾数据」（前三轮回归累计插入 175 条、且无挂号）。如需验证：设 FS_ALLOW_CREATE_PATIENT=1 单独运行，跑完自行清理。",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-012",
+   "title": "门诊挂号·号序连续性与挂号费展示",
+   "status": "跳过",
+   "note": "本用例需通过接口真实挂号（产生挂号记录）。默认不执行 —— 用户 2026-10-10 反馈「先别测试会新增数据的测试用例，免得增加垃圾数据」",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-014",
+   "title": "门诊挂号·快捷键与录入防错",
+   "status": "未执行",
+   "note": "库里没有可用于防错校验的既有患者",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-015",
+   "title": "门诊退号·查患者带出可退挂号与筛选",
+   "status": "未执行",
+   "note": "库中没有「已收费挂号≥2 笔且跨≥2 天」的患者，无法同时核对带出与筛选",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-018",
+   "title": "预约列表查询与收费处取号",
+   "status": "失败",
+   "note": "执行异常: TypeError: 'NoneType' object is not subscriptable",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.5,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L6-020",
+   "title": "门诊挂号·挂号日结时段选择、确认与取消",
+   "status": "未执行",
+   "note": "未能获取当前操作人身份，无法按操作人口径核对挂号日结报表",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 21.2,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-024",
+   "title": "门诊收费·载入待收费用与勾选规则",
+   "status": "未执行",
+   "note": "库中没有处于「待缴费」状态的门诊就诊样本，无法核对载入结果",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-025",
+   "title": "门诊收费·手工单划价",
+   "status": "未执行",
+   "note": "库中没有可用的「试验台就诊」（测试患者的有效挂号），无法做手工单划价",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-026",
+   "title": "自费收银与医保收银",
+   "status": "未执行",
+   "note": "防空跑拦截：FIN_OP_INVOICE_RECEIPT 中有效自费发票(0)或医保发票(0)样本不足",
+   "evidence": {
+    "防空跑观测": {
+     "有效自费发票数": 0,
+     "有效医保发票数": 0,
+     "全量分布": {}
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-028",
+   "title": "门诊退费·收费处退费、全退与部分退",
+   "status": "未执行",
+   "note": "库中没有可用的「试验台就诊」，无法做门诊退费闭环",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-032",
+   "title": "收费日结·收费员日结与对账",
+   "status": "未执行",
+   "note": "未能获取当前操作人身份，无法按操作人口径核对收费日结",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 3.6,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-033",
+   "title": "发票票据·发票清单与支付方式修改",
+   "status": "未执行",
+   "note": "库中没有「未作废、未日结且有支付记录」的测试患者门诊发票，无法核对发票清单",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-036",
+   "title": "门诊票据日结与稽核",
+   "status": "未执行",
+   "note": "未能获取当前操作人身份，无法按操作人口径核对日结报表",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 4.2,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-038",
+   "title": "医保登记与补登记",
+   "status": "失败",
+   "note": "执行异常: TypeError: 'NoneType' object is not subscriptable",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.5,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L6-039",
+   "title": "在院费用实时汇总与综合查询",
+   "status": "未执行",
+   "note": "库中没有可用的住院费用样本",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-043",
+   "title": "住院费用·床位费自动计提（定时任务）",
+   "status": "失败",
+   "note": "执行异常: TypeError: 'NoneType' object is not subscriptable",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L6-045",
+   "title": "住院退费申请与可退数量校验",
+   "status": "未执行",
+   "note": "库中没有已产生收费、可用于退费校验的住院申请",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-046",
+   "title": "住院退费全退、部分退与取消申请",
+   "status": "未执行",
+   "note": "库中没有数量≥2、可用于全退/部分退对照的已收费住院申请",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-047",
+   "title": "退费确认与批量确认",
+   "status": "未执行",
+   "note": "住院护士当前没有待确认的退费申请，无法校验确认链路。需先产生一笔待退费数据（可在界面上按流程发起退费申请）",
+   "evidence": {
+    "待确认患者数": 0,
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 231.4,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-050",
+   "title": "预交金日结与收据补打",
+   "status": "未执行",
+   "note": "未能获取当前操作人身份，无法按操作人口径核对",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 6.5,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-052",
+   "title": "中途结算、多次结算与按项目结算",
+   "status": "未执行",
+   "note": "库中没有多次结算的住院登记，无法校验中途/多次结算",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-055",
+   "title": "结算日结·结算日结、发票管理与退费对账",
+   "status": "未执行",
+   "note": "库里没有已挂收据的住院结算日结记录（type='I'），无法核对",
+   "evidence": {
+    "防空跑观测": {
+     "住院结算日结候选数": 0
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-056",
+   "title": "住院电子发票与票据管理",
+   "status": "未执行",
+   "note": "防空跑拦截：FIN_EBILL 表无电子发票数据",
+   "evidence": {
+    "防空跑观测": {
+     "总电子发票数": 0,
+     "冲红分布": {}
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-063",
+   "title": "基金结算单查询打印",
+   "status": "未执行",
+   "note": "库中无有效 SI_IP_BALANCE 医保结算样本",
+   "evidence": {
+    "防空跑观测": {
+     "有效SI_IP_BALANCE样本数": 0
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-064",
+   "title": "单据配置维护与路由调起",
+   "status": "未执行",
+   "note": "库中无 GHFP 打印单据配置样本",
+   "evidence": {
+    "防空跑观测": {
+     "GHFP配置样本存在": false
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L6-068",
+   "title": "医保结算单与异地单补打",
+   "status": "未执行",
+   "note": "库中无有效 SI_IP_BALANCE 医保结算记录",
+   "evidence": {
+    "防空跑观测": {
+     "有效SI_IP_BALANCE记录数": 0
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L9-010",
+   "title": "住院药房·住院摆药与按患者发药",
+   "status": "未执行",
+   "note": "西药房(910125)没有配置住院调配终端，无法核对摆药明细",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 2.5,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L9-011",
+   "title": "住院药房·摆药单分类与归类规则正确性",
+   "status": "失败",
+   "note": "摆药单分类字典接口异常: {'msg': '请求访问：/faith/pharmacy/base/dispenseType/list，认证失败，无法访问系统资源', 'code': 401}",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 2.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L9-012",
+   "title": "住院药房·长期医嘱自动摆药与计划关联",
+   "status": "未执行",
+   "note": "西药房(910125)没有配置住院调配终端，无法核对摆药",
+   "evidence": {
+    "防空跑观测": {
+     "住院调配终端数": 0
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 2.5,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  },
+  {
+   "case_id": "L9-013",
+   "title": "住院药房·出院带药发药",
+   "status": "失败",
+   "note": "执行异常: TypeError: 'NoneType' object is not subscriptable",
+   "evidence": {
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 1
+  },
+  {
+   "case_id": "L9-014",
+   "title": "住院药房·住院退药回库与医嘱关联",
+   "status": "未执行",
+   "note": "库里从来没有执行过住院退药单，也没有待执行的，本轮无可验证的退药回库",
+   "evidence": {
+    "防空跑观测": {
+     "待执行退药单数": 0,
+     "历史已执行单数": 0
+    },
+    "env": "sandbox",
+    "sandbox_mode": "param_shape_only"
+   },
+   "duration_ms": 0.0,
+   "断言": [],
+   "遵循规则": [],
+   "未归规则断言数": 0
+  }
+ ]
+}

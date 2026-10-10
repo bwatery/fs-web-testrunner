@@ -34,12 +34,14 @@ class SandboxEnv(BaseEnv):
 
     def filter_result_status(self, raw_status: str, note: str = "") -> Tuple[str, str]:
         """
-        强制门禁：沙盒环境永远不能产出「通过」。
-        任何'通过'/'OK'/'正常'/'PASSED' 必须转为'未执行'，并注明沙盒说明。
+        强制门禁：沙盒环境永远不能产出「通过」、「失败」或「阻塞」。
+        沙盒环境下允许出现的状态只有两个：「跳过」与「未执行」。
+        除了「跳过」保留原状态与原因外，其余所有状态一律映射为「未执行」，并注明沙盒说明。
         """
-        if raw_status in ("通过", "OK", "正常", "PASSED"):
-            return "未执行", "沙盒模式：仅校验接口参数形状，未验证业务"
-        return raw_status, note
+        if raw_status in ("跳过", "SKIPPED"):
+            return "跳过", note
+        fallback_note = note if ("沙盒模式" in note) else f"沙盒模式：未连接数据库，无法验证业务 (原状态: {raw_status})"
+        return "未执行", fallback_note
 
     def wrap_evidence(self, evidence: Any) -> Dict[str, Any]:
         """在 evidence 中注入 env='sandbox'。"""

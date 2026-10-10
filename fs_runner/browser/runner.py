@@ -50,6 +50,41 @@ def _archive_failure_trace(session: BrowserSession, case_id: str, note: str, evi
         print(f"        ⚠️ [UI现场包归档异常] {e}")
 
 
+def _record_ui_result(
+    ui_results: List[Dict[str, Any]],
+    cid: str,
+    title: str,
+    is_ok: bool,
+    note: str,
+    evidence: Dict[str, Any],
+    duration_ms: float,
+    env_name: str,
+    session: BrowserSession,
+):
+    if env_name == "sandbox":
+        final_status = "未执行"
+        final_note = f"不判通过模式：仍连真实环境做通道校验（真实等式{'成立' if is_ok else '不成立'}），但结论一律降级为未执行"
+        evidence["env"] = "sandbox"
+        evidence["no_pass_mode"] = True
+    else:
+        final_status = "通过" if is_ok else "失败"
+        final_note = note
+
+    ui_results.append({
+        "case_id": cid,
+        "title": title,
+        "status": final_status,
+        "note": final_note,
+        "evidence": evidence,
+        "duration_ms": duration_ms,
+    })
+    mark = "⚪" if env_name == "sandbox" else ("✅" if is_ok else "❌")
+    print(f"  {mark} [{cid}] —— {final_status}")
+    print(f"        {final_note}")
+    if not is_ok and env_name != "sandbox":
+        _archive_failure_trace(session, cid, note, evidence)
+
+
 def run_ui_verify(args: Any) -> int:
     """执行 ui-verify 子命令。"""
     is_windowed = getattr(args, "windowed", False)
@@ -64,7 +99,7 @@ def run_ui_verify(args: Any) -> int:
     cases_arg = getattr(args, "case", None) or getattr(args, "cases", None)
 
     mode_label = "[界面·窗口]" if is_windowed else "[界面·无头]"
-    env_label = "隔离沙盒 (Sandbox: 永不判通过)" if env_name == "sandbox" else "真实环境 (Real)"
+    env_label = "不判通过模式 (仍连真实环境做通道校验，但结论一律降级为未执行)" if env_name == "sandbox" else "真实环境 (Real)"
 
     print("=" * 68)
     print(f"  FS.TestRunner · 界面认证与真实业务等式对账 ({mode_label})")
@@ -79,18 +114,7 @@ def run_ui_verify(args: Any) -> int:
         print(f"  目标用例  : {cases_arg}")
     print("-" * 68)
 
-    # 1. 沙盒模式纯离线拦截（严禁既连生产又自称沙盒）
-    if env_name == "sandbox":
-        print("\n⚠️  [沙盒模式硬门禁] 沙盒环境纯离线运行，严禁连接生产前端与业务网关，强制产出「未执行」！")
-        selected_cases = [c.strip() for c in cases_arg.split(",")] if cases_arg else ["UI-L6-039-P1", "UI-L6-039-P2", "UI-L6-039-LIST"]
-        print(f"\n[离线参数校验] 检查目标用例: {', '.join(selected_cases)} (离线参数结构合法)")
-        print("\n沙盒模式执行结果：")
-        for cid in selected_cases:
-            print(f"  ⚪ {cid} —— 未执行（沙盒模式：纯离线参数校验，未连接生产前端与业务网关）")
-        print("\n沙盒模式执行完毕：共 3 条用例，未执行 3 条，0 条通过，0 条失败。")
-        return 0
-
-    # 2. 启动或连接浏览器会话
+    # 1. 启动或连接浏览器会话
     try:
         session = launch_browser(headless=headless, port=9222)
     except Exception as e:
@@ -317,19 +341,17 @@ def run_ui_verify(args: Any) -> int:
             "等式成立": p1_ok,
             "变异扰动": is_mutation,
         }
-        ui_results.append({
-            "case_id": "UI-L6-039-P1",
-            "title": f"界面对账·费用综合查询·{p1_name}费用明细与汇总",
-            "status": p1_status,
-            "note": p1_note,
-            "evidence": p1_evidence,
-            "duration_ms": round((time.time() - t0) * 1000, 1),
-        })
-        mark = "✅" if p1_ok else "❌"
-        print(f"  {mark} [UI-L6-039-P1] —— {p1_status}")
-        print(f"        {p1_note}")
-        if not p1_ok:
-            _archive_failure_trace(session, "UI-L6-039-P1", p1_note, p1_evidence)
+        _record_ui_result(
+            ui_results=ui_results,
+            cid="UI-L6-039-P1",
+            title=f"界面对账·费用综合查询·{p1_name}费用明细与汇总",
+            is_ok=p1_ok,
+            note=p1_note,
+            evidence=p1_evidence,
+            duration_ms=round((time.time() - t0) * 1000, 1),
+            env_name=env_name,
+            session=session,
+        )
 
         # ===================================================================
         # 断言 2: UI-L6-039-P2 (在院第二患者费用汇总)
@@ -403,19 +425,17 @@ def run_ui_verify(args: Any) -> int:
             "等式成立": p2_ok,
             "变异扰动": is_mutation,
         }
-        ui_results.append({
-            "case_id": "UI-L6-039-P2",
-            "title": f"界面对账·费用综合查询·{p2_name}费用汇总",
-            "status": p2_status,
-            "note": p2_note,
-            "evidence": p2_evidence,
-            "duration_ms": round((time.time() - t0) * 1000, 1),
-        })
-        mark = "✅" if p2_ok else "❌"
-        print(f"  {mark} [UI-L6-039-P2] —— {p2_status}")
-        print(f"        {p2_note}")
-        if not p2_ok:
-            _archive_failure_trace(session, "UI-L6-039-P2", p2_note, p2_evidence)
+        _record_ui_result(
+            ui_results=ui_results,
+            cid="UI-L6-039-P2",
+            title=f"界面对账·费用综合查询·{p2_name}费用汇总",
+            is_ok=p2_ok,
+            note=p2_note,
+            evidence=p2_evidence,
+            duration_ms=round((time.time() - t0) * 1000, 1),
+            env_name=env_name,
+            session=session,
+        )
 
         # ===================================================================
         # 断言 3: UI-L6-039-LIST (全院在院患者床位分配全集)
@@ -457,19 +477,17 @@ def run_ui_verify(args: Any) -> int:
             "等式成立": p3_ok,
             "变异扰动": is_mutation,
         }
-        ui_results.append({
-            "case_id": "UI-L6-039-LIST",
-            "title": f"界面对账·费用综合查询·{dept_name}在院患者床位分配全集",
-            "status": p3_status,
-            "note": p3_note,
-            "evidence": p3_evidence,
-            "duration_ms": round((time.time() - t0) * 1000, 1),
-        })
-        mark = "✅" if p3_ok else "❌"
-        print(f"  {mark} [UI-L6-039-LIST] —— {p3_status}")
-        print(f"        {p3_note}")
-        if not p3_ok:
-            _archive_failure_trace(session, "UI-L6-039-LIST", p3_note, p3_evidence)
+        _record_ui_result(
+            ui_results=ui_results,
+            cid="UI-L6-039-LIST",
+            title=f"界面对账·费用综合查询·{dept_name}在院患者床位分配全集",
+            is_ok=p3_ok,
+            note=p3_note,
+            evidence=p3_evidence,
+            duration_ms=round((time.time() - t0) * 1000, 1),
+            env_name=env_name,
+            session=session,
+        )
 
         # ===================================================================
         # 断言 4: UI-INDEX (首页运营指标看板等式校验)
@@ -517,19 +535,17 @@ def run_ui_verify(args: Any) -> int:
             "等式成立": p4_ok,
             "变异扰动": is_mutation,
         }
-        ui_results.append({
-            "case_id": "UI-INDEX",
-            "title": "界面对账·首页看板·收费总量指标聚合等式",
-            "status": p4_status,
-            "note": p4_note,
-            "evidence": p4_evidence,
-            "duration_ms": round((time.time() - t0) * 1000, 1),
-        })
-        mark = "✅" if p4_ok else "❌"
-        print(f"  {mark} [UI-INDEX] —— {p4_status}")
-        print(f"        {p4_note}")
-        if not p4_ok:
-            _archive_failure_trace(session, "UI-INDEX", p4_note, p4_evidence)
+        _record_ui_result(
+            ui_results=ui_results,
+            cid="UI-INDEX",
+            title="界面对账·首页看板·收费总量指标聚合等式",
+            is_ok=p4_ok,
+            note=p4_note,
+            evidence=p4_evidence,
+            duration_ms=round((time.time() - t0) * 1000, 1),
+            env_name=env_name,
+            session=session,
+        )
 
         # -------------------------------------------------------------------
         # 结果汇总与落盘
@@ -539,6 +555,7 @@ def run_ui_verify(args: Any) -> int:
             "模式": mode_label,
             "通过": sum(1 for r in ui_results if r["status"] == "通过"),
             "失败": sum(1 for r in ui_results if r["status"] == "失败"),
+            "未执行": sum(1 for r in ui_results if r["status"] == "未执行"),
             "总计": len(ui_results),
             "变异扰动": is_mutation,
         }
@@ -551,6 +568,7 @@ def run_ui_verify(args: Any) -> int:
                 "is_mutation": is_mutation,
                 "frontend": frontend,
                 "gateway": gateway,
+                "env": env_name,
             },
             "summary": summary,
             "results": ui_results,
@@ -561,13 +579,20 @@ def run_ui_verify(args: Any) -> int:
         latest_path = REPORTS_DIR / "ui_verify_latest.json"
 
         out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-        latest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
         print("\n" + "─" * 68)
         print(f"  界面真实业务对账完成 ({mode_label})")
-        print(f"  ✅ 通过 {summary['通过']}   ❌ 失败 {summary['失败']}   (共 {summary['总计']} 项界面断言)")
-        print(f"  报告落盘: {out_path.relative_to(ROOT_DIR)} & ui_verify_latest.json")
+        print(f"  ✅ 通过 {summary['通过']}   ❌ 失败 {summary['失败']}   ⚪ 未执行 {summary['未执行']}   (共 {summary['总计']} 项界面断言)")
+        if env_name == "sandbox":
+            print(f"  报告落盘: {out_path.relative_to(ROOT_DIR)}")
+            print("  [提示] 不判通过模式运行结果不覆盖 ui_verify_latest.json（保护生产台账）")
+        else:
+            latest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            print(f"  报告落盘: {out_path.relative_to(ROOT_DIR)} & ui_verify_latest.json")
         print("─" * 68)
+
+        if env_name == "sandbox":
+            return 0
 
         if is_mutation:
             # 变异自检模式下：全部变红说明断言承重，退出码应为 0

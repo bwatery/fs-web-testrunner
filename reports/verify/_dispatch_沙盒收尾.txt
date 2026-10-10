@@ -1,0 +1,92 @@
+【收尾两项：沙盒不许产「失败」＋ sandbox 标签名不副实】
+
+> 成果已提交到 `bb6f3e1`，工作区干净。**不要回退造数闸门，那是用户明确要求的。**
+> 本轮只有两件事，做完写回执。
+
+---
+
+# 一、沙盒模式正在产 **24 条假「失败」**（方案红线，必须修）
+
+## 实测现场
+
+```
+$ python -I fsrun.py run --suite closed-loop --env sandbox
+  ✅ 通过 0   ❌ 失败 24   🚫 阻塞 0   ⏭️ 跳过 3   ⚪ 未执行 39  (总计 66)
+```
+
+失败样例：
+```
+[L0-010] 执行异常: TypeError: 'NoneType' object is not subscriptable
+[L2-105] 执行异常: AttributeError: '_MockCursor' object has no attribute 'description'
+```
+
+## 根因
+
+`fs_runner/cases/closed_loop/closed_loop.py` 的 `_oracle_conn()`：
+
+```python
+def _oracle_conn():
+    if os.environ.get("FS_RUNNER_ENV") == "sandbox":
+        class _MockCursor:
+            def execute(self, *a, **kw): pass
+            def fetchone(self): return None      # <- 流程拿到 None 就崩
+            def fetchall(self): return []        # <- 没有 description
+        class _MockConn: ...
+        return _MockConn()
+```
+
+**这正是重构方案明令禁止的做法**：
+
+> `env/sandbox.py`：只验接口参数形状。**不得**采用旧实现的"替换 requests/oracledb"那种做法
+> —— 那是**"接管"不是"隔离"**。
+
+现在的形式不是全局 monkey-patch，但**性质相同**：往被测流程里塞一个假数据库，
+流程拿到 `None`/`[]` 崩溃，然后**被记成「失败」** —— 读报告的人会以为**系统有 24 个缺陷**。
+
+## 方案原文（第 4 节第 1 条，红线）
+
+> **沙盒（无库）环境永远不能产出「通过」。它只能产出「未执行」**，
+> 备注写明"沙盒模式：仅校验接口参数形状，未验证业务"。
+
+## 要改成什么样
+
+1. **删掉 `_MockConn` / `_MockCursor`** —— 沙盒不许再往流程里塞假数据源。
+2. 沙盒下走**前置门禁**：用例需要数据库而 `SandboxEnv.can_connect_oracle()` 为 False
+   → **直接返回「未执行」**，备注："沙盒模式：未连接数据库，无法验证业务"。
+   （`fs_runner/core/preconditions.py` 已有门禁机制，复用它，别新造。）
+3. **兜底再加一道**：`SandboxEnv.filter_result_status()` 目前只把 `通过` 映射为 `未执行`，
+   **`失败` 没管**。要求：**沙盒下 `通过` / `失败` / `阻塞` 一律映射为「未执行」**
+   （沙盒环境无从判断业务对错，判失败同样是**把没验的说成验了**）。
+4. 沙盒下**允许出现的状态只有两个**：`未执行`、`跳过`。
+
+## 验收（我逐条实测）
+- `python -I fsrun.py run --suite closed-loop --env sandbox`
+  → **通过 0 · 失败 0 · 阻塞 0**，其余全部「未执行」，且每条备注写明沙盒原因
+- `python -I fsrun.py ui-verify --headless --env sandbox` → 同样零「通过」零「失败」
+- **不许**为了让这条通过而把断言改弱或吞异常 —— 是**门禁拦截**，不是 try/except 兜底
+
+---
+
+# 二、`--env sandbox` 标签名不副实（提过两次，这次务必改）
+
+`fs_runner/browser/runner.py:67`：
+
+```python
+env_label = "隔离沙盒 (Sandbox: 永不判通过)" if env_name == "sandbox" else "真实环境 (Real)"
+```
+
+**实测**：标着"隔离沙盒"，却**真实登录了生产前端与网关**（token 203 字符、侧边栏 12 项菜单）。
+
+**二选一**：
+- **A. 真隔离** —— 沙盒下不连真前端/网关（那 `ui-verify --env sandbox` 就只能做静态/离线校验）
+- **B. 改名** —— 标签改成「**不判通过模式**」，并说明"仍连真实环境做通道校验，但结论一律降级为未执行"
+
+**我倾向 B**（改动小、语义诚实）。但**不许**既连真环境、又自称"隔离" —— 这与旧引擎"导入即接管"是同一类病，只是方向相反。
+
+---
+
+# 三、纪律
+
+- 改动后跑一次 `run --suite closed-loop`（真实环境）确认 **66 条分布不变**：`58/1/1/3/3`
+- 提交一次，写 `from_antigravity_收尾回执.md`，**停下报告**
+- 红线不变：不改断言、不删库数据、不兜底

@@ -23,17 +23,7 @@ _JSON_H = {"Content-Type": "application/json"}
 
 def _oracle_conn():
     if os.environ.get("FS_RUNNER_ENV") == "sandbox":
-        class _MockCursor:
-            def execute(self, *a, **kw): pass
-            def fetchone(self): return None
-            def fetchall(self): return []
-            def close(self): pass
-        class _MockConn:
-            def cursor(self): return _MockCursor()
-            def close(self): pass
-            def commit(self): pass
-            def rollback(self): pass
-        return _MockConn()
+        raise RuntimeError("沙盒模式：未连接数据库，禁止创建真实数据库连接（前置门禁应已拦截）")
     import oracledb
     return oracledb.connect(user="xchis", password="xchis",
                             dsn="192.168.1.199:1521/orcl")
@@ -4050,6 +4040,76 @@ except Exception as _e:            # 插件目录坏了不能拖垮主流程
     print(f"[flows] 外挂用例加载失败（忽略）: {type(_e).__name__}: {_e}")
 
 
+_CASE_TITLES: Dict[str, str] = {
+    "L0-010": "医保三大目录对照与限价",
+    "L2-105": "医生站·附材与用量重算",
+    "L2-107": "医生站·医嘱删除与关联清理",
+    "L4-048": "临嘱专项校验",
+    "L5-001": "护理文书·体温单录入与曲线绘制",
+    "L5-002": "体温单跨日连续性与数据引用",
+    "L5-003": "护理文书·一般护理记录单录入与签名",
+    "L5-004": "护理文书·出入量与护理措施记录",
+    "L5-005": "护理记录与医嘱、体温单数据一致性",
+    "L5-006": "护理文书·护理记录修改留痕",
+    "L5-008": "住院文书·既往史与过敏史引用",
+    "L5-010": "住院文书·上级医师审核首次病程",
+    "L5-011": "住院文书·日常病程记录书写",
+    "L5-012": "住院文书·上级医师查房记录",
+    "L5-013": "住院文书·会诊意见与疑难病例讨论",
+    "L5-014": "住院文书·术前讨论与术前小结",
+    "L5-015": "住院文书·手术记录书写与归档",
+    "L5-016": "住院文书·术后首次病程与术后记录",
+    "L5-019": "住院文书·病案首页生成与编码",
+    "L5-020": "模板与元素·结构化模板与元素引用",
+    "L5-021": "模板与元素·模板权限与版本管理",
+    "L5-022": "模板与元素·既往病历引用与复制",
+    "L5-023": "模板与元素·专科病历模板覆盖",
+    "L5-024": "签名与留痕·医师签名与时间戳",
+    "L5-025": "签名与留痕·签名权限与上级审签",
+    "L5-026": "签名与留痕·已签名病历修改与解锁",
+    "L5-027": "病历封存与解封",
+    "L5-028": "病历归档与调阅授权",
+    "L5-036": "病历文书·EMR与HIS/LIS/PACS数据一致性",
+    "L5-037": "数据一致性·病历内容检索与结构化查询",
+    "L6-001": "收费处新患者建档（办卡）",
+    "L6-002": "多方式患者查询与回填",
+    "L6-004": "患者管理·作废卡号与启动卡号",
+    "L6-005": "患者管理·底部挂号列表联动与补打条码",
+    "L6-008": "排班双击联动与左侧筛选",
+    "L6-009": "门诊挂号·挂号时新建患者（临时办档）",
+    "L6-012": "门诊挂号·号序连续性与挂号费展示",
+    "L6-014": "门诊挂号·快捷键与录入防错",
+    "L6-015": "门诊退号·查患者带出可退挂号与筛选",
+    "L6-018": "预约列表查询与收费处取号",
+    "L6-020": "门诊挂号·挂号日结时段选择、确认与取消",
+    "L6-024": "门诊收费·载入待收费用与勾选规则",
+    "L6-025": "门诊收费·手工单划价",
+    "L6-026": "自费收银与医保收银",
+    "L6-028": "门诊退费·收费处退费、全退与部分退",
+    "L6-032": "收费日结·收费员日结与对账",
+    "L6-033": "发票票据·发票清单与支付方式修改",
+    "L6-036": "门诊票据日结与稽核",
+    "L6-038": "医保登记与补登记",
+    "L6-039": "在院费用实时汇总与综合查询",
+    "L6-043": "住院费用·床位费自动计提（定时任务）",
+    "L6-045": "住院退费申请与可退数量校验",
+    "L6-046": "住院退费全退、部分退与取消申请",
+    "L6-047": "退费确认与批量确认",
+    "L6-050": "预交金日结与收据补打",
+    "L6-052": "中途结算、多次结算与按项目结算",
+    "L6-055": "结算日结·结算日结、发票管理与退费对账",
+    "L6-056": "住院电子发票与票据管理",
+    "L6-063": "基金结算单查询打印",
+    "L6-064": "单据配置维护与路由调起",
+    "L6-068": "医保结算单与异地单补打",
+    "L9-010": "住院药房·住院摆药与按患者发药",
+    "L9-011": "住院药房·摆药单分类与归类规则正确性",
+    "L9-012": "住院药房·长期医嘱自动摆药与计划关联",
+    "L9-013": "住院药房·出院带药发药",
+    "L9-014": "住院药房·住院退药回库与医嘱关联",
+}
+
+
 def supported_cases() -> List[str]:
     return sorted(_FLOWS.keys())
 
@@ -4075,7 +4135,7 @@ def run(selected: List[str], gateway: str, admin_token: str,
 
         fn = _FLOWS.get(cid)
         if not fn:
-            r = LoopResult(case_id=cid, title="", status="未执行",
+            r = LoopResult(case_id=cid, title=_CASE_TITLES.get(cid, ""), status="未执行",
                            note="尚未实现该用例的真实闭环校验")
         else:
             try:
@@ -4083,7 +4143,27 @@ def run(selected: List[str], gateway: str, admin_token: str,
                 audit_tracer.set_current_case(cid)
             except Exception:
                 pass
-            r = fn(ctx)
+
+            # 前置门禁检查：
+            # 1. 若命制造数闸门（L6-001 / L6-009 / L6-012 且未开启 FS_ALLOW_CREATE_PATIENT），
+            #    正常调用 flow，流程内部依据造数闸门直接返回「跳过」，绝不碰库与网络。
+            # 2. 对于其余用例，检查数据库可用性前置门禁：
+            #    若处于沙盒环境（无法连接 Oracle），前置门禁直接拦截为「未执行」，绝不塞假数据源。
+            is_create_patient_gated = cid in ("L6-001", "L6-009", "L6-012") and not _patient_creation_allowed()
+            from ...core.preconditions import precondition_manager
+            ora_ok, ora_reason = precondition_manager.check_oracle_precondition()
+
+            if not ora_ok and not is_create_patient_gated:
+                t_title = _CASE_TITLES.get(cid, getattr(fn, "__doc__", "").strip().splitlines()[0] if getattr(fn, "__doc__", "") else "")
+                r = LoopResult(
+                    case_id=cid,
+                    title=t_title,
+                    status="未执行",
+                    note=ora_reason,
+                    evidence={"env": "sandbox", "gated_by": "precondition_oracle"},
+                )
+            else:
+                r = fn(ctx)
         out.append(r)
         if progress:
             progress(i, len(selected), r)
