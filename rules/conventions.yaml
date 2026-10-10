@@ -251,14 +251,33 @@
     - L9-013
     - L9-014
 
-- id: CONV_EQUAL_SCOPE_ASSERTION
+- id: CONV_API_FULLSET_WITH_FLAG
   domain: 断言纪律
-  statement: 接口返回全量带标志位时，断言两边必须对齐相同范围(全量对全量，有效对有效)
-  evidence: L6-005 接口返回全量挂号忽略入参，与库 valid_flag='1' 对比在发生退号时突发假失败
+  statement: 接口返回全量带标志位时，断言两边必须对齐相同范围(全量对全量，有效对有效)，不许把接口带出已退号判为失败
+  evidence: L6-005 忽略 validFlag 入参返回全量；L6-015 返回全部已收费 11 条含 6 条退号，需以四集合严格比对
   discovered: "2026-10-10"
   status: confirmed
   affected_cases:
     - L6-005
+    - L6-015
+
+- id: CONV_DISPENSED_STATE_IS_APPLY_STATE_4
+  domain: 药房发药
+  statement: 住院药房"已发药"判据必须为 APPLY_STATE='4'（或存在出库明细），存在摆药申请行(1/2)不等于已发药；OUTPUT_TIME/DISPENSE_TIME 住院明细恒为空不可作判据
+  evidence: CD医嘱 5307/5308/5309 申请状态为 1/2 未发药且出库明细为 0，门禁放行导致假通过
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L9-013
+
+- id: CONV_CAUSAL_ATTRIBUTION_OBSERVABLE
+  domain: 归因规范
+  statement: 状态变化必须归因到可观测的证据（谁、什么时间、哪张表哪一行），严禁凭时序猜测因果关系
+  evidence: 曾误将界面点击摆药申请归因为中午修改配置，经核实申请时间早于配置修改且改配置无法自动生成申请
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L9-013
 
 - id: CONV_SAMPLE_AVOID_EMPTY_SET
   domain: 采样规范

@@ -33,7 +33,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L6_026(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT', 'RULE_FIN_CASHIER_SEGMENT', 'RULE_OP_05', 'RULE_OP_08']
+    """自费收银与医保收银分段核验：退费明细与原收费记录金额加总轧平。"""
     res = LoopResult(case_id="L6-026", title="自费收银与医保收银")
     t0 = time.time()
     try:

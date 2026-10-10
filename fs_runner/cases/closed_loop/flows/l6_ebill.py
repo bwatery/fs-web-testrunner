@@ -41,7 +41,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L6_056(ctx: Ctx) -> LoopResult:
-    requires_rules = ['RULE_EBILL_RED_BLUE_OFFSET']
+    """住院电子发票与票据管理：电子票据红蓝对冲与原发票号码轧平对账。"""
     res = LoopResult(case_id="L6-056", title="住院电子发票与票据管理")
     t0 = time.time()
     try:

@@ -521,13 +521,27 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_rules.add_argument("--source", choices=["db", "snapshot"], default=None, help="指定死配置扫描数据源：db（当前库）或 snapshot（快照）")
     p_rules.add_argument("--snapshot", default=None, help="指定历史快照 JSON 路径执行死配置扫描")
     p_rules.add_argument("--lint", action="store_true", help="执行死配置扫描与采样规范抽查")
-    p_rules.add_argument("--json", action="store_true", help="以 JSON 格式输出反查表")
+    # ui-verify 子命令（第 8 步：界面认证与无头模式）
+    p_ui = subparsers.add_parser("ui-verify", help="界面认证与真实验证（支持 --headless 与 --windowed）")
+    p_ui.add_argument("--case", "--cases", dest="case", help="指定待测用例编号，如 L6-005,L9-012,L6-050")
+    p_ui.add_argument("--headless", action="store_true", default=False, help="以无头模式运行（默认模式，给 AI 快速测试）")
+    p_ui.add_argument("--windowed", action="store_true", default=False, help="以窗口模式运行（接管 9222 端口，给人看）")
+    p_ui.add_argument("--screenshot", action="store_true", default=False, help="抓取界面执行截图并落盘留证")
+    p_ui.add_argument("--env", choices=["real", "sandbox"], default="real", help="运行环境：real（默认）或 sandbox（沙盒永不判通过）")
+    p_ui.add_argument("--gateway", default=None, help="网关服务地址")
+    p_ui.add_argument("--frontend", default=None, help="前端服务地址")
+    p_ui.add_argument("--username", default="admin", help="登录账号")
+    p_ui.add_argument("--password", default="admin123", help="登录密码")
 
     if not args_list:
         parser.print_help()
         return 0
 
     parsed = parser.parse_args(args_list)
+
+    if parsed.command == "ui-verify":
+        from .browser.runner import run_ui_verify
+        return run_ui_verify(parsed)
 
     if parsed.command == "rules":
         from .rules.cli import run_rules_command

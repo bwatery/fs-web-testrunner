@@ -96,7 +96,6 @@ def _oracle_charge_totals(register_id: int) -> Dict[str, Any]:
 # L6-039 在院费用实时汇总与综合查询
 # ---------------------------------------------------------------------------
 def flow_L6_039(ctx: Ctx) -> LoopResult:
-    requires_rules = []
     """
     断言链：
       ① 明细接口 total == 库中明细条数
@@ -218,7 +217,6 @@ def _patient_query(ctx: Ctx, query_type: int, content: str) -> List[Dict[str, An
 
 
 def flow_L6_002(ctx: Ctx) -> LoopResult:
-    requires_rules = []
     """
     从库里取一个真实患者，分别用 姓名 / 身份证 / 手机号 查询，
     断言每种方式都能命中同一个患者，且回填的姓名与证件号与库中一致。
@@ -340,7 +338,6 @@ def _create_test_patient(ctx: Ctx, prefix: str):
 
 
 def flow_L6_001(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_ADMIN_TOKEN_ONCE', 'CONV_ID_CARD_COLLISION_SEED', 'RULE_OP_01']
     """
     真实建档 -> 接口回读 -> Oracle 回读，三方一致才判通过。
     建档数据带明显的测试标识，并在备注中给出生成的 patientId 便于清理。
@@ -431,7 +428,6 @@ def _pick_refundable_apply() -> Optional[tuple]:
 
 
 def flow_L6_045(ctx: Ctx) -> LoopResult:
-    requires_rules = []
     """
     断言链（全部走只读的"退费方案预览"接口，不产生任何退费单据）：
       ① 申请退费数量 == 已收费数量时，必须被接受
@@ -552,7 +548,6 @@ def _refund_apply_list(ctx: Ctx, register_id: int) -> List[Dict[str, Any]]:
 
 
 def flow_L6_046(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_MUTATION_NON_NUMERIC', 'CONV_OP_CHARGE_APPLY_CHAIN', 'RULE_IP_07', 'RULE_OP_05', 'RULE_OP_06', 'RULE_OP_08']
     """
     真实走三件事，并**收尾清理**（创建的退费申请全部取消）：
       ① 部分退：数量 < 已收费 → 应被接受，且申请真的能查到
@@ -701,7 +696,6 @@ def _nurse_ctx(ctx: Ctx, role_id: int = 36, dept_id: int = 910131) -> Optional["
 
 
 def flow_L6_047(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_ADMIN_TOKEN_ONCE', 'CONV_MUTATION_NON_NUMERIC', 'CONV_REFUND_DEPT_ISOLATION', 'RULE_IP_07', 'RULE_OP_06', 'RULE_OP_08']
     """
     退费确认链路（住院护士视角）。
 
@@ -812,7 +806,6 @@ def _rows_of(resp: Any) -> List[Dict[str, Any]]:
 
 
 def flow_L6_018(ctx: Ctx) -> LoopResult:
-    requires_rules = ['RULE_IP_01', 'RULE_IP_05', 'RULE_IP_06']
     """预约列表查询：接口返回的预约条数必须与预约库一致。"""
     res = LoopResult(case_id="L6-018", title="预约列表查询与收费处取号")
     t0 = time.time()
@@ -857,7 +850,6 @@ def flow_L6_018(ctx: Ctx) -> LoopResult:
 
 
 def flow_L6_050(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_PREPAY_DAY_BALANCE_SCOPE', 'RULE_IP_06']
     """
     预交金日结：报表金额 == 「上次日结时间之后」+「当前操作人收取」的预交金合计。
 
@@ -944,7 +936,6 @@ def flow_L6_050(ctx: Ctx) -> LoopResult:
 
 
 def flow_L6_008(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_MUTATION_NON_NUMERIC', 'RULE_OP_02', 'RULE_OP_07']
     """排班科室联动：接口返回的排班科室必须在排班表里真的有排班。"""
     res = LoopResult(case_id="L6-008", title="排班双击联动与左侧筛选")
     t0 = time.time()
@@ -996,7 +987,6 @@ def flow_L6_008(ctx: Ctx) -> LoopResult:
 
 
 def flow_L6_052(ctx: Ctx) -> LoopResult:
-    requires_rules = ['RULE_IP_08']
     """
     中途结算/多次结算：接口查到的结算记录数必须与库中一致，且金额逐条对得上。
     选一条**有多次结算**的住院登记作为样本——这正是"中途结算、多次结算"的体现。
@@ -1069,7 +1059,6 @@ def flow_L6_052(ctx: Ctx) -> LoopResult:
 
 
 def flow_L6_036(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
     """
     门诊票据日结与稽核。报表口径 = **日结记录ID**，不是时间区间。
 
@@ -1233,7 +1222,6 @@ def _pick_register_with_pending() -> Optional[int]:
 
 
 def flow_L6_024(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_OP_UNPAID_SEE_NO_GROUP']
     """
     门诊收费「载入待收费用」：收费界面载入的待缴明细必须与库中真值逐条一致。
 
@@ -1365,22 +1353,23 @@ def _pick_patient_for_refund_reg() -> Optional[int]:
 
 
 def flow_L6_015(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_REFUNDABLE_REG_ROWS']
     """
-    门诊退号：进入退号界面查患者，带出的可退挂号列表与筛选必须与库一致。
+    门诊退号：进入退号界面查患者，带出的已收费挂号列表与筛选必须与库一致。
 
-    口径（实测确证）：`/faith/finance/outpatient/register/view/list` 返回的
-    **可退挂号 = FIN_OP_REGISTER 中 valid_flag='1' AND balance_flag='1'** 的行
-    （即已收费、尚未退号的挂号）。已验 14 个患者全部吻合。
+    口径（实测确证，与 L6-005 同型）：`/faith/finance/outpatient/register/view/list`
+    返回的是该患者**全部已收费挂号（balance_flag='1'，包含 valid_flag='0' 的已退号）**，
+    每行自带 `validFlag` 字段由前端进行可退性展示与过滤。
 
-    ⚠️ 返回体里的 `total` 字段**不等于**可退条数（它是该患者全部有效挂号数），
-    判定只能看 `data` 行数，不能看 `total`。
+    必须同时取四个集合（全量对全量，有效对有效）：
+      - 接口全量 / 接口有效子集 (validFlag == 1)
+      - 库全量 (balance_flag='1') / 库有效子集 (valid_flag='1' AND balance_flag='1')
 
-    断言（四条）：
-      ① 不带筛选：返回条数 == 库中可退挂号数
-      ② registerId 集合双向一致（不许多、不许漏）
-      ③ 逐条 挂号时间/当日号/挂号科室/挂号级别/费别 与库一致
-      ④ 加日期筛选后：返回集合 == 库中同区间过滤结果（且确实比不筛时少）
+    断言：
+      ① 全量双向一致：接口全量 registerId 集合 == 库全量已收费集合（不许把接口带出已退号判为失败）
+      ② 逐行标志位一致：接口每条自带的 validFlag == 库中同一 register_id 的 valid_flag
+      ③ 有效子集双向一致：接口 validFlag==1 子集 == 库 valid_flag='1' AND balance_flag='1' 子集，
+         且逐条 挂号时间/当日号/挂号科室/挂号级别/费别 与库一致
+      ④ 日期筛选一致：按日期筛选后，接口返回的集合与库中该日期区间一致，且筛选后条数确实少于不筛时条数
     """
     res = LoopResult(case_id="L6-015", title="门诊退号·查患者带出可退挂号与筛选")
     t0 = time.time()
@@ -1393,16 +1382,26 @@ def flow_L6_015(ctx: Ctx) -> LoopResult:
 
         conn = _oracle_conn()
         cur = conn.cursor()
-        cur.execute("""SELECT register_id, TO_CHAR(register_time,'YYYY-MM-DD HH24:MI:SS'),
+        cur.execute("""SELECT register_id, valid_flag,
+                              TO_CHAR(register_time,'YYYY-MM-DD HH24:MI:SS'),
                               daily_serial_id, register_dept_id, reg_level_id, medical_type_id
                        FROM fin_op_register
-                       WHERE patient_id = :1 AND valid_flag = '1' AND balance_flag = '1'""", [pid])
-        ora_rows = cur.fetchall()
+                       WHERE patient_id = :1 AND balance_flag = '1'""", [pid])
+        ora_all_rows = cur.fetchall()
         conn.close()
-        ora = {int(r[0]): (r[1], r[2], r[3], r[4], r[5]) for r in ora_rows}
-        if not ora:
+
+        ora_all = {}
+        ora_valid = {}
+        for r in ora_all_rows:
+            rid = int(r[0])
+            vf = str(r[1])
+            ora_all[rid] = (vf, r[2], r[3], r[4], r[5], r[6])
+            if vf == '1':
+                ora_valid[rid] = (r[2], r[3], r[4], r[5], r[6])
+
+        if not ora_valid:
             res.status = "未执行"
-            res.note = f"患者 {pid} 在库中没有已收费挂号，构不成有效比对"
+            res.note = f"患者 {pid} 在库中没有有效已收费挂号，构不成有效比对"
             return res
 
         # ① ② ③ 不带筛选
@@ -1412,62 +1411,105 @@ def flow_L6_015(ctx: Ctx) -> LoopResult:
             res.status = "失败"
             res.note = f"可退挂号查询接口异常: {str(r)[:160]}"
             return res
+
         api_rows = _rows_of(r)
-        api = {}
+        api_all = {}
+        api_valid = {}
         for x in api_rows:
-            api[int(x["registerId"])] = (x.get("registerTime"), x.get("dailySerialId"),
-                                         x.get("registerDeptId"), x.get("regLevelId"),
-                                         x.get("medicalTypeId"))
+            rid = int(x["registerId"])
+            vf = str(x.get("validFlag") or "")
+            api_all[rid] = (vf, x.get("registerTime"), x.get("dailySerialId"),
+                            x.get("registerDeptId"), x.get("regLevelId"),
+                            x.get("medicalTypeId"))
+            if vf == '1':
+                api_valid[rid] = (x.get("registerTime"), x.get("dailySerialId"),
+                                  x.get("registerDeptId"), x.get("regLevelId"),
+                                  x.get("medicalTypeId"))
 
-        ev = {"patientId": pid, "库中可退挂号": len(ora), "接口返回条数": len(api),
-              "接口total(不可用作条数)": r.get("total"),
-              "可退挂号ID": sorted(api)}
+        ev = {
+            "patientId": pid,
+            "库中已收费挂号(全量)": len(ora_all),
+            "库中有效挂号(有效子集)": len(ora_valid),
+            "接口返回条数(全量)": len(api_all),
+            "接口有效条数(有效子集)": len(api_valid),
+            "接口total(不可用作条数)": r.get("total"),
+            "全量挂号ID": sorted(api_all),
+            "口径": "接口返回全量已收费(含已退号)+validFlag字段；严格比对全量与有效两级集合，不把带出已退号误判为失败"
+        }
         bad = []
-        if len(api) != len(ora):
-            bad.append(f"①可退条数：接口 {len(api)} ≠ 库 {len(ora)}")
-        only_api, only_ora = sorted(set(api) - set(ora)), sorted(set(ora) - set(api))
-        if only_api:
-            bad.append(f"②接口多出库中没有的挂号 {only_api[:5]}")
-        if only_ora:
-            bad.append(f"②库中有而接口漏掉的挂号 {only_ora[:5]}")
-        if not only_api and not only_ora:
-            def _n(v: Any) -> str:
-                return "" if v is None else str(v).strip()
 
-            for k in sorted(api):
-                a_n = tuple(_n(x) for x in api[k])
-                o_n = tuple(_n(x) for x in ora[k])
-                if a_n != o_n:
-                    bad.append(f"③挂号 {k} 字段不符：接口 {a_n} vs 库 {o_n}")
+        # 断言① 全量双向一致
+        only_api, only_ora = sorted(set(api_all) - set(ora_all)), sorted(set(ora_all) - set(api_all))
+        if only_api:
+            bad.append(f"①接口全量多出库中没有的挂号 {only_api[:5]}")
+        if only_ora:
+            bad.append(f"①库中全量已收费而接口漏掉的挂号 {only_ora[:5]}")
+
+        # 断言② 逐行标志位一致
+        if not only_api and not only_ora:
+            for k in sorted(api_all):
+                if api_all[k][0] != ora_all[k][0]:
+                    bad.append(f"②挂号 {k} validFlag 不符：接口 {api_all[k][0]} vs 库 {ora_all[k][0]}")
                     break
 
-        # ④ 日期筛选
-        days = sorted({str(o[0])[:10] for o in ora.values()})
+        # 断言③ 有效子集双向一致 + 逐条字段一致
+        v_only_api = sorted(set(api_valid) - set(ora_valid))
+        v_only_ora = sorted(set(ora_valid) - set(api_valid))
+        if v_only_api:
+            bad.append(f"③接口有效子集多出库中没有的 {v_only_api[:5]}")
+        if v_only_ora:
+            bad.append(f"③库中有效子集而接口没标有效的 {v_only_ora[:5]}")
+
+        def _n(v: Any) -> str:
+            return "" if v is None else str(v).strip()
+
+        if not v_only_api and not v_only_ora:
+            for k in sorted(api_valid):
+                a_n = tuple(_n(x) for x in api_valid[k])
+                o_n = tuple(_n(x) for x in ora_valid[k])
+                if a_n != o_n:
+                    bad.append(f"③有效挂号 {k} 字段不符：接口 {a_n} vs 库 {o_n}")
+                    break
+
+        # 断言④ 日期筛选
+        days = sorted({str(o[0])[:10] for o in ora_valid.values()})
         day = days[-1]
         b, e = f"{day} 00:00:00", f"{day} 23:59:59"
         r2 = ctx.post("/faith/finance/outpatient/register/view/list",
                       {"patientId": pid, "beginDate": b, "endDate": e,
                        "pageNum": 1, "pageSize": 200})
-        api2 = {int(x["registerId"]) for x in _rows_of(r2)}
-        ora2 = {k for k, o in ora.items() if o[0][:10] == day}
-        ev["筛选"] = {"区间": f"{b} ~ {e}", "接口": sorted(api2), "库": sorted(ora2),
-                      "不筛时条数": len(api)}
-        if api2 != ora2:
-            bad.append(f"④按 {day} 筛选：接口 {sorted(api2)} ≠ 库 {sorted(ora2)}")
-        elif len(api2) >= len(api):
-            bad.append(f"④按 {day} 筛选后条数({len(api2)}) 未少于不筛({len(api)})，筛选未生效")
+        if r2.get("code") != 200:
+            bad.append(f"④日期筛选接口调用异常: {str(r2)[:100]}")
+        else:
+            api2_rows = _rows_of(r2)
+            api2_all = {int(x["registerId"]) for x in api2_rows}
+            api2_valid = {int(x["registerId"]) for x in api2_rows if str(x.get("validFlag")) == '1'}
+            ora2_all = {k for k, v in ora_all.items() if str(v[1])[:10] == day}
+            ora2_valid = {k for k, v in ora_valid.items() if str(v[0])[:10] == day}
+
+            ev["筛选"] = {
+                "区间": f"{b} ~ {e}",
+                "接口全量": sorted(api2_all), "库全量": sorted(ora2_all),
+                "接口有效": sorted(api2_valid), "库有效": sorted(ora2_valid),
+                "不筛时全量条数": len(api_all), "筛选后全量条数": len(api2_all)
+            }
+            if api2_all != ora2_all:
+                bad.append(f"④按 {day} 筛选全量集合不符：接口 {sorted(api2_all)} ≠ 库 {sorted(ora2_all)}")
+            if api2_valid != ora2_valid:
+                bad.append(f"④按 {day} 筛选有效集合不符：接口 {sorted(api2_valid)} ≠ 库 {sorted(ora2_valid)}")
+            if len(api2_all) >= len(api_all):
+                bad.append(f"④按 {day} 筛选后全量条数({len(api2_all)}) 未少于不筛({len(api_all)})，筛选未生效")
 
         ev["问题"] = bad
         if bad:
             res.status = "失败"
-            res.note = f"可退挂号带出/筛选与库不符：" + "；".join(bad)
+            res.note = "可退挂号带出/筛选与库不符：" + "；".join(bad)
             res.evidence = ev
             return res
 
         res.status = "通过"
-        res.note = (f"患者 patientId={pid}：退号界面带出可退挂号 {len(api)} 笔，"
-                    f"与库中 valid_flag=1 且 balance_flag=1 完全一致；"
-                    f"按 {day} 筛选后收窄为 {len(api2)} 笔，亦与库一致")
+        res.note = (f"患者 patientId={pid}：退号界面带出已收费挂号全量 {len(api_all)} 笔（含有效 {len(api_valid)} 笔），"
+                    f"全量与有效两级集合均与库完全双向一致；按 {day} 筛选后收窄为 {len(api2_all)} 笔（有效 {len(api2_valid)} 笔），亦与库一致")
         res.evidence = ev
     except Exception as e:
         res.status = "失败"
@@ -1481,7 +1523,6 @@ def flow_L6_015(ctx: Ctx) -> LoopResult:
 # L6-020 门诊挂号 · 挂号日结时段选择、确认与取消
 # ---------------------------------------------------------------------------
 def flow_L6_020(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
     """
     挂号日结报表：与门诊票据日结同族，口径同样是 **dayBalanceId**（见 4.8/4.9 与 L6-036）。
 
@@ -1626,7 +1667,6 @@ def flow_L6_020(ctx: Ctx) -> LoopResult:
 # L6-033 发票票据 · 发票清单与支付方式修改
 # ---------------------------------------------------------------------------
 def flow_L6_033(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_RECEIPT_PAYMENT_ACTIVE']
     """
     发票清单查询 + 支付方式变更。
 
@@ -1825,7 +1865,6 @@ def _pick_manual_charge_item() -> Optional[tuple]:
 
 
 def flow_L6_025(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_OP_CHARGE_APPLY_CHAIN']
     """
     门诊收费「手工单划价」：无医嘱场景下新增手工单项目 → 划价 → 纳入收银。
 
@@ -2007,7 +2046,6 @@ def flow_L6_025(ctx: Ctx) -> LoopResult:
 # L6-028 门诊退费 · 收费处退费、全退与部分退
 # ---------------------------------------------------------------------------
 def flow_L6_028(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_OP_CHARGE_APPLY_CHAIN']
     """
     门诊退费：查可退数量 → 部分退 → 超退拦截。
 
@@ -2195,7 +2233,6 @@ def flow_L6_028(ctx: Ctx) -> LoopResult:
 # L6-004 患者管理 · 作废卡号与启动卡号
 # ---------------------------------------------------------------------------
 def flow_L6_004(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_PATIENT_INVALIDATE_SEMANTICS']
     """
     作废/启动患者（= 卡）。可逆，用的是**既有测试患者**，不新建数据。
 
@@ -2329,7 +2366,6 @@ def flow_L6_004(ctx: Ctx) -> LoopResult:
 # L6-009 门诊挂号 · 挂号时新建患者（临时办档）
 # ---------------------------------------------------------------------------
 def flow_L6_009(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_ID_CARD_COLLISION_SEED', 'CONV_REG_GRADE_DICT_DRIFT']
     """
     无卡患者到窗口：在挂号处**一次把档建好并完成挂号**。
 
@@ -2499,7 +2535,6 @@ def flow_L6_009(ctx: Ctx) -> LoopResult:
 # L6-012 门诊挂号 · 号序连续性与挂号费展示
 # ---------------------------------------------------------------------------
 def flow_L6_012(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_REG_GRADE_DICT_DRIFT', 'CONV_REG_NOON_SERIAL']
     """
     同一医生连挂 5 个号，看号序与挂号费。
 
@@ -2707,7 +2742,6 @@ _DISPENSE_STATES = {"SENT": "1", "PRINTED": "2", "DISPENSED": "3", "OUTPUTTED": 
 
 
 def flow_L9_010(ctx: Ctx) -> LoopResult:
-    requires_rules = ['RULE_PHA_DISPENSE_PRIORITY']
     """
     住院摆药明细：药房工作台按【摆药单 × 状态】取到的明细，必须与库里一致。
 
@@ -2811,7 +2845,6 @@ def flow_L9_010(ctx: Ctx) -> LoopResult:
 # L9-011 住院药房 · 摆药单分类与归类规则正确性
 # ---------------------------------------------------------------------------
 def flow_L9_011(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_ASSERTION_HONEST_EVIDENCE', 'CONV_DEAD_CONFIG_FALLBACK_ORDER', 'CONV_DISPENSE_ORDER_SPLIT', 'CONV_DRUG_QUALITY_DICT', 'RULE_PHA_DISPENSE_PRIORITY', 'RULE_PHA_INFUSION_QUALITY']
     """
     摆药单分类字典 + 归类一致性。
 
@@ -2933,7 +2966,6 @@ def flow_L9_011(ctx: Ctx) -> LoopResult:
 # L6-005 患者管理 · 底部挂号列表联动与补打条码
 # ---------------------------------------------------------------------------
 def flow_L6_005(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_EQUAL_SCOPE_ASSERTION', 'CONV_SAMPLE_AVOID_EMPTY_SET', 'RULE_OP_01', 'RULE_OP_02', 'RULE_OP_03', 'RULE_OP_07']
     """
     患者管理页选中患者后，底部"挂号列表"带出的记录必须与库一致。
 
@@ -3064,7 +3096,6 @@ def flow_L6_005(ctx: Ctx) -> LoopResult:
 # L9-014 住院药房 · 住院退药回库与医嘱关联
 # ---------------------------------------------------------------------------
 def flow_L9_014(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT', 'CONV_PHA_DISPENSE_OUTPUTTED', 'RULE_IP_07']
     """
     住院退药：把病区退回的药品执行掉，库存要回补，且退药必须挂回原医嘱。
 
@@ -3258,7 +3289,6 @@ def flow_L9_014(ctx: Ctx) -> LoopResult:
 # L6-014 门诊挂号 · 快捷键与录入防错
 # ---------------------------------------------------------------------------
 def flow_L6_014(ctx: Ctx) -> LoopResult:
-    requires_rules = []
     """
     录入防错：非法录入必须被拦下，而且**拦在正确的点上**（提示要说得出是哪错了）。
 
@@ -3367,7 +3397,6 @@ def _order_camel(col: str) -> str:
 
 
 def flow_L2_107(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_OP_ORDER_NEXT_COMB', 'CONV_SAMPLE_IMMUTABLE_SORT', 'RULE_IP_01', 'RULE_IP_02']
     """
     门诊医嘱：开一条医嘱 → 删除 → 关联（费用申请）必须一起被清掉。
 
@@ -3573,7 +3602,6 @@ def _order_row_to_dto(row, names):
 
 
 def flow_L2_105(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_OP_ORDER_NEXT_COMB', 'RULE_IP_01', 'RULE_IP_02', 'RULE_IP_03', 'RULE_IP_05', 'RULE_OP_04']
     """
     医嘱用量重算：治疗医嘱的总数必须 = 单次量 × 频次次数 × 天数，且重算接口算出来的与库里存的**一致**。
 
@@ -3705,7 +3733,6 @@ def flow_L2_105(ctx: Ctx) -> LoopResult:
 # L6-032 收费日结 · 收费员日结与对账
 # ---------------------------------------------------------------------------
 def flow_L6_032(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
     """
     收费员日结与对账：**从"钱"的角度**把日结核一遍（与 L6-036 的"票"角度互补）。
 
@@ -3863,12 +3890,12 @@ flow_L2_107.requires_rules = ['CONV_OP_ORDER_NEXT_COMB', 'CONV_SAMPLE_IMMUTABLE_
 flow_L6_001.requires_rules = ['CONV_ADMIN_TOKEN_ONCE', 'CONV_ID_CARD_COLLISION_SEED', 'RULE_OP_01']
 flow_L6_002.requires_rules = []
 flow_L6_004.requires_rules = ['CONV_PATIENT_INVALIDATE_SEMANTICS']
-flow_L6_005.requires_rules = ['CONV_EQUAL_SCOPE_ASSERTION', 'CONV_SAMPLE_AVOID_EMPTY_SET', 'RULE_OP_01', 'RULE_OP_02', 'RULE_OP_03', 'RULE_OP_07']
+flow_L6_005.requires_rules = ['CONV_API_FULLSET_WITH_FLAG', 'CONV_SAMPLE_AVOID_EMPTY_SET', 'RULE_OP_01', 'RULE_OP_02', 'RULE_OP_03', 'RULE_OP_07']
 flow_L6_008.requires_rules = ['CONV_MUTATION_NON_NUMERIC', 'RULE_OP_02', 'RULE_OP_07']
 flow_L6_009.requires_rules = ['CONV_ID_CARD_COLLISION_SEED', 'CONV_REG_GRADE_DICT_DRIFT']
 flow_L6_012.requires_rules = ['CONV_REG_GRADE_DICT_DRIFT', 'CONV_REG_NOON_SERIAL']
 flow_L6_014.requires_rules = []
-flow_L6_015.requires_rules = ['CONV_REFUNDABLE_REG_ROWS']
+flow_L6_015.requires_rules = ['CONV_API_FULLSET_WITH_FLAG', 'CONV_REFUNDABLE_REG_ROWS']
 flow_L6_018.requires_rules = ['RULE_IP_01', 'RULE_IP_05', 'RULE_IP_06']
 flow_L6_020.requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
 flow_L6_024.requires_rules = ['CONV_OP_UNPAID_SEE_NO_GROUP']

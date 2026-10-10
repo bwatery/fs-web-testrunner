@@ -12,8 +12,27 @@ from .lint import scan_dead_configs, scan_sampling_violations
 from .registry import registry
 
 
+def check_flow_docstrings():
+    """检查全部 Flow 函数是否具备有效 docstring。"""
+    from ..cases.closed_loop.closed_loop import _FLOWS
+    missing = []
+    for cid, fn in _FLOWS.items():
+        doc = getattr(fn, "__doc__", None)
+        if not doc or not doc.strip():
+            missing.append(f"{cid} ({fn.__module__}.{fn.__name__})")
+    return missing, len(_FLOWS)
+
+
 def run_rules_command(args: Any) -> int:
     """执行 rules 子命令分发。"""
+    # 0. Flow 文档串完整性自检（硬门禁：有缺失立即报错阻断）
+    missing_docs, total_flows = check_flow_docstrings()
+    if missing_docs:
+        print(f"❌ Flow 文档串完整性自检失败（发现 {len(missing_docs)} 条 Flow 缺失有效 docstring）：")
+        for m in missing_docs:
+            print(f"  - {m}")
+        return 1
+
     # 1. 装载并严格校验
     registry.load(reload=True)
 
@@ -123,6 +142,7 @@ def run_rules_command(args: Any) -> int:
     print(f"  - 已证实规则   : {summary['confirmed_rules']} 条 (confirmed)")
     print(f"  - 存疑/推测规则: {summary['suspected_rules']} 条 (suspected)")
     print(f"  - 关联用例数   : {summary['total_associated_cases']} 条")
+    print(f"  - Flow 文档串自检: 0 条缺失 ({total_flows}/{total_flows} 均具备有效 docstring)")
     print("\n  用法提示：")
     print("    python -I fsrun.py rules --case L9-011       # 反查用例依赖的规则")
     print("    python -I fsrun.py rules --rule RULE_PHA_DISPENSE_PRIORITY  # 反查规则约束的用例")

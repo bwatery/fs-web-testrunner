@@ -52,7 +52,7 @@ def _collect(cur, sql: str, rid: int) -> List[Any]:
 
 
 def flow_L5_036(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_CROSS_SYS_DEPT_DISTINCTION', 'CONV_INPATIENT_SAMPLE_INCOMPLETE']
+    """病历文书·EMR与HIS/LIS/PACS数据一致性：在院患者就诊跨系统科室一致性对账。"""
     res = LoopResult(case_id="L5-036", title="病历文书·EMR与HIS/LIS/PACS数据一致性")
     t0 = time.time()
     try:

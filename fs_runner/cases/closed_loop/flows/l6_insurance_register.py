@@ -33,7 +33,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L6_038(ctx: Ctx) -> LoopResult:
-    requires_rules = []
+    """医保登记与补登记：发票号段连续性与就诊状态核验。"""
     res = LoopResult(case_id="L6-038", title="医保登记与补登记")
     t0 = time.time()
     try:

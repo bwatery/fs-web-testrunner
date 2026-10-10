@@ -50,7 +50,7 @@ def _f(x: Any, nd: int = 2):
 
 
 def flow_L9_012(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_DISPENSE_ORDER_SPLIT', 'CONV_DISPENSE_QTY_CONVERSION', 'CONV_PHA_DISPENSE_OUTPUTTED', 'RULE_IP_04', 'RULE_PHA_DISPENSE_NOT_OVER_SUPPLY']
+    """住院药房·长期医嘱自动摆药与计划关联：摆药明细汇总与出库单位换算未超发核验。"""
     res = LoopResult(case_id="L9-012", title="住院药房·长期医嘱自动摆药与计划关联")
     t0 = time.time()
     try:
@@ -293,18 +293,17 @@ def flow_L9_012(ctx: Ctx) -> LoopResult:
 
 
 def flow_L9_013(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_DISPENSE_QTY_CONVERSION', 'CONV_GATE_OBSERVATION_EXPLICIT', 'CONV_MUTATION_NON_NUMERIC', 'RULE_PHA_DISPENSE_NOT_OVER_SUPPLY']
     """
-    出院带药发药 —— **本环境没有可验的业务数据，如实标注「未执行」并附证据**。
+    出院带药发药 —— 严格门禁：必须存在真实已发药记录（APPLY_STATE='4' 或出库明细 > 0）方可判定。
 
-    口径：出院带药是医嘱类型 `CD`（`MED_BD_ORDER_TYPE`：出院带药，CLASSIFY_TYPE='S'，
-    `OUTSIDE_FLAG='1'` —— 院外带药，走门诊药房）。
-    实测（2026-10-09）库里只有 6 条 CD 医嘱，且：
-      · 其中 3 条根本不是药品（"内外踝骨折切开复位内固定术" / "紫外线治疗"，`ITEM_FEE_TYPE` 为诊疗类）
-      · **6 条全部没有发药明细**（`PHA_DISPENSE_APPLY` 按 ORDER_ID 查 0 条）
-      · 也**没有出库明细**（`PHA_OUTPUT_LIST` 按 ORDER_ID 查 0 条）
-    也就是说，"出院带药发药"这条业务链在本环境从未被走过 —— 没有数据就无法核对
-    "发出的药与出院带药医嘱一致"，硬写断言只会变成空跑判通过。
+    口径（实测确证）：
+      1. 出院带药为医嘱类型 CD（med_ip_order.order_type = 'CD'）。
+      2. 「已发药」判据严格为 pha_dispense_apply.apply_state = '4' 或存在 pha_output_list 出库明细。
+         仅有摆药申请（apply_state 为 '1' 或 '2'）表示仅提交了调配申请尚未发药，不可作为发药成立依据。
+      3. OUTPUT_TIME / DISPENSE_TIME 住院明细恒为空，不可作判据。
+      4. 若存在 CD 医嘱，但没有任何一条实际发药（apply_state='4'），状态判定为「阻塞」，
+         说明前置业务发药未发生，无法核对"发出的药与出院带药医嘱一致"。
+      5. 仅当存在真实发药记录时，方核对 出库量 ↔ 医嘱量（不得超发）。
     """
     res = LoopResult(case_id="L9-013", title="住院药房·出院带药发药")
     t0 = time.time()
@@ -314,29 +313,52 @@ def flow_L9_013(ctx: Ctx) -> LoopResult:
         cur.execute("""SELECT o.order_id, o.register_id, o.item_name, o.qty, o.qty_unit,
                               o.order_state, o.item_fee_type,
                               (SELECT COUNT(*) FROM pha_dispense_apply d
-                                WHERE d.order_id = o.order_id) AS n_disp,
+                                WHERE d.order_id = o.order_id AND d.valid_flag = '1') AS n_disp_all,
+                              (SELECT COUNT(*) FROM pha_dispense_apply d
+                                WHERE d.order_id = o.order_id AND d.valid_flag = '1' AND d.apply_state = '4') AS n_disp_done,
                               (SELECT COUNT(*) FROM pha_output_list l
                                 WHERE l.order_id = o.order_id) AS n_out
                          FROM med_ip_order o
                         WHERE o.order_type = 'CD'
                         ORDER BY o.order_id""")
         rows = cur.fetchall()
-        cur.execute("SELECT COUNT(*) FROM pha_dispense_apply WHERE sys_business_type IN "
-                    "('PHA_DIS_OUT01','PHA_DIS_OUT02')")
-        n_op_disp_all = int(cur.fetchone()[0])
+
+        # 统计所有 CD 医嘱关联申请的 apply_state 分布
+        cur.execute("""SELECT d.apply_state, COUNT(*)
+                         FROM pha_dispense_apply d
+                         JOIN med_ip_order o ON o.order_id = d.order_id
+                        WHERE o.order_type = 'CD' AND d.valid_flag = '1'
+                        GROUP BY d.apply_state""")
+        state_dist = {str(r[0]): int(r[1]) for r in cur.fetchall()}
+
+        cur.execute("SELECT COUNT(*) FROM pha_dispense_apply WHERE apply_state = '4'")
+        n_all_disp_4 = int(cur.fetchone()[0])
         conn.close()
 
         detail = [{"orderId": r[0], "就诊": r[1], "项目": r[2],
-                   "数量": f"{r[3]}{r[4]}", "医嘱状态": r[5], "费用类型": r[6],
-                   "发药明细条数": r[7], "出库明细条数": r[8]} for r in rows]
-        ev = {"出院带药(CD)医嘱条数": len(rows), "明细": detail,
-              "有发药明细的CD医嘱条数": sum(1 for r in rows if r[7]),
-              "有出库明细的CD医嘱条数": sum(1 for r in rows if r[8]),
-              "全库门诊发药明细条数(对照)": n_op_disp_all,
-              "防空跑观测": {"CD医嘱数": len(rows),
-                             "发药明细数": sum(1 for r in rows if r[7]),
-                             "出库明细数": sum(1 for r in rows if r[8]),
-                             "全库门诊发药对照数": n_op_disp_all}}
+                   "医嘱量": f"{r[3]}{r[4]}", "医嘱状态": r[5], "费用类型": r[6],
+                   "摆药申请总条数": r[7], "已发药(state=4)条数": r[8], "出库明细条数": r[9]} for r in rows]
+
+        n_cd_orders = len(rows)
+        n_has_apply = sum(1 for r in rows if r[7] > 0)
+        n_has_done = sum(1 for r in rows if r[8] > 0 or r[9] > 0)
+        n_total_out = sum(int(r[9]) for r in rows)
+
+        ev = {
+            "出院带药(CD)医嘱条数": n_cd_orders,
+            "明细": detail,
+            "APPLY_STATE分布": state_dist,
+            "有摆药申请的CD医嘱条数": n_has_apply,
+            "已发药(state=4或有出库)条数": n_has_done,
+            "全库已发药(state=4)对照数": n_all_disp_4,
+            "防空跑观测": {
+                "出库明细条数": n_total_out,
+                "APPLY_STATE分布": state_dist,
+                "已发药条数": n_has_done,
+                "CD医嘱数": n_cd_orders,
+                "全库state4对照数": n_all_disp_4
+            }
+        }
 
         if not rows:
             res.status = "未执行"
@@ -344,39 +366,41 @@ def flow_L9_013(ctx: Ctx) -> LoopResult:
             res.evidence = ev
             return res
 
-        if not any(r[7] or r[8] for r in rows):
-            res.status = "未执行"
-            res.note = (f"库里只有 {len(rows)} 条出院带药(CD)医嘱，且**没有任何一条生成过发药或出库明细**"
-                        f"（门诊发药明细有 {n_op_disp_all} 条作为对照，说明发药功能本身有数据）——"
-                        f"出院带药这条业务链在本环境没有走过，无法核对「发出的药与医嘱一致」")
+        # 核心门禁：没有任何一条发药成立
+        if n_has_done == 0:
+            res.status = "阻塞"
+            dist_desc = "/".join(f"{k}:{v}" for k, v in sorted(state_dist.items())) or "无"
+            res.note = (f"库中有 {n_cd_orders} 条出院带药(CD)医嘱，其中 {n_has_apply} 条有摆药申请，"
+                        f"但均未发药（apply_state分布: {dist_desc}，无一条为 4）、出库明细 0 条 → "
+                        f"前置业务发药未执行，无法核对「发出的药与出院带药医嘱一致」")
             res.evidence = ev
             return res
 
-        # 有数据时才谈得上核对：断言「不得超发」（口径同 L9-012）
+        # 真有发药记录时，核对出库量与医嘱量（不得超发）
         over = []
         for r in rows:
-            if not r[7]:
+            if r[8] == 0 and r[9] == 0:
                 continue
             c2 = _oracle_conn()
             cu = c2.cursor()
             cu.execute("""SELECT NVL(SUM(apply_qty),0), MAX(apply_unit) FROM pha_dispense_apply
-                           WHERE order_id=:1 AND valid_flag='1'""", [r[0]])
+                           WHERE order_id=:1 AND valid_flag='1' AND apply_state='4'""", [r[0]])
             net, aunit = cu.fetchone()
             c2.close()
             net = float(net or 0)
             conv = net if str(aunit) == str(r[4]) else net
             if conv > abs(float(r[3])) + 1e-6:
                 over.append({"orderId": r[0], "医嘱": f"{r[3]}{r[4]}",
-                             "摆药净量": f"{net}{aunit}"})
+                             "已发药净量": f"{net}{aunit}"})
         ev["超发"] = over
         if over:
             res.status = "失败"
             res.note = f"出院带药发药量超过医嘱量：{over[:3]}"
             res.evidence = ev
             return res
+
         res.status = "通过"
-        res.note = (f"{len(rows)} 条出院带药(CD)医嘱：有发药明细的均能挂回医嘱且未超发；"
-                    f"（另有 {sum(1 for r in rows if not r[7])} 条尚未发药）")
+        res.note = (f"{n_cd_orders} 条出院带药(CD)医嘱：已发药({n_has_done}条)明细均挂回源医嘱且未超发")
         res.evidence = ev
     except Exception as e:
         res.status = "失败"
@@ -387,7 +411,7 @@ def flow_L9_013(ctx: Ctx) -> LoopResult:
 
 
 flow_L9_012.requires_rules = ['CONV_DISPENSE_ORDER_SPLIT', 'CONV_DISPENSE_QTY_CONVERSION', 'CONV_PHA_DISPENSE_OUTPUTTED', 'RULE_IP_04', 'RULE_PHA_DISPENSE_NOT_OVER_SUPPLY']
-flow_L9_013.requires_rules = ['CONV_DISPENSE_QTY_CONVERSION', 'CONV_GATE_OBSERVATION_EXPLICIT', 'CONV_MUTATION_NON_NUMERIC', 'RULE_PHA_DISPENSE_NOT_OVER_SUPPLY']
+flow_L9_013.requires_rules = ['CONV_CAUSAL_ATTRIBUTION_OBSERVABLE', 'CONV_DISPENSED_STATE_IS_APPLY_STATE_4', 'CONV_DISPENSE_QTY_CONVERSION', 'CONV_GATE_OBSERVATION_EXPLICIT', 'CONV_MUTATION_NON_NUMERIC', 'RULE_PHA_DISPENSE_NOT_OVER_SUPPLY']
 
 FLOWS = {
     "L9-012": flow_L9_012,

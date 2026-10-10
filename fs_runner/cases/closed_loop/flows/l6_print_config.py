@@ -21,7 +21,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L6_064(ctx: Ctx) -> LoopResult:
-    requires_rules = ['CONV_EXCEL_IMAGE_DIMENSION']
+    """单据配置维护与路由调起：打印机路由与单据参数一致性核验。"""
     res = LoopResult(case_id="L6-064", title="单据配置维护与路由调起")
     t0 = time.time()
     try:

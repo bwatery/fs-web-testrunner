@@ -43,7 +43,7 @@ class _EmrClient:
 
 
 def flow_L5_005(ctx: Ctx) -> LoopResult:
-    requires_rules = []
+    """护理记录与医嘱、体温单数据一致性核验。"""
     res = LoopResult(case_id="L5-005", title="护理记录与医嘱、体温单数据一致性")
     t0 = time.time()
     try:

@@ -34,7 +34,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L0_010(ctx: Ctx) -> LoopResult:
-    requires_rules = ["RULE_SI_CATALOG_CHECK"]
+    """医保三大目录对照与限价：中心目录 vs 医保目录行数及对照一致性核验。"""
     res = LoopResult(case_id="L0-010", title="医保三大目录对照与限价")
     t0 = time.time()
     try:
