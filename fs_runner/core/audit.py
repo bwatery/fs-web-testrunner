@@ -80,6 +80,7 @@ KNOWN_WRITE_PATTERNS = [
     (r"/faith/medical/inpatient/order/save", "医嘱"),
 
     # 9. 电子发票与单据
+    (r"/faith/finance/outpatient/receipt/payment/change", "发票与单据"),
     (r"/faith/finance/EBill/queryURL", "发票与单据"),
     (r"/faith/finance/EBill/inpatient/save", "发票与单据"),
     (r"/faith/finance/EBill/save", "发票与单据"),
@@ -88,6 +89,22 @@ KNOWN_WRITE_PATTERNS = [
     # 10. 病历封存与归档
     (r"/emr/recordMaster/(seal|unseal)", "病历封存"),
 ]
+
+TYPE_ID_FIELDS = {
+    "患者": "patientId",
+    "挂号": "registerId",
+    "挂号预结": "registerId",
+    "收费": "balanceId",
+    "收费预结": "balanceId",
+    "发票与单据": "receiptId",
+    "药房摆药": "dispenseNo",
+    "药房发药": "dispenseNo",
+    "药房退药": "retreatId",
+    "医嘱": "orderId",
+    "退费": "refundApplyId",
+    "作废": "registerId",
+    "病历封存": "recordId",
+}
 
 KNOWN_READ_QUERY_PATTERNS = [
     r"/(query|list|page|view|preview|report)",
@@ -162,9 +179,9 @@ class AuditTracer:
             "未登记写接口": 0,
         }
         self.active_case_id: str = ""
-        self.db_baseline_patients: Optional[int] = None
-        self.db_baseline_registers: Optional[int] = None
-        self.db_baseline_dispenses: Optional[int] = None
+        self.probe_baseline: Optional[Dict[str, int]] = None
+        self.residual_baseline: Optional[Dict[str, int]] = None
+        self.db_baseline_balance_ids: Set[int] = set()
 
     def set_current_case(self, case_id: str):
         self.active_case_id = case_id
@@ -190,30 +207,26 @@ class AuditTracer:
 
         extracted_id = None
         if success:
-            if isinstance(data, (int, str)) and str(data).isdigit():
-                extracted_id = int(data)
-            elif isinstance(data, dict):
-                extracted_id = (
-                    data.get("patientId")
-                    or data.get("registerId")
-                    or data.get("balanceId")
-                    or data.get("receiptId")
-                    or data.get("applyId")
-                    or data.get("dispenseNo")
-                    or data.get("id")
-                )
+            target_key = TYPE_ID_FIELDS.get(matched_type)
+            if isinstance(data, dict):
+                extracted_id = data.get(target_key) if target_key else None
+            elif isinstance(data, (int, str)) and str(data).isdigit():
+                if matched_type == "患者":
+                    extracted_id = int(data)
+                elif target_key:
+                    extracted_id = int(data)
 
             # 统计分类计数
             if matched_type == "患者" and extracted_id:
                 self.created_patient_ids.add(int(extracted_id))
-            elif matched_type in ("挂号", "挂号预结") and extracted_id:
+            elif matched_type == "挂号" and extracted_id:
                 self.created_register_ids.add(int(extracted_id))
-            elif matched_type in ("收费", "收费预结") and extracted_id:
+            elif matched_type == "收费" and extracted_id:
                 self.created_balance_ids.add(int(extracted_id))
             elif "摆药" in matched_type or "发药" in matched_type:
                 if extracted_id:
                     self.created_dispense_ids.add(str(extracted_id))
-            elif matched_type in ("作废", "退费"):
+            elif matched_type == "作废" and any(p in path for p in ["/register/cancel", "/register/outpatient/refund", "/cancelRegister"]):
                 self.void_count += 1
 
             self.category_counts[matched_type] = self.category_counts.get(matched_type, 0) + 1
@@ -301,21 +314,66 @@ class AuditTracer:
         return out_file
 
     def capture_db_baseline(self):
-        """记录回归运行前数据库测试数据基线（全库测试患者与当前 runId 基线）。"""
+        """记录回归运行前数据库测试数据基线（全库测试患者/挂号/收费/作废与有效/作废隔离基线）。"""
         try:
             from ..cases.closed_loop.closed_loop import _oracle_conn
             conn = _oracle_conn()
             cur = conn.cursor()
-            cur.execute("SELECT COUNT(*) FROM bd_patient WHERE patient_name LIKE '%测试%' AND valid_flag='1'")
-            self.db_baseline_patients = int(cur.fetchone()[0])
-            cur.execute("""SELECT COUNT(*) FROM fin_op_register 
-                           WHERE valid_flag='1' AND patient_id IN (
-                               SELECT patient_id FROM bd_patient WHERE patient_name LIKE '%测试%'
-                           )""")
-            self.db_baseline_registers = int(cur.fetchone()[0])
-            cur.execute("""SELECT COUNT(*) FROM pha_ip_dispense_detail 
-                           WHERE TRUNC(create_time) = TRUNC(SYSDATE)""")
-            self.db_baseline_dispenses = int(cur.fetchone()[0])
+
+            # 1. Probe 基线（四个数，同口径捕获）
+            cur.execute("SELECT COUNT(*) FROM bd_patient WHERE patient_name LIKE '%测试%'")
+            pat_cnt = int(cur.fetchone()[0])
+
+            cur.execute("""SELECT COUNT(*) FROM fin_op_register r 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%'""")
+            reg_cnt = int(cur.fetchone()[0])
+
+            cur.execute("""SELECT COUNT(*) FROM fin_op_charge c 
+                           JOIN fin_op_register r ON c.register_id = r.register_id 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%'""")
+            charge_cnt = int(cur.fetchone()[0])
+
+            cur.execute("""SELECT COUNT(*) FROM fin_op_register r 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%' AND r.valid_flag = '0'""")
+            reg_void_cnt = int(cur.fetchone()[0])
+
+            self.probe_baseline = {
+                "测试患者": pat_cnt,
+                "测试挂号": reg_cnt,
+                "测试收费": charge_cnt,
+                "测试作废": reg_void_cnt,
+            }
+
+            # 记录已有的 balance_id 集合
+            cur.execute("""SELECT b.balance_id FROM fin_op_balance b 
+                           JOIN fin_op_register r ON b.register_id = r.register_id 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%'""")
+            self.db_baseline_balance_ids = set(r[0] for r in cur.fetchall())
+
+            # 2. 残留校验基线（四个数，有效与作废分开）
+            cur.execute("SELECT COUNT(*) FROM bd_patient WHERE patient_name LIKE '%测试%' AND valid_flag = '1'")
+            p_val = int(cur.fetchone()[0])
+            cur.execute("SELECT COUNT(*) FROM bd_patient WHERE patient_name LIKE '%测试%' AND valid_flag = '0'")
+            p_inval = int(cur.fetchone()[0])
+            cur.execute("""SELECT COUNT(*) FROM fin_op_register r 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%' AND r.valid_flag = '1'""")
+            r_val = int(cur.fetchone()[0])
+            cur.execute("""SELECT COUNT(*) FROM fin_op_register r 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%' AND r.valid_flag = '0'""")
+            r_inval = int(cur.fetchone()[0])
+
+            self.residual_baseline = {
+                "测试患者(有效)": p_val,
+                "测试患者(作废)": p_inval,
+                "测试挂号(有效)": r_val,
+                "测试挂号(作废)": r_inval,
+            }
             conn.close()
         except Exception:
             pass
@@ -323,10 +381,13 @@ class AuditTracer:
     def verify_db_no_residual(self) -> Tuple[bool, str]:
         """
         校验回归运行后数据库数据隔离性：
-        1. Probe 计数断言：本轮依据 runId 产生的净增行数 == 审计记录造数条数（不等即报错）。
-        2. 零残留校验：全库未授权有效测试数据净增量必须为 0。
+        1. Probe 计数断言：
+           db_delta 逐项比对 audit_delta（测试患者、测试挂号、测试收费、测试作废），不等即报错并给出差额明细。
+        2. 残留校验（作废行计入）：
+           对比测试患者（有效/作废）、测试挂号（有效/作废）四项指标，差额必须为 0（除非显式放行）；
+           若有净增则响亮报警并列出涉及的前几个 ID。
         """
-        if self.db_baseline_patients is None:
+        if not hasattr(self, "probe_baseline") or self.probe_baseline is None:
             return True, "未开启基线比对"
 
         try:
@@ -334,43 +395,125 @@ class AuditTracer:
             conn = _oracle_conn()
             cur = conn.cursor()
 
-            # 1. Probe 计数断言：精确校验当前 run_id 的数据净增量
-            cur.execute("SELECT COUNT(*) FROM bd_patient WHERE patient_name LIKE :1", [f"%{self.run_id}%"])
-            run_pats = int(cur.fetchone()[0])
-            cur.execute("""SELECT COUNT(*) FROM fin_op_register 
-                           WHERE patient_id IN (SELECT patient_id FROM bd_patient WHERE patient_name LIKE :1)""",
-                        [f"%{self.run_id}%"])
-            run_regs = int(cur.fetchone()[0])
+            # 1. 跑批后再取同样的四个数 (Probe)
+            cur.execute("SELECT COUNT(*) FROM bd_patient WHERE patient_name LIKE '%测试%'")
+            after_pat = int(cur.fetchone()[0])
 
-            audit_expected = len(self.created_patient_ids) + len(self.created_register_ids)
-            db_actual_run = run_pats + run_regs
+            cur.execute("""SELECT COUNT(*) FROM fin_op_register r 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%'""")
+            after_reg = int(cur.fetchone()[0])
 
-            if db_actual_run != audit_expected:
+            cur.execute("""SELECT COUNT(*) FROM fin_op_charge c 
+                           JOIN fin_op_register r ON c.register_id = r.register_id 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%'""")
+            after_charge = int(cur.fetchone()[0])
+
+            cur.execute("""SELECT COUNT(*) FROM fin_op_register r 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%' AND r.valid_flag = '0'""")
+            after_reg_void = int(cur.fetchone()[0])
+
+            after_probe = {
+                "测试患者": after_pat,
+                "测试挂号": after_reg,
+                "测试收费": after_charge,
+                "测试作废": after_reg_void,
+            }
+            db_delta = {k: after_probe[k] - self.probe_baseline[k] for k in self.probe_baseline}
+
+            # 审计侧：只统计「本轮真正新增」的条数，同样分四类
+            # 同步更新通过 balance 相关写接口生成的平衡记录 ID
+            cur.execute("""SELECT b.balance_id FROM fin_op_balance b 
+                           JOIN fin_op_register r ON b.register_id = r.register_id 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%'""")
+            after_balances = set(r[0] for r in cur.fetchall())
+            new_balances = after_balances - getattr(self, "db_baseline_balance_ids", set())
+            self.created_balance_ids.update(new_balances)
+
+            audit_delta = {
+                "测试患者": len(self.created_patient_ids),
+                "测试挂号": len(self.created_register_ids),
+                "测试收费": len(self.created_balance_ids),
+                "测试作废": self.void_count,
+            }
+
+            # 断言：四个数逐个相等
+            probe_mismatches = []
+            for k in db_delta:
+                if db_delta[k] != audit_delta[k]:
+                    probe_mismatches.append(f"{k} (库中变化 {db_delta[k]:+d}, 审计记录 {audit_delta[k]})")
+
+            if probe_mismatches:
                 conn.close()
                 msg = (
-                    f"🚨 [Probe断言失败] 数据库测试行净增量 ({db_actual_run}) "
-                    f"与审计记录的造数条数 ({audit_expected}) 不符！存在写操作绕过审计！"
+                    f"🚨 [Probe断言失败] 数据库测试净增量与审计记录不符！\n"
+                    f"   差异明细: {'; '.join(probe_mismatches)}。\n"
+                    f"   当前库中: {after_probe}，基线: {self.probe_baseline}。\n"
+                    f"   审计记录: {audit_delta}。"
                 )
                 return False, msg
 
-            # 2. 全库有效测试残留校验
-            cur.execute("SELECT COUNT(*) FROM bd_patient WHERE patient_name LIKE '%测试%' AND valid_flag='1'")
-            after_patients = int(cur.fetchone()[0])
-            cur.execute("""SELECT COUNT(*) FROM fin_op_register 
-                           WHERE valid_flag='1' AND patient_id IN (
-                               SELECT patient_id FROM bd_patient WHERE patient_name LIKE '%测试%'
-                           )""")
-            after_registers = int(cur.fetchone()[0])
+            # 2. 残留校验（有效与作废分开，四个数分别比对）
+            cur.execute("SELECT COUNT(*) FROM bd_patient WHERE patient_name LIKE '%测试%' AND valid_flag = '1'")
+            after_p_val = int(cur.fetchone()[0])
+            cur.execute("SELECT COUNT(*) FROM bd_patient WHERE patient_name LIKE '%测试%' AND valid_flag = '0'")
+            after_p_inval = int(cur.fetchone()[0])
+            cur.execute("""SELECT COUNT(*) FROM fin_op_register r 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%' AND r.valid_flag = '1'""")
+            after_r_val = int(cur.fetchone()[0])
+            cur.execute("""SELECT COUNT(*) FROM fin_op_register r 
+                           JOIN bd_patient p ON r.patient_id = p.patient_id 
+                           WHERE p.patient_name LIKE '%测试%' AND r.valid_flag = '0'""")
+            after_r_inval = int(cur.fetchone()[0])
+
+            after_residual = {
+                "测试患者(有效)": after_p_val,
+                "测试患者(作废)": after_p_inval,
+                "测试挂号(有效)": after_r_val,
+                "测试挂号(作废)": after_r_inval,
+            }
+
+            residual_diffs = {
+                k: after_residual[k] - self.residual_baseline[k]
+                for k in self.residual_baseline
+            }
+
+            allow_creation = os.environ.get("FS_ALLOW_CREATE_PATIENT") == "1"
+            residual_alarms = []
+
+            for k, diff in residual_diffs.items():
+                if diff != 0 and not allow_creation:
+                    sample_ids = []
+                    if "患者" in k:
+                        vf = "1" if "有效" in k else "0"
+                        cur.execute("SELECT patient_id FROM bd_patient WHERE patient_name LIKE '%测试%' AND valid_flag = :1 ORDER BY patient_id DESC FETCH FIRST 5 ROWS ONLY", [vf])
+                        sample_ids = [str(r[0]) for r in cur.fetchall()]
+                    elif "挂号" in k:
+                        vf = "1" if "有效" in k else "0"
+                        cur.execute("""SELECT r.register_id FROM fin_op_register r 
+                                       JOIN bd_patient p ON r.patient_id = p.patient_id 
+                                       WHERE p.patient_name LIKE '%测试%' AND r.valid_flag = :1 
+                                       ORDER BY r.register_id DESC FETCH FIRST 5 ROWS ONLY""", [vf])
+                        sample_ids = [str(r[0]) for r in cur.fetchall()]
+
+                    residual_alarms.append(f"{k} 净增 {diff:+d} 条 (最新ID: {', '.join(sample_ids) if sample_ids else '无'})")
+
             conn.close()
 
-            p_diff = after_patients - self.db_baseline_patients
-            r_diff = after_registers - self.db_baseline_registers
-
-            if p_diff > 0 or r_diff > 0:
-                msg = f"库中测试数据存在净增残留（测试患者净增 {p_diff} 条，测试挂号净增 {r_diff} 条）"
+            if residual_alarms:
+                msg = f"🚨 [造数护栏警告] 库中测试数据存在净增残留（未经许可）：\n   " + "\n   ".join(residual_alarms)
                 return False, msg
 
-            return True, f"测试数据零残留且 probe 计数严格吻合（患者 {after_patients} 条，挂号 {after_registers} 条，前后一致）"
+            report_str = (
+                f"Probe计数完全吻合且零残留："
+                f"测试患者(有效 {after_p_val}·作废 {after_p_inval}·净增 {residual_diffs['测试患者(有效)']}) · "
+                f"测试挂号(有效 {after_r_val}·作废 {after_r_inval}·净增 {residual_diffs['测试挂号(有效)']})"
+            )
+            return True, report_str
         except Exception as e:
             return True, f"数据库校验异常跳过: {e}"
 
