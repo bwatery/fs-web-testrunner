@@ -1,0 +1,38 @@
+{
+  "case_id": "UI-INDEX",
+  "timestamp": "2026-10-10 20:23:28",
+  "note": "首页看板渲染总收费量 2800，门诊收费 2810，住院收费 505 —— 总收费量异常小于门诊收费细项（变异自检生效：内存扰动总收费量导致断言变红）",
+  "route": {
+    "href": "http://192.168.1.198:8088/#/index",
+    "origin": "http://192.168.1.198:8088",
+    "pathname": "/",
+    "hash": "#/index",
+    "title": "首页 - HIOP",
+    "readyState": "complete"
+  },
+  "screenshot_saved": true,
+  "dom_bytes": 576897,
+  "console_entries_count": 41,
+  "network_requests_count": 350,
+  "evidence": {
+    "用例编号": "UI-INDEX",
+    "运行模式": "[界面·无头]",
+    "界面元素选择器": ".card-panel (总收费量 / 门诊收费 / 住院收费)",
+    "界面读出指标": {
+      "总收费量": 2800,
+      "门诊收费": 2810,
+      "住院收费": 505
+    },
+    "验证等式": "总收费量(2800) >= 门诊收费(2810)",
+    "等式成立": false,
+    "变异扰动": true
+  },
+  "files": [
+    "meta.json",
+    "dom.html",
+    "route.json",
+    "console.json",
+    "network.json",
+    "screenshot.png"
+  ]
+}
