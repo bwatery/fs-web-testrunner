@@ -1,18 +1,19 @@
 // FS.TestRunner 前端控制台主脚本 (Vanilla JS, 零外部依赖)
 let gState = {
   activeTab: "cases",
-  caseView: "closed_loop", // closed_loop | excel
   env: "real",
   showBrowser: false,
   slowmo: 0,
   statusFilter: "ALL",
   searchKeyword: "",
+  moduleFilter: "ALL",
   selectedCases: new Set(),
   casesData: [],
   excelData: [],
   rulesData: [],
   running: false,
   currentViewingLog: null,
+  isTermFloating: false,
 };
 
 let ws = null;
@@ -30,83 +31,153 @@ document.addEventListener("DOMContentLoaded", () => {
   loadUiVerify();
 
   // 绑定控件事件
-  document.getElementById("showBrowserCheck").addEventListener("change", (e) => {
-    gState.showBrowser = e.target.checked;
-  });
-  document.getElementById("slowmoSelect").addEventListener("change", (e) => {
-    gState.slowmo = parseInt(e.target.value, 10);
-  });
+  const slowmoEl = document.getElementById("slowmoSelect");
+  if (slowmoEl) {
+    slowmoEl.addEventListener("change", (e) => {
+      gState.slowmo = parseInt(e.target.value, 10);
+    });
+  }
 });
 
 // =========================================================================
-// 标签页切换
+// 标签页与领域切换
 // =========================================================================
-function switchTab(tabId) {
-  gState.activeTab = tabId;
-  const tabs = ["cases", "logs", "rules", "health", "ui"];
-  tabs.forEach((t) => {
-    const elSec = document.getElementById(`tab-${t}`);
-    const elBtn = document.getElementById(`menu-${t}`);
-    if (elSec) elSec.style.display = t === tabId ? "block" : "none";
-    if (elBtn) {
-      if (t === tabId) elBtn.classList.add("active");
-      else elBtn.classList.remove("active");
+function switchDomain(domainKey) {
+  // Activity Rail 项高亮
+  const railItems = {
+    cases: "railItemCases",
+    excel: "railItemExcel",
+    rules: "railItemRules",
+    health: "railItemHealth",
+    screen: "railItemScreen",
+    logs: "railItemLogs",
+  };
+  Object.keys(railItems).forEach((k) => {
+    const el = document.getElementById(railItems[k]);
+    if (el) {
+      if (k === domainKey) el.classList.add("active");
+      else el.classList.remove("active");
     }
   });
 
-  if (tabId === "logs") loadLogsList();
-  if (tabId === "rules") loadRules();
-  if (tabId === "health") loadHealth();
-  if (tabId === "ui") loadUiVerify();
+  switchTab(domainKey);
+}
+
+function switchTab(tabKey) {
+  gState.activeTab = tabKey;
+  const tabs = ["cases", "excel", "rules", "health", "screen", "logs"];
+
+  // 顶栏 TabBar 高亮
+  const tabItems = document.querySelectorAll("#tabBar .tab-item");
+  tabItems.forEach((item) => {
+    if (item.getAttribute("data-tab") === `tab-${tabKey}`) {
+      item.classList.add("active");
+    } else {
+      item.classList.remove("active");
+    }
+  });
+
+  // Rail 栏同步高亮
+  const railItems = {
+    cases: "railItemCases",
+    excel: "railItemExcel",
+    rules: "railItemRules",
+    health: "railItemHealth",
+    screen: "railItemScreen",
+    logs: "railItemLogs",
+  };
+  Object.keys(railItems).forEach((k) => {
+    const el = document.getElementById(railItems[k]);
+    if (el) {
+      if (k === tabKey) el.classList.add("active");
+      else el.classList.remove("active");
+    }
+  });
+
+  // 主内容区显示控制
+  tabs.forEach((t) => {
+    const elSec = document.getElementById(`tab-${t}`);
+    if (elSec) {
+      if (t === tabKey) elSec.classList.add("active");
+      else elSec.classList.remove("active");
+    }
+  });
+
+  // 侧栏 Drawer 显示控制：在用例页展示，其他页自动折叠
+  const drawer = document.getElementById("caseDrawer");
+  if (drawer) {
+    if (tabKey === "cases") {
+      drawer.classList.remove("collapsed");
+    } else {
+      drawer.classList.add("collapsed");
+    }
+  }
+
+  // 按需加载数据
+  if (tabKey === "excel" && gState.excelData.length === 0) loadExcelCases();
+  if (tabKey === "logs") loadLogsList();
+  if (tabKey === "rules" && gState.rulesData.length === 0) loadRules();
+  if (tabKey === "health") loadHealth();
+  if (tabKey === "screen") loadUiVerify();
+}
+
+// 侧栏展开/收起切换
+function toggleDrawer() {
+  const drawer = document.getElementById("caseDrawer");
+  if (drawer) {
+    drawer.classList.toggle("collapsed");
+  }
 }
 
 // =========================================================================
 // 环境切换与视觉分离
 // =========================================================================
 function onEnvChange() {
-  const sel = document.getElementById("envSelect");
+  const sel = document.getElementById("envModeSelect");
   gState.env = sel.value;
   const banner = document.getElementById("sandboxBanner");
-  if (gState.env === "sandbox") {
-    banner.style.display = "flex";
-  } else {
-    banner.style.display = "none";
+  if (banner) {
+    if (gState.env === "sandbox") {
+      banner.style.display = "flex";
+    } else {
+      banner.style.display = "none";
+    }
   }
   renderCaseTable();
 }
 
 // =========================================================================
-// 用例列表与视图切换
+// 浏览器可见性开关
 // =========================================================================
-function switchCaseView(view) {
-  gState.caseView = view;
-  const btnClosed = document.getElementById("viewClosedLoopBtn");
-  const btnExcel = document.getElementById("viewExcelBtn");
-  const viewClosed = document.getElementById("closedLoopView");
-  const viewExcel = document.getElementById("excelView");
-
-  if (view === "closed_loop") {
-    btnClosed.classList.add("active");
-    btnExcel.classList.remove("active");
-    viewClosed.style.display = "block";
-    viewExcel.style.display = "none";
+function onBrowserCheckChange(cb) {
+  gState.showBrowser = cb.checked;
+  const txtMode = document.getElementById("headlessSwitchModeText");
+  const txtTip = document.getElementById("headlessSwitchTipText");
+  if (gState.showBrowser) {
+    if (txtMode) txtMode.innerHTML = `<svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> 窗口模式`;
+    if (txtTip) txtTip.innerText = `(桌面可见实操)`;
+    showToast("浏览器显示开启", "执行时将在桌面弹出独立 Chrome 窗口实时展现操作流程", "info");
   } else {
-    btnClosed.classList.remove("active");
-    btnExcel.classList.add("active");
-    viewClosed.style.display = "none";
-    viewExcel.style.display = "block";
-    if (gState.excelData.length === 0) {
-      loadExcelCases();
-    }
+    if (txtMode) txtMode.innerHTML = `<svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> 后台模式`;
+    if (txtTip) txtTip.innerText = `(隐形快速执行)`;
   }
 }
 
+// =========================================================================
+// 用例列表与分类树加载
+// =========================================================================
 async function loadCases() {
   try {
     const res = await fetch("/api/cases");
     const data = await res.json();
     gState.casesData = data.cases || [];
+
+    // 默认全选
+    gState.selectedCases.clear();
+    gState.casesData.forEach((c) => gState.selectedCases.add(c.case_id));
+
     updateSummaryCounts(data.summary || {});
+    renderDrawerCategories();
     renderCaseTable();
   } catch (err) {
     console.error("加载用例失败:", err);
@@ -114,29 +185,175 @@ async function loadCases() {
 }
 
 function updateSummaryCounts(summary) {
-  document.getElementById("countAll").innerText = summary["总计"] || gState.casesData.length;
-  document.getElementById("countPass").innerText = summary["通过"] || 0;
-  document.getElementById("countFail").innerText = summary["失败"] || 0;
-  document.getElementById("countBlock").innerText = summary["阻塞"] || 0;
-  document.getElementById("countSkip").innerText = summary["跳过"] || 0;
-  document.getElementById("countUnexec").innerText = summary["未执行"] || 0;
+  const total = summary["总计"] || gState.casesData.length || 66;
+  const pass = summary["通过"] || 0;
+  const fail = summary["失败"] || 0;
+  const block = summary["阻塞"] || 0;
+  const skip = summary["跳过"] || 0;
+  const unexec = summary["未执行"] || 0;
+
+  const setT = (id, v) => {
+    const el = document.getElementById(id);
+    if (el) el.innerText = v;
+  };
+
+  setT("kpiTotal", total);
+  setT("totalTestsCount", total);
+  setT("totalCountBadge", total);
+  setT("countPass", pass);
+  setT("countFail", fail);
+  setT("countBlock", block);
+  setT("countSkip", skip);
+  setT("countUnexec", unexec);
+
+  const badgeCases = document.getElementById("railBadgeCases");
+  if (badgeCases) badgeCases.innerText = total;
 }
 
+// 渲染左侧分类树
+function renderDrawerCategories() {
+  const container = document.getElementById("drawerNavContainer");
+  if (!container) return;
+  container.innerHTML = "";
+
+  const moduleMap = {
+    "L0": "门诊挂号 (L0)",
+    "L1": "门诊收费 (L1)",
+    "L2": "门诊医生 (L2)",
+    "L3": "药房发药 (L3)",
+    "L4": "住院护士 (L4)",
+    "L5": "住院医生 (L5)",
+    "L6": "住院收费 (L6)",
+    "UI": "界面巡检 (UI)",
+  };
+
+  // 按模块分组
+  const groups = {};
+  Object.keys(moduleMap).forEach((k) => (groups[k] = []));
+  groups["OTHER"] = [];
+
+  gState.casesData.forEach((c) => {
+    let matched = false;
+    for (const prefix of Object.keys(moduleMap)) {
+      if (c.case_id.startsWith(prefix) || (prefix === "UI" && c.case_id.startsWith("UI-"))) {
+        groups[prefix].push(c);
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) groups["OTHER"].push(c);
+  });
+
+  Object.keys(groups).forEach((key) => {
+    const list = groups[key];
+    if (list.length === 0) return;
+    const catName = moduleMap[key] || "其他用例";
+
+    const wrap = document.createElement("div");
+    wrap.className = "nav-cat-wrap";
+
+    const header = document.createElement("div");
+    header.className = "nav-cat-header";
+    header.innerHTML = `
+      <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
+        <span class="arrow">▾</span>
+        <input type="checkbox" class="cat-select-chk" checked title="勾选/取消该分类全部用例">
+        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${catName}</span>
+      </div>
+      <span class="nav-pill">${list.length}</span>
+    `;
+
+    const subList = document.createElement("div");
+    subList.className = "nav-sub-list";
+
+    list.forEach((c) => {
+      const item = document.createElement("div");
+      item.className = "nav-sub-item";
+      const dotCls = c.status === "通过" ? "pass" : (c.status === "失败" ? "fail" : "");
+      item.innerHTML = `
+        <span class="nav-status-dot ${dotCls}"></span>
+        <span style="font-family:var(--g-mono); font-size:11px; font-weight:500;">${c.case_id}</span>
+      `;
+      item.onclick = (e) => {
+        e.stopPropagation();
+        document.querySelectorAll(".nav-sub-item").forEach((el) => el.classList.remove("active"));
+        item.classList.add("active");
+        gState.searchKeyword = c.case_id;
+        renderCaseTable();
+      };
+      subList.appendChild(item);
+    });
+
+    // 展开/收缩点击事件
+    header.onclick = (e) => {
+      if (e.target.tagName.toLowerCase() === "input") return;
+      header.classList.toggle("collapsed");
+      subList.classList.toggle("collapsed");
+    };
+
+    // 勾选分类事件
+    const chk = header.querySelector(".cat-select-chk");
+    chk.onchange = (e) => {
+      const checked = e.target.checked;
+      list.forEach((c) => {
+        if (checked) gState.selectedCases.add(c.case_id);
+        else gState.selectedCases.delete(c.case_id);
+      });
+      renderCaseTable();
+    };
+
+    wrap.appendChild(header);
+    wrap.appendChild(subList);
+    container.appendChild(wrap);
+  });
+}
+
+function collapseAllCategories() {
+  document.querySelectorAll(".nav-cat-header").forEach((h) => h.classList.add("collapsed"));
+  document.querySelectorAll(".nav-sub-list").forEach((l) => l.classList.add("collapsed"));
+}
+
+function expandAllCategories() {
+  document.querySelectorAll(".nav-cat-header").forEach((h) => h.classList.remove("collapsed"));
+  document.querySelectorAll(".nav-sub-list").forEach((l) => l.classList.remove("collapsed"));
+}
+
+// 状态过滤
 function filterByStatus(status) {
   gState.statusFilter = status;
-  const pills = document.querySelectorAll("#statusFilterPills .stat-filter-btn");
-  pills.forEach((p) => p.classList.remove("active"));
-  event.target.classList.add("active");
+  const btns = [
+    { id: "btnFilterAll", s: "ALL" },
+    { id: "btnFilterPass", s: "通过" },
+    { id: "btnFilterFail", s: "失败" },
+    { id: "btnFilterBlock", s: "阻塞" },
+    { id: "btnFilterSkip", s: "跳过" },
+    { id: "btnFilterUnexec", s: "未执行" },
+  ];
+  btns.forEach((b) => {
+    const el = document.getElementById(b.id);
+    if (el) {
+      if (b.s === status) {
+        el.className = "g-btn g-btn-tonal active";
+      } else {
+        el.className = "g-btn g-btn-outlined";
+      }
+    }
+  });
   renderCaseTable();
 }
 
 function onSearchCases() {
-  gState.searchKeyword = document.getElementById("caseSearchInput").value.trim().toLowerCase();
+  const inp = document.getElementById("searchInput");
+  gState.searchKeyword = inp ? inp.value.trim().toLowerCase() : "";
   renderCaseTable();
 }
 
+// =========================================================================
+// 核心表格渲染
+// =========================================================================
 function renderCaseTable() {
   const tbody = document.getElementById("caseTableBody");
+  if (!tbody) return;
   tbody.innerHTML = "";
 
   const isSandbox = gState.env === "sandbox";
@@ -146,47 +363,55 @@ function renderCaseTable() {
       return false;
     }
     if (gState.searchKeyword) {
-      const target = (c.case_id + " " + c.title).toLowerCase();
+      const target = (c.case_id + " " + (c.title || "")).toLowerCase();
       if (!target.includes(gState.searchKeyword)) return false;
     }
     return true;
   });
 
+  // 更新计数指示器
+  const cntFilterEl = document.getElementById("filteredCasesCount");
+  if (cntFilterEl) cntFilterEl.innerText = `(显示 ${filtered.length} 项)`;
+  const selBadge = document.getElementById("selCountBadge");
+  if (selBadge) selBadge.innerText = gState.selectedCases.size;
+
   filtered.forEach((c) => {
     const tr = document.createElement("tr");
-    tr.style.borderBottom = "1px solid var(--g-border-subtle)";
     if (isSandbox) {
       tr.style.backgroundColor = "#f8fafc";
       tr.style.border = "1.5px dashed #94a3b8";
     }
 
-    const badgeColor = {
-      "通过": "background:#e6f4ea; color:#137333;",
-      "失败": "background:#fce8e6; color:#c5221f;",
-      "阻塞": "background:#fef7e0; color:#b06000;",
-      "跳过": "background:#f1f3f4; color:#5f6368;",
-      "未执行": "background:#f1f3f4; color:#80868b;",
-    }[c.status] || "background:#eee;";
+    let statusHtml = "";
+    if (c.status === "通过") {
+      statusHtml = '<span class="status-chip passed">通过</span>';
+    } else if (c.status === "失败") {
+      statusHtml = '<span class="status-chip failed">失败</span>';
+    } else if (c.status === "阻塞") {
+      statusHtml = '<span class="status-chip running" style="color:var(--g-yellow); background:var(--g-yellow-surface);">阻塞</span>';
+    } else if (c.status === "跳过") {
+      statusHtml = '<span class="status-chip pending">跳过</span>';
+    } else {
+      statusHtml = '<span class="status-chip pending">未执行</span>';
+    }
 
     const isChecked = gState.selectedCases.has(c.case_id) ? "checked" : "";
 
     tr.innerHTML = `
-      <td style="padding:10px 12px;"><input type="checkbox" value="${c.case_id}" ${isChecked} onchange="toggleSelectCase('${c.case_id}', this.checked)"></td>
-      <td style="padding:10px 12px; font-weight:600; font-family:var(--g-mono); color:var(--g-blue);">${c.case_id}</td>
-      <td style="padding:10px 12px;">
+      <td style="text-align:center;">
+        <input type="checkbox" value="${c.case_id}" ${isChecked} onchange="toggleSelectCase('${c.case_id}', this.checked)">
+      </td>
+      <td style="font-weight:600; font-family:var(--g-mono); color:var(--g-blue);">${c.case_id}</td>
+      <td>
         <div style="font-weight:500;">${c.title}</div>
         ${c.note ? `<div style="font-size:11px; color:var(--g-text-secondary); margin-top:2px;">${c.note}</div>` : ""}
         ${isSandbox ? `<div style="font-size:11px; color:#64748b; font-style:italic; margin-top:2px;">⚠️ 不判通过模式 (未验证业务)</div>` : ""}
       </td>
-      <td style="padding:10px 12px;">
-        <span style="display:inline-block; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:600; ${badgeColor}">
-          ${c.status}
-        </span>
-      </td>
-      <td style="padding:10px 12px; font-size:12px; color:var(--g-text-secondary);">${c.duration_ms ? c.duration_ms + 'ms' : '-'}</td>
-      <td style="padding:10px 12px; text-align:center;">
-        <button class="btn-icon-run" onclick="runSingleCase('${c.case_id}')" title="单独执行该用例">▶ 执行</button>
-        <button class="btn-secondary" style="font-size:11px; padding:2px 6px; margin-left:4px;" onclick="toggleEvidence('${c.case_id}')">证据</button>
+      <td>${statusHtml}</td>
+      <td style="font-size:12px; color:var(--g-text-secondary);">${c.duration_ms ? c.duration_ms + 'ms' : '-'}</td>
+      <td style="text-align:center;">
+        <button class="g-btn g-btn-tonal" style="height:24px; font-size:11px; padding:0 8px;" onclick="runSingleCase('${c.case_id}')" title="单独执行该用例">▶ 执行</button>
+        <button class="g-btn g-btn-outlined" style="height:24px; font-size:11px; padding:0 8px; margin-left:4px;" onclick="toggleEvidence('${c.case_id}')">证据</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -195,11 +420,10 @@ function renderCaseTable() {
     const trEv = document.createElement("tr");
     trEv.id = `ev-row-${c.case_id}`;
     trEv.style.display = "none";
-    trEv.style.background = "var(--g-surface-variant)";
     trEv.innerHTML = `
-      <td colspan="6" style="padding:10px 16px;">
-        <div style="font-size:12px; font-weight:600; margin-bottom:4px;">实测比对证据 (Evidence):</div>
-        <pre style="margin:0; font-family:var(--g-mono); font-size:11px; background:#fff; padding:8px 12px; border-radius:4px; border:1px solid var(--g-border); max-height:200px; overflow:auto;">${JSON.stringify(c.evidence || {}, null, 2)}</pre>
+      <td colspan="6" style="padding:10px 16px; background:var(--g-surface-variant);">
+        <div style="font-size:12px; font-weight:600; margin-bottom:4px; color:var(--g-text-primary);">实测比对证据 (Evidence):</div>
+        <pre style="margin:0; font-family:var(--g-mono); font-size:11px; background:var(--g-surface); padding:8px 12px; border-radius:4px; border:1px solid var(--g-border); max-height:220px; overflow:auto;">${JSON.stringify(c.evidence || {}, null, 2)}</pre>
       </td>
     `;
     tbody.appendChild(trEv);
@@ -216,6 +440,8 @@ function toggleEvidence(caseId) {
 function toggleSelectCase(caseId, isChecked) {
   if (isChecked) gState.selectedCases.add(caseId);
   else gState.selectedCases.delete(caseId);
+  const selBadge = document.getElementById("selCountBadge");
+  if (selBadge) selBadge.innerText = gState.selectedCases.size;
 }
 
 function toggleSelectAll(masterCheckbox) {
@@ -226,6 +452,8 @@ function toggleSelectAll(masterCheckbox) {
     if (checked) gState.selectedCases.add(cb.value);
     else gState.selectedCases.delete(cb.value);
   });
+  const selBadge = document.getElementById("selCountBadge");
+  if (selBadge) selBadge.innerText = gState.selectedCases.size;
 }
 
 // =========================================================================
@@ -244,20 +472,20 @@ async function loadExcelCases() {
 
 function renderExcelTable() {
   const tbody = document.getElementById("excelTableBody");
+  if (!tbody) return;
   tbody.innerHTML = "";
   gState.excelData.forEach((row) => {
     const tr = document.createElement("tr");
-    tr.style.borderBottom = "1px solid var(--g-border-subtle)";
     tr.innerHTML = `
-      <td style="padding:8px 10px; font-weight:600; font-family:var(--g-mono);">${row["用例ID"] || ""}</td>
-      <td style="padding:8px 10px; color:var(--g-text-secondary);">${row["所属域"] || ""}</td>
-      <td style="padding:8px 10px;">${row["子系统"] || ""}</td>
-      <td style="padding:8px 10px;">
+      <td style="font-weight:600; font-family:var(--g-mono);">${row["用例ID"] || ""}</td>
+      <td style="color:var(--g-text-secondary);">${row["所属域"] || ""}</td>
+      <td>${row["子系统"] || ""}</td>
+      <td>
         <div style="font-weight:500;">${row["测试点"] || ""}</div>
         <div style="font-size:11px; color:var(--g-text-secondary);">${row["预期结果"] || ""}</div>
       </td>
-      <td style="padding:8px 10px;">${row["执行方式"] || "手工"}</td>
-      <td style="padding:8px 10px;"><span style="display:inline-block; padding:2px 6px; border-radius:4px; font-size:11px; background:#e6f4ea; color:#137333;">${row["执行状态"] || "未测试"}</span></td>
+      <td>${row["执行方式"] || "手工"}</td>
+      <td><span class="status-chip passed">${row["执行状态"] || "未测试"}</span></td>
     `;
     tbody.appendChild(tr);
   });
@@ -273,7 +501,7 @@ async function runSingleCase(caseId) {
 async function runSelectedCases() {
   const cases = Array.from(gState.selectedCases);
   if (cases.length === 0) {
-    alert("请先勾选用例！");
+    showToast("提示", "请先在用例列表中勾选至少一条用例！", "warning");
     return;
   }
   await executeCases(cases);
@@ -292,7 +520,7 @@ async function executeCases(casesArray) {
     is_ui_verify: false,
   };
 
-  appendTerminal(`\n🚀 [下发执行指令] 目标用例: ${casesArray ? casesArray.join(", ") : "全量66条"} (环境: ${gState.env}, 显示浏览器: ${gState.showBrowser})\n`);
+  appendTerminal(`\n🚀 [下发执行指令] 目标用例: ${casesArray ? casesArray.join(", ") : "全量66条"} (环境: ${gState.env}, 显示浏览器: ${gState.showBrowser}, 慢放: ${gState.slowmo}ms)\n`);
 
   try {
     const res = await fetch("/api/run", {
@@ -302,12 +530,13 @@ async function executeCases(casesArray) {
     });
     const resData = await res.json();
     if (!resData.ok) {
-      alert("启动失败: " + resData.msg);
+      showToast("启动失败", resData.msg, "danger");
     } else {
       setRunningState(true);
+      showToast("开始执行", `测试已启动 (${casesArray ? casesArray.length + "条" : "全量66条"})`, "run");
     }
   } catch (err) {
-    alert("请求异常: " + err);
+    showToast("请求异常", String(err), "danger");
   }
 }
 
@@ -318,28 +547,35 @@ async function stopRun() {
     const data = await res.json();
     appendTerminal(`\n⏹️ [停止指令] ${data.msg}\n`);
     setRunningState(false);
+    showToast("已停止", data.msg, "warning");
   } catch (err) {
-    alert("停止失败: " + err);
+    showToast("停止失败", String(err), "danger");
   }
 }
 
 function setRunningState(isRunning) {
   gState.running = isRunning;
   const pill = document.getElementById("statusPill");
-  const dot = document.getElementById("statusDot");
-  const text = document.getElementById("statusText");
-  const stopBtn = document.getElementById("stopBtn");
+  const stopBtn = document.getElementById("btnStop");
+  const runSelBtn = document.getElementById("btnRunSelected");
+  const runAllBtn = document.getElementById("btnRunAll");
 
   if (isRunning) {
-    pill.className = "status-pill running";
-    dot.innerText = "🟢";
-    text.innerText = "执行中";
-    stopBtn.disabled = false;
+    if (pill) {
+      pill.className = "status-chip running";
+      pill.innerText = "● 执行中";
+    }
+    if (stopBtn) stopBtn.disabled = false;
+    if (runSelBtn) runSelBtn.disabled = true;
+    if (runAllBtn) runAllBtn.disabled = true;
   } else {
-    pill.className = "status-pill idle";
-    dot.innerText = "●";
-    text.innerText = "就绪空闲";
-    stopBtn.disabled = true;
+    if (pill) {
+      pill.className = "status-chip pending";
+      pill.innerText = "就绪空闲";
+    }
+    if (stopBtn) stopBtn.disabled = true;
+    if (runSelBtn) runSelBtn.disabled = false;
+    if (runAllBtn) runAllBtn.disabled = false;
   }
 }
 
@@ -378,14 +614,17 @@ function handleWsEvent(payload) {
   if (payload.type === "log") {
     appendTerminal(payload.data + "\n");
   } else if (payload.type === "step") {
-    document.getElementById("stepText").innerText = `[${payload.data.case_id}] ${payload.data.step}`;
+    const stepEl = document.getElementById("stepText");
+    if (stepEl) stepEl.innerText = `[${payload.data.case_id}] ${payload.data.step}`;
   } else if (payload.type === "case_result") {
     const d = payload.data;
-    document.getElementById("progressText").innerText = `进度: ${d.current_index}/${d.total_cases}`;
+    const progText = document.getElementById("progressText");
+    if (progText) progText.innerText = `进度: ${d.current_index}/${d.total_cases}`;
     const pct = Math.floor((d.current_index / d.total_cases) * 100);
-    document.getElementById("progressFill").style.width = pct + "%";
+    const progFill = document.getElementById("progressFill");
+    if (progFill) progFill.style.width = Math.min(pct, 100) + "%";
 
-    // 局部更新该行状态
+    // 局部更新行状态
     const cObj = gState.casesData.find((x) => x.case_id === d.case_id || (d.case_id && d.case_id.includes(x.case_id)));
     if (cObj) {
       cObj.status = d.status;
@@ -393,8 +632,12 @@ function handleWsEvent(payload) {
     }
   } else if (payload.type === "finished") {
     setRunningState(false);
-    document.getElementById("stepText").innerText = "执行完成";
+    const stepEl = document.getElementById("stepText");
+    if (stepEl) stepEl.innerText = "执行完成";
+    const progFill = document.getElementById("progressFill");
+    if (progFill) progFill.style.width = "100%";
     loadCases(); // 重新拉取落盘最新数据
+    showToast("执行完成", "本次自动化测试批次已结束，报告与审计已落盘", "success");
   }
 }
 
@@ -405,10 +648,15 @@ function startPollingFallback() {
       const res = await fetch("/api/status");
       const st = await res.json();
       setRunningState(st.running);
-      if (st.current_step) document.getElementById("stepText").innerText = st.current_step;
+      if (st.current_step) {
+        const stepEl = document.getElementById("stepText");
+        if (stepEl) stepEl.innerText = st.current_step;
+      }
       if (st.total_cases > 0) {
-        document.getElementById("progressText").innerText = `进度: ${st.current_index}/${st.total_cases}`;
-        document.getElementById("progressFill").style.width = st.percent + "%";
+        const progText = document.getElementById("progressText");
+        if (progText) progText.innerText = `进度: ${st.current_index}/${st.total_cases}`;
+        const progFill = document.getElementById("progressFill");
+        if (progFill) progFill.style.width = Math.min(st.percent, 100) + "%";
       }
     } catch (e) {}
   }, 1000);
@@ -416,17 +664,47 @@ function startPollingFallback() {
 
 function appendTerminal(text) {
   const term = document.getElementById("terminal");
-  term.innerText += text;
+  if (!term) return;
+
+  const div = document.createElement("div");
+  div.className = "t-line";
+  if (text.includes("ERROR") || text.includes("失败")) div.className += " ERROR";
+  else if (text.includes("WARN") || text.includes("⚠️")) div.className += " WARN";
+  else if (text.includes("SUCCESS") || text.includes("通过") || text.includes("✅")) div.className += " SUCCESS";
+  else div.className += " INFO";
+
+  div.innerText = text.replace(/[\r\n]+$/, "");
+  term.appendChild(div);
   term.scrollTop = term.scrollHeight;
+
+  // 更新顶部简报行
+  const latestEl = document.getElementById("termLatestLine");
+  if (latestEl) latestEl.innerText = div.innerText;
 }
 
 function clearTerminal() {
-  document.getElementById("terminal").innerText = "";
+  const term = document.getElementById("terminal");
+  if (term) term.innerHTML = '<div class="t-line INFO">[就绪] FS.TestRunner 控制台已挂载，等待执行指令...</div>';
+  const latestEl = document.getElementById("termLatestLine");
+  if (latestEl) latestEl.innerText = "";
 }
 
-function toggleTerminal() {
-  const term = document.getElementById("terminal");
-  term.style.display = term.style.display === "none" ? "block" : "none";
+function toggleTerminalDrawer() {
+  const drawer = document.getElementById("termDrawer");
+  const btn = document.getElementById("btnMinTerm");
+  if (drawer) {
+    drawer.classList.toggle("collapsed");
+    if (btn) btn.innerText = drawer.classList.contains("collapsed") ? "展开" : "收起";
+  }
+}
+
+function toggleTerminalFloat() {
+  const drawer = document.getElementById("termDrawer");
+  const btn = document.getElementById("btnToggleFloat");
+  if (drawer) {
+    drawer.classList.toggle("floating");
+    if (btn) btn.innerText = drawer.classList.contains("floating") ? "停靠" : "悬浮";
+  }
 }
 
 // =========================================================================
@@ -437,23 +715,26 @@ async function loadLogsList() {
     const res = await fetch("/api/log-files");
     const list = await res.json();
     const box = document.getElementById("logFileList");
+    if (!box) return;
     box.innerHTML = "";
 
     list.forEach((f) => {
       const item = document.createElement("div");
-      item.className = "btn-secondary";
-      item.style.padding = "8px 10px";
+      item.className = "g-btn g-btn-outlined";
+      item.style.padding = "8px 12px";
+      item.style.height = "auto";
       item.style.display = "flex";
       item.style.justifyContent = "space-between";
       item.style.alignItems = "center";
       item.style.cursor = "pointer";
+      item.style.textAlign = "left";
 
       const badgeType = f.type === "audit" ? "🛡️ 审计" : "📊 报告";
 
       item.innerHTML = `
         <div style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:210px;">
-          <div style="font-weight:500; font-size:12px;">${f.name}</div>
-          <div style="font-size:11px; color:var(--g-text-secondary);">${badgeType} · ${f.size_kb} KB</div>
+          <div style="font-weight:600; font-size:12px; color:var(--g-text-primary);">${f.name}</div>
+          <div style="font-size:11px; color:var(--g-text-secondary); margin-top:2px;">${badgeType} · ${f.size_kb} KB</div>
         </div>
       `;
       item.onclick = () => viewLogFile(f.path, f.name);
@@ -466,17 +747,19 @@ async function loadLogsList() {
 
 async function viewLogFile(relPath, fileName) {
   gState.currentViewingLog = relPath;
-  document.getElementById("logViewerTitle").innerText = fileName;
-  document.getElementById("downloadLogBtn").disabled = false;
+  const titleEl = document.getElementById("logViewerTitle");
+  if (titleEl) titleEl.innerText = fileName;
+  const downBtn = document.getElementById("downloadLogBtn");
+  if (downBtn) downBtn.disabled = false;
   const viewer = document.getElementById("logViewerContent");
-  viewer.innerText = "正在载入...";
+  if (viewer) viewer.innerText = "正在载入...";
 
   try {
     const res = await fetch(`/api/log-files/content?path=${encodeURIComponent(relPath)}`);
     const data = await res.json();
-    viewer.innerText = data.content || "（空文件）";
+    if (viewer) viewer.innerText = data.content || "（空文件）";
   } catch (err) {
-    viewer.innerText = "读取文件失败: " + err;
+    if (viewer) viewer.innerText = "读取文件失败: " + err;
   }
 }
 
@@ -500,44 +783,45 @@ async function loadRules() {
 }
 
 function onSearchRules() {
-  const kw = document.getElementById("ruleSearchInput").value.trim().toLowerCase();
+  const inp = document.getElementById("ruleSearchInput");
+  const kw = inp ? inp.value.trim().toLowerCase() : "";
   renderRulesCards(kw);
 }
 
 function renderRulesCards(kw = "") {
   const box = document.getElementById("rulesList");
+  if (!box) return;
   box.innerHTML = "";
 
   const filtered = gState.rulesData.filter((r) => {
     if (!kw) return true;
-    return (r.id + " " + r.title + " " + r.statement).toLowerCase().includes(kw);
+    return (r.id + " " + (r.title || "") + " " + (r.statement || "")).toLowerCase().includes(kw);
   });
 
   filtered.forEach((r) => {
     const card = document.createElement("div");
-    card.style.background = "var(--g-surface)";
-    card.style.border = "1px solid var(--g-border)";
-    card.style.borderRadius = "var(--g-radius-md)";
-    card.style.padding = "14px 16px";
+    card.className = "rule-card";
 
-    const badgeStatus = r.status === "confirmed"
-      ? '<span style="background:#e6f4ea; color:#137333; font-size:11px; padding:2px 6px; border-radius:4px; font-weight:600;">Confirmed</span>'
-      : '<span style="background:#fef7e0; color:#b06000; font-size:11px; padding:2px 6px; border-radius:4px; font-weight:600;">Suspected</span>';
+    const badgeCls = r.kind === "WARN" ? "rule-badge-warn" : "rule-badge-block";
+    const statusText = r.status === "confirmed" ? "Confirmed" : "Suspected";
 
-    const affected = (r.affected_cases || []).map((c) => `<span style="background:#e8f0fe; color:#1a73e8; font-size:11px; padding:2px 6px; border-radius:4px; margin-right:4px;">${c}</span>`).join("");
+    const affected = (r.affected_cases || []).map((c) => `<span class="rule-param-pill">${c}</span>`).join("");
 
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;">
+      <div class="rule-card-header">
         <div>
-          <span style="font-family:var(--g-mono); font-weight:bold; color:var(--g-blue); font-size:13px;">${r.id}</span>
+          <span class="rule-id-pill">${r.id}</span>
           <span style="font-size:11px; color:var(--g-text-secondary); margin-left:6px;">[${r.kind}]</span>
         </div>
-        ${badgeStatus}
+        <span class="rule-badge ${badgeCls}">${statusText}</span>
       </div>
-      <div style="font-weight:600; font-size:13px; margin-bottom:6px;">${r.title}</div>
-      <div style="font-size:12px; color:var(--g-text-primary); line-height:1.5; margin-bottom:8px;">${r.statement}</div>
+      <div class="rule-card-title">${r.title}</div>
+      <div style="font-size:12px; color:var(--g-text-primary); line-height:1.5; margin:8px 0;">${r.statement}</div>
       ${r.evidence ? `<div style="font-size:11px; color:var(--g-text-secondary); background:var(--g-surface-variant); padding:6px 10px; border-radius:4px; margin-bottom:8px;">实测证据: ${r.evidence}</div>` : ""}
-      <div style="font-size:11px; color:var(--g-text-secondary);">受影响用例: ${affected || "无"}</div>
+      <div class="rule-card-footer">
+        <span style="font-size:11px; color:var(--g-text-secondary);">受影响用例:</span>
+        <div class="rule-params-wrap">${affected || "无"}</div>
+      </div>
     `;
     box.appendChild(card);
   });
@@ -552,9 +836,14 @@ async function loadHealth() {
     const data = await res.json();
 
     const sum = data.closed_loop_summary || {};
-    document.getElementById("healthPassRate").innerText = `${sum["通过"] || 0} / ${sum["总计"] || 66} 通过`;
-    document.getElementById("healthRuleCount").innerText = `${data.rule_stats?.total || 57} 条`;
-    document.getElementById("healthCreatedText").innerText = data.created_text || "门诊患者净增 0 · 测试挂号净增 0";
+    const passRateEl = document.getElementById("healthPassRate");
+    if (passRateEl) passRateEl.innerText = `${sum["通过"] || 0} / ${sum["总计"] || 66} 通过`;
+
+    const ruleEl = document.getElementById("healthRuleCount");
+    if (ruleEl) ruleEl.innerText = `${data.rule_stats?.total || 57} 条`;
+
+    const createdEl = document.getElementById("healthCreatedText");
+    if (createdEl) createdEl.innerText = data.created_text || "门诊患者净增 0 · 测试挂号净增 0";
   } catch (err) {
     console.error("加载体检大盘失败:", err);
   }
@@ -575,6 +864,7 @@ async function loadUiVerify() {
 
 function renderUiResults(data) {
   const grid = document.getElementById("uiResultsGrid");
+  if (!grid) return;
   grid.innerHTML = "";
 
   const results = data.results || [];
@@ -585,21 +875,30 @@ function renderUiResults(data) {
 
   results.forEach((r) => {
     const card = document.createElement("div");
-    card.style.background = "var(--g-surface)";
-    card.style.border = "1px solid var(--g-border)";
-    card.style.borderRadius = "var(--g-radius-md)";
-    card.style.padding = "14px";
+    card.className = "ws-card";
 
-    const badgeColor = r.status === "通过" ? "background:#e6f4ea; color:#137333;" : (r.status === "未执行" ? "background:#f1f3f4; color:#64748b;" : "background:#fce8e6; color:#c5221f;");
+    let statusBadge = "";
+    if (r.status === "通过") {
+      statusBadge = '<span class="status-chip passed">通过</span>';
+    } else if (r.status === "未执行") {
+      statusBadge = '<span class="status-chip pending">未执行</span>';
+    } else {
+      statusBadge = '<span class="status-chip failed">失败</span>';
+    }
 
     card.innerHTML = `
-      <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
-        <span style="font-weight:bold; font-family:var(--g-mono); color:var(--g-blue);">${r.case_id}</span>
-        <span style="font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600; ${badgeColor}">${r.status}</span>
+      <div class="ws-card-header">
+        <div>
+          <span style="font-weight:bold; font-family:var(--g-mono); color:var(--g-blue); font-size:14px;">${r.case_id}</span>
+          <div class="ws-card-title" style="margin-top:4px;">${r.title}</div>
+        </div>
+        ${statusBadge}
       </div>
-      <div style="font-size:13px; font-weight:500; margin-bottom:6px;">${r.title}</div>
-      <div style="font-size:12px; color:var(--g-text-secondary); line-height:1.4;">${r.note || ""}</div>
-      <div style="font-size:11px; color:var(--g-text-tertiary); margin-top:8px;">耗时: ${r.duration_ms}ms</div>
+      <div class="ws-card-desc">${r.note || ""}</div>
+      <div class="ws-card-footer">
+        <span style="font-size:11px; color:var(--g-text-tertiary);">耗时: ${r.duration_ms}ms</span>
+        <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue);">真实 DOM 对账</span>
+      </div>
     `;
     grid.appendChild(card);
   });
@@ -614,7 +913,7 @@ async function runUiVerifyNow() {
   };
 
   appendTerminal("\n🖥️ [触发界面巡检] 正在拉起 Chrome 执行真实业务等式对账...\n");
-  switchTab("cases"); // 切换到 terminal 查看
+  switchTab("cases"); // 切换到用例控制台查看实时日志
 
   try {
     const res = await fetch("/api/run", {
@@ -624,11 +923,46 @@ async function runUiVerifyNow() {
     });
     const resData = await res.json();
     if (!resData.ok) {
-      alert("启动失败: " + resData.msg);
+      showToast("启动失败", resData.msg, "danger");
     } else {
       setRunningState(true);
+      showToast("界面巡检开始", "正在通过独立 Chrome 运行真实 DOM 比对", "run");
     }
   } catch (err) {
-    alert("请求异常: " + err);
+    showToast("请求异常", String(err), "danger");
   }
+}
+
+// =========================================================================
+// 主题切换与辅助组件
+// =========================================================================
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || "light";
+  const next = current === "light" ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", next);
+  showToast("主题切换", `已切换为 ${next === "dark" ? "深色模式" : "浅色模式"}`, "info");
+}
+
+function showToast(title, desc, type = "info") {
+  const container = document.getElementById("toastContainer");
+  if (!container) return;
+
+  const toast = document.createElement("div");
+  toast.className = `g-toast toast-${type}`;
+  toast.innerHTML = `
+    <div class="g-toast-icon">
+      ${type === "success" ? "✅" : (type === "danger" ? "❌" : (type === "warning" ? "⚠️" : "ℹ️"))}
+    </div>
+    <div class="g-toast-content">
+      <div class="g-toast-title">${title}</div>
+      <div class="g-toast-desc">${desc}</div>
+    </div>
+    <span class="g-toast-close" onclick="this.parentElement.remove()">✕</span>
+  `;
+
+  container.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add("hide");
+    setTimeout(() => toast.remove(), 250);
+  }, 3500);
 }

@@ -1,482 +1,620 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FS.TestRunner · 自动化测试控制台</title>
-  <link rel="stylesheet" href="/static/css/variables.css">
-  <link rel="stylesheet" href="/static/css/layout.css">
-  <link rel="stylesheet" href="/static/css/components.css">
-  <link rel="stylesheet" href="/static/css/cases.css">
-  <link rel="stylesheet" href="/static/css/rules.css">
-  <style>
-    /* 自定义与微调样式 */
-    .top-toolbar {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 24px;
-      background: var(--g-surface);
-      border-bottom: 1px solid var(--g-border);
-      flex-wrap: wrap;
-    }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 10px;
-      border-radius: var(--g-radius-full);
-      font-size: 12px;
-      font-weight: 500;
-    }
-    .status-pill.idle { background: var(--g-surface-variant); color: var(--g-text-secondary); }
-    .status-pill.running { background: #e8f0fe; color: #1a73e8; border: 1px solid #aecbfa; }
-    
-    .btn-primary {
-      background: var(--g-blue);
-      color: #fff;
-      border: none;
-      padding: 6px 14px;
-      border-radius: var(--g-radius-sm);
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .btn-primary:hover { background: var(--g-blue-hover); }
-    .btn-secondary {
-      background: var(--g-surface);
-      color: var(--g-text-primary);
-      border: 1px solid var(--g-border);
-      padding: 6px 12px;
-      border-radius: var(--g-radius-sm);
-      cursor: pointer;
-      font-size: 13px;
-    }
-    .btn-secondary:hover { background: var(--g-surface-hover); }
-    .btn-danger {
-      background: var(--g-red-surface);
-      color: var(--g-red);
-      border: 1px solid #f28b82;
-      padding: 6px 12px;
-      border-radius: var(--g-radius-sm);
-      cursor: pointer;
-      font-size: 13px;
-      font-weight: 500;
-    }
-    .btn-danger:hover { background: #fce8e6; }
-    .btn-icon-run {
-      background: #e6f4ea;
-      color: #1e8e3e;
-      border: 1px solid #ceead6;
-      padding: 3px 8px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 11px;
-      font-weight: 600;
-    }
-    .btn-icon-run:hover { background: #ceead6; }
-
-    .sandbox-banner {
-      background: #fef7e0;
-      border: 1px solid #fdd663;
-      color: #b06000;
-      padding: 6px 16px;
-      font-size: 12px;
-      font-weight: 500;
-      display: none;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .case-card.sandbox-mode {
-      background-color: #f8fafc !important;
-      border: 1.5px dashed #94a3b8 !important;
-    }
-    .badge-sandbox-mark {
-      background: #e2e8f0;
-      color: #475569;
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 3px;
-      border: 1px dashed #94a3b8;
-    }
-
-    .progress-bar-wrap {
-      width: 140px;
-      height: 8px;
-      background: var(--g-surface-variant);
-      border-radius: 4px;
-      overflow: hidden;
-      display: inline-block;
-      vertical-align: middle;
-    }
-    .progress-bar-fill {
-      height: 100%;
-      background: var(--g-blue);
-      width: 0%;
-      transition: width 0.2s;
-    }
-
-    .terminal-container {
-      background: #1e1e1e;
-      color: #d4d4d4;
-      font-family: var(--g-mono);
-      font-size: 12px;
-      line-height: 1.5;
-      padding: 12px 16px;
-      border-radius: var(--g-radius-md);
-      height: 240px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-all;
-      margin-top: 14px;
-      border: 1px solid #333;
-    }
-
-    .evidence-drawer {
-      margin-top: 8px;
-      padding: 10px 14px;
-      background: var(--g-surface-variant);
-      border-radius: 6px;
-      font-family: var(--g-mono);
-      font-size: 12px;
-      overflow-x: auto;
-      display: none;
-    }
-
-    .stat-filter-btn {
-      cursor: pointer;
-      padding: 4px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      background: var(--g-surface-variant);
-      border: 1px solid transparent;
-      color: var(--g-text-secondary);
-    }
-    .stat-filter-btn.active {
-      background: var(--g-blue-surface);
-      border-color: var(--g-blue);
-      color: var(--g-blue);
-      font-weight: 600;
-    }
-  </style>
+  <!-- Google Material Design 3 Modular CSS Architecture -->
+  <link rel="stylesheet" href="/static/css/variables.css?v=2.3.0">
+  <link rel="stylesheet" href="/static/css/layout.css?v=2.3.0">
+  <link rel="stylesheet" href="/static/css/components.css?v=2.3.0">
+  <link rel="stylesheet" href="/static/css/cases.css?v=2.3.0">
+  <link rel="stylesheet" href="/static/css/rules.css?v=2.3.0">
 </head>
 <body>
-  <!-- 顶部主标题栏 -->
-  <header style="background:var(--g-surface); border-bottom:1px solid var(--g-border); padding:10px 24px; display:flex; justify-content:space-between; align-items:center;">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <div style="width:32px; height:32px; background:var(--g-blue); border-radius:8px; display:flex; align-items:center; justify-content:center; color:#fff; font-weight:bold;">FS</div>
-      <div>
-        <h1 style="font-size:16px; font-weight:600; margin:0;">FS.TestRunner · 自动化测试控制台</h1>
-        <p style="font-size:12px; color:var(--g-text-secondary); margin:0;">闭环真校验 · 业务等式对账 · 造数护栏防污染</p>
+
+  <!-- Floating Toast Notifications Container -->
+  <div id="toastContainer"></div>
+
+  <!-- Google App Header -->
+  <header>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <div class="brand-wrap" style="min-width:auto;">
+        <div class="google-dots">
+          <div class="g-dot g-dot-blue"></div>
+          <div class="g-dot g-dot-red"></div>
+          <div class="g-dot g-dot-yellow"></div>
+          <div class="g-dot g-dot-green"></div>
+        </div>
+        <div class="brand-title">
+          FS.TestRunner
+          <span class="badge">Google QA Suite</span>
+        </div>
+      </div>
+
+      <!-- Search Pill -->
+      <div class="search-pill">
+        <svg class="ui-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--g-text-tertiary); flex-shrink:0;">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="searchInput" placeholder="搜索测试用例、病历元素或 HIS 模块 (按 / 聚焦)..." oninput="onSearchCases()">
       </div>
     </div>
-    <div style="display:flex; align-items:center; gap:16px;">
-      <div style="font-size:12px; color:var(--g-text-secondary);">
-        控制台端口: <span style="font-weight:bold; color:var(--g-text-primary);">8989</span> | 
-        只读报告站: <a href="http://127.0.0.1:8990" target="_blank" style="color:var(--g-blue); text-decoration:none;">8990 ↗</a>
+
+    <!-- Top Action Groups -->
+    <div class="top-actions">
+      <!-- Group 1: 核心执行操作 -->
+      <div class="action-btn-group" title="测试执行模式">
+        <button class="g-btn g-btn-primary" id="btnRunSelected" onclick="runSelectedCases()" title="执行当前勾选的测试用例">
+          <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+          <span>运行选中用例</span>
+        </button>
+        <button class="g-btn g-btn-tonal" id="btnRunAll" onclick="runAllCases()" title="全量执行所有 66 条闭环用例">
+          <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon><line x1="19" y1="5" x2="19" y2="19"></line></svg>
+          <span>全部执行 (66条)</span>
+        </button>
+        <button class="g-btn g-btn-danger" id="btnStop" onclick="stopRun()" disabled title="强制终止当前正在运行的测试">
+          <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
+          <span>停止</span>
+        </button>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <!-- Group 2: 环境模式选择 -->
+      <div class="env-mode-wrapper" title="运行环境与数据库模式切换">
+        <select class="target-select env-mode-select" id="envModeSelect" onchange="onEnvChange()">
+          <option value="real" selected>真实现场直连 (Real)</option>
+          <option value="sandbox">不判通过模式 (Sandbox)</option>
+        </select>
+      </div>
+
+      <div class="header-divider"></div>
+
+      <!-- Group 3: 工具与配置 -->
+      <div class="tools-btn-group">
+        <select class="target-select" id="slowmoSelect" style="height:32px; font-size:12px;" title="动作间慢放延迟">
+          <option value="0">慢放: 正常 (0ms)</option>
+          <option value="500">慢放: 500ms</option>
+          <option value="1000">慢放: 1秒</option>
+        </select>
+
+        <button class="g-btn g-btn-outlined" id="btnOpenRunConfig" title="运行环境与控制台信息">
+          <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>控制台: 8989</span>
+          <span id="configSummaryBadge" class="config-summary-pill">直连现场</span>
+        </button>
+
+        <button class="icon-btn" id="btnToggleTheme" onclick="toggleTheme()" title="切换深色/浅色主题">
+          <svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
 
-  <!-- 顶部控制条 -->
-  <div class="top-toolbar">
-    <div id="statusPill" class="status-pill idle">
-      <span id="statusDot">●</span> <span id="statusText">就绪空闲</span>
-    </div>
+  <!-- App Layout -->
+  <div class="app-layout">
+    <!-- Level 1 Global Activity Rail -->
+    <aside class="activity-rail" id="activityRail">
+      <div class="rail-top">
+        <!-- 1. 测试中心 -->
+        <div class="rail-item active" id="railItemCases" onclick="switchDomain('cases')" title="用例清单与测试执行控制台">
+          <div class="rail-icon">
+            <svg class="ui-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+          </div>
+          <span class="rail-label">用例执行</span>
+          <span class="rail-badge" id="railBadgeCases">66</span>
+        </div>
 
-    <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
-      <span id="progressText">进度: 0/0</span>
-      <div class="progress-bar-wrap">
-        <div id="progressFill" class="progress-bar-fill"></div>
+        <!-- 2. 全院台账 -->
+        <div class="rail-item" id="railItemExcel" onclick="switchDomain('excel')" title="全院回归用例总台账 (353项)">
+          <div class="rail-icon">
+            <svg class="ui-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+          </div>
+          <span class="rail-label">全院台账</span>
+          <span class="rail-badge" style="background:#0284c7;">353</span>
+        </div>
+
+        <!-- 3. 业务规则 -->
+        <div class="rail-item" id="railItemRules" onclick="switchDomain('rules')" title="临床与业务规则知识库 (只读)">
+          <div class="rail-icon">
+            <svg class="ui-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              <polyline points="9 12 11 14 15 10"></polyline>
+            </svg>
+          </div>
+          <span class="rail-label">业务规则</span>
+          <span class="rail-badge" style="background:var(--g-green);">57</span>
+        </div>
+
+        <!-- 4. 全院体检 -->
+        <div class="rail-item" id="railItemHealth" onclick="switchDomain('health')" title="全院核心模块矩阵与体检健康度">
+          <div class="rail-icon">
+            <svg class="ui-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+            </svg>
+          </div>
+          <span class="rail-label">全院体检</span>
+        </div>
+
+        <!-- 5. 界面巡检 -->
+        <div class="rail-item" id="railItemScreen" onclick="switchDomain('screen')" title="实体 Chrome 界面巡检与等式比对视窗">
+          <div class="rail-icon">
+            <svg class="ui-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+          </div>
+          <span class="rail-label">界面巡检</span>
+        </div>
+
+        <!-- 6. 运行日志 -->
+        <div class="rail-item" id="railItemLogs" onclick="switchDomain('logs')" title="运行日志与磁盘持久化归档">
+          <div class="rail-icon">
+            <svg class="ui-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+              <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+          </div>
+          <span class="rail-label">运行日志</span>
+        </div>
       </div>
-    </div>
 
-    <!-- 步骤提示 -->
-    <div style="flex:1; min-width:180px; font-size:12px; color:var(--g-text-secondary); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-      当前动作: <span id="stepText" style="color:var(--g-text-primary); font-weight:500;">等待指令</span>
-    </div>
+      <div class="rail-bottom">
+        <div class="rail-item rail-action" onclick="toggleTerminalDrawer()" title="展开/收起底部实时日志终端">
+          <div class="rail-icon">
+            <svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="4 17 10 11 4 5"></polyline>
+              <line x1="12" y1="19" x2="20" y2="19"></line>
+            </svg>
+          </div>
+          <span class="rail-label">终端日志</span>
+        </div>
 
-    <!-- 环境选择 -->
-    <div style="display:flex; align-items:center; gap:6px; font-size:13px;">
-      <label style="font-weight:500;">环境:</label>
-      <select id="envSelect" class="btn-secondary" style="padding:4px 8px;" onchange="onEnvChange()">
-        <option value="real">真实环境 (Real)</option>
-        <option value="sandbox">不判通过模式 (Sandbox)</option>
-      </select>
-    </div>
-
-    <!-- 浏览器可见性开关 -->
-    <label style="display:inline-flex; align-items:center; gap:4px; font-size:13px; cursor:pointer;">
-      <input type="checkbox" id="showBrowserCheck">
-      <span style="font-weight:500;">显示浏览器（可看页面在动）</span>
-    </label>
-
-    <!-- 慢放选择 -->
-    <select id="slowmoSelect" class="btn-secondary" style="padding:4px 8px; font-size:12px;">
-      <option value="0">慢放: 正常(0ms)</option>
-      <option value="500">慢放: 500ms</option>
-      <option value="1000">慢放: 1秒</option>
-    </select>
-
-    <!-- 操作按钮组 -->
-    <div style="display:flex; gap:8px;">
-      <button class="btn-primary" onclick="runSelectedCases()">▶ 执行选中</button>
-      <button class="btn-secondary" onclick="runAllCases()">▶ 全部执行 (66条)</button>
-      <button class="btn-danger" id="stopBtn" onclick="stopRun()" disabled>⏹ 停止</button>
-    </div>
-  </div>
-
-  <!-- 不判通过模式警示横幅 -->
-  <div id="sandboxBanner" class="sandbox-banner">
-    <span>⚠️</span>
-    <span>当前处于<b>不判通过模式</b>：仅校验通道与结构，不连接数据库，结论一律降级为「未执行」，永不判通过。</span>
-  </div>
-
-  <!-- 主布局区：左侧菜单 + 右侧内容 -->
-  <div style="display:flex; flex:1; overflow:hidden;">
-    <!-- 左侧菜单栏 -->
-    <aside style="width:200px; background:var(--g-surface); border-right:1px solid var(--g-border); display:flex; flex-direction:column; padding:12px 8px;">
-      <nav style="display:flex; flex-direction:column; gap:4px;">
-        <button class="menu-item active" id="menu-cases" onclick="switchTab('cases')">
-          <span>🚀</span> 用例执行
-        </button>
-        <button class="menu-item" id="menu-logs" onclick="switchTab('logs')">
-          <span>📋</span> 运行日志
-        </button>
-        <button class="menu-item" id="menu-rules" onclick="switchTab('rules')">
-          <span>📖</span> 业务规则
-        </button>
-        <button class="menu-item" id="menu-health" onclick="switchTab('health')">
-          <span>🩺</span> 体检总览
-        </button>
-        <button class="menu-item" id="menu-ui" onclick="switchTab('ui')">
-          <span>🖥️</span> 界面巡检
-        </button>
-      </nav>
-
-      <div style="margin-top:auto; padding:10px 8px; font-size:11px; color:var(--g-text-tertiary); border-top:1px solid var(--g-border-subtle);">
-        <div>FS.TestRunner v2.0</div>
-        <div>Engine: fs_runner</div>
+        <div class="rail-item rail-action" onclick="location.reload()" title="刷新当前控制台界面">
+          <div class="rail-icon">
+            <svg class="ui-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </div>
+          <span class="rail-label">刷新</span>
+        </div>
       </div>
     </aside>
 
-    <!-- 右侧主内容展示区 -->
-    <main style="flex:1; overflow-y:auto; padding:20px 24px; background:var(--g-bg-base);">
-      
-      <!-- ============================================================= -->
-      <!-- TAB 1: 用例执行                                               -->
-      <!-- ============================================================= -->
-      <section id="tab-cases">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
-          <!-- 视图切换 -->
-          <div style="display:flex; gap:6px;">
-            <button class="btn-secondary active" id="viewClosedLoopBtn" onclick="switchCaseView('closed_loop')">66 条闭环自动化</button>
-            <button class="btn-secondary" id="viewExcelBtn" onclick="switchCaseView('excel')">353 行生产台账</button>
+    <!-- Level 2 Left Navigation Drawer -->
+    <aside class="drawer" id="caseDrawer">
+      <div class="drawer-header">
+        <div style="display:flex; justify-content:space-between; align-items:center; width:100%;">
+          <div class="drawer-title">业务模块分类 (<span id="totalTestsCount">66</span>)</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <label style="font-size:12px; color:var(--g-blue); cursor:pointer; display:inline-flex; align-items:center; gap:3px;">
+              <input type="checkbox" id="chkSelectAll" checked onchange="toggleSelectAll(this)"> 全选
+            </label>
+            <button type="button" class="drawer-tool-btn" id="btnToggleDrawer" onclick="toggleDrawer()" title="收起分类侧栏" style="padding:2px 4px;">
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </button>
           </div>
+        </div>
+        <div class="drawer-tree-tools">
+          <button type="button" class="drawer-tool-btn" id="btnCollapseAllCategories" onclick="collapseAllCategories()" title="收起全部业务模块分类">
+            <svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="8" y1="13" x2="16" y2="13"></line></svg>
+            <span>全部收缩</span>
+          </button>
+          <span class="drawer-tool-sep">|</span>
+          <button type="button" class="drawer-tool-btn" id="btnExpandAllCategories" onclick="expandAllCategories()" title="展开全部业务模块分类">
+            <svg class="ui-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><line x1="12" y1="10" x2="12" y2="16"></line><line x1="9" y1="13" x2="15" y2="13"></line></svg>
+            <span>全部展开</span>
+          </button>
+        </div>
+      </div>
+      <nav class="drawer-nav" id="drawerNavContainer">
+        <!-- Injected dynamically by app.js -->
+      </nav>
+    </aside>
 
-          <!-- 状态统计过滤 -->
-          <div style="display:flex; gap:6px; flex-wrap:wrap;" id="statusFilterPills">
-            <span class="stat-filter-btn active" onclick="filterByStatus('ALL')">全部 <span id="countAll">0</span></span>
-            <span class="stat-filter-btn" onclick="filterByStatus('通过')">✅ 通过 <span id="countPass">0</span></span>
-            <span class="stat-filter-btn" onclick="filterByStatus('失败')">❌ 失败 <span id="countFail">0</span></span>
-            <span class="stat-filter-btn" onclick="filterByStatus('阻塞')">🚫 阻塞 <span id="countBlock">0</span></span>
-            <span class="stat-filter-btn" onclick="filterByStatus('跳过')">⏭️ 跳过 <span id="countSkip">0</span></span>
-            <span class="stat-filter-btn" onclick="filterByStatus('未执行')">⚪ 未执行 <span id="countUnexec">0</span></span>
+    <!-- Main Viewport -->
+    <main class="main-viewport">
+      <!-- Google Tab Bar -->
+      <div class="tab-bar" id="tabBar">
+        <div class="tab-item active" data-tab="tab-cases" onclick="switchTab('cases')">
+          <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+            <path d="M9 12h6"></path>
+            <path d="M9 16h6"></path>
+          </svg>
+          <span>用例清单与控制台</span>
+        </div>
+        <div class="tab-item" data-tab="tab-excel" onclick="switchTab('excel')">
+          <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <line x1="16" y1="13" x2="8" y2="13"></line>
+            <line x1="16" y1="17" x2="8" y2="17"></line>
+          </svg>
+          <span>全院台账 (353项)</span>
+        </div>
+        <div class="tab-item" data-tab="tab-rules" onclick="switchTab('rules')">
+          <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <path d="M9 15l2 2 4-4"></path>
+          </svg>
+          <span>临床与业务规则中心</span>
+        </div>
+        <div class="tab-item" data-tab="tab-health" onclick="switchTab('health')">
+          <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
+          </svg>
+          <span>全院业务模块体检</span>
+        </div>
+        <div class="tab-item" data-tab="tab-screen" onclick="switchTab('screen')">
+          <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          <span>界面巡检视窗</span>
+        </div>
+        <div class="tab-item" data-tab="tab-logs" onclick="switchTab('logs')">
+          <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>运行与归档日志</span>
+        </div>
+      </div>
+
+      <!-- Tab 1: 用例清单与控制台 -->
+      <section class="content-area active" id="tab-cases">
+        <!-- 不判通过模式警示横幅 -->
+        <div id="sandboxBanner" class="smart-selection-banner" style="display:none; background:#fef7e0; border-color:#fdd663; color:#b06000;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:16px;">⚠️</span>
+            <span>当前处于<b>不判通过模式</b>：仅校验通道与结构，不连接数据库，结论一律降级为「未执行」，永不判通过。</span>
           </div>
-
-          <!-- 搜索框 -->
-          <input type="text" id="caseSearchInput" placeholder="搜索用例编号或标题..." class="btn-secondary" style="width:200px; padding:6px 10px;" oninput="onSearchCases()">
         </div>
 
-        <!-- 闭环用例列表表格 -->
-        <div id="closedLoopView">
-          <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); overflow:hidden;">
-            <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
-              <thead style="background:var(--g-surface-variant); border-bottom:1px solid var(--g-border); color:var(--g-text-secondary);">
+        <!-- 实时执行状态条 (进度、动作) -->
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:8px 14px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-shrink:0;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <span id="statusPill" class="status-chip pending">就绪空闲</span>
+            <div style="display:flex; align-items:center; gap:6px; font-size:12px;">
+              <span id="progressText" style="font-weight:600; color:var(--g-text-secondary);">进度: 0/0</span>
+              <div style="width:140px; height:8px; background:var(--g-surface-variant); border-radius:4px; overflow:hidden;">
+                <div id="progressFill" style="height:100%; width:0%; background:var(--g-blue); transition:width 0.2s;"></div>
+              </div>
+            </div>
+          </div>
+          <div style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; color:var(--g-text-secondary); text-align:right;">
+            当前动作: <b id="stepText" style="color:var(--g-text-primary);">等待指令</b>
+          </div>
+        </div>
+
+        <!-- KPI Mini Status Badges -->
+        <div class="kpi-badge-bar">
+          <div class="kpi-tag-item total" title="全系统已注册的测试用例总数">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">注册用例:</span>
+            <b class="kpi-tag-num" id="kpiTotal">66</b>
+            <span class="kpi-tag-extra">(闭环真校验)</span>
+          </div>
+          <div class="kpi-tag-item pass" title="测试通过数量">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">通过:</span>
+            <b class="kpi-tag-num" id="countPass">0</b>
+          </div>
+          <div class="kpi-tag-item fail" title="测试失败数量">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">失败:</span>
+            <b class="kpi-tag-num" id="countFail">0</b>
+          </div>
+          <div class="kpi-tag-item exec" title="依赖阻塞数量">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">阻塞:</span>
+            <b class="kpi-tag-num" id="countBlock">0</b>
+          </div>
+          <div class="kpi-tag-item" title="条件跳过数量">
+            <span class="kpi-tag-dot" style="background:#80868b;"></span>
+            <span class="kpi-tag-title">跳过:</span>
+            <b class="kpi-tag-num" id="countSkip">0</b>
+          </div>
+          <div class="kpi-tag-item" title="尚未执行数量">
+            <span class="kpi-tag-dot" style="background:#dadce0;"></span>
+            <span class="kpi-tag-title">未执行:</span>
+            <b class="kpi-tag-num" id="countUnexec">0</b>
+          </div>
+          <div class="kpi-tag-item sel" id="selectionStatusBadge" title="当前用例勾选统计与模式">
+            <span class="kpi-tag-dot"></span>
+            <span class="kpi-tag-title">已勾选:</span>
+            <b class="kpi-tag-num"><span id="selCountBadge">0</span>/<span id="totalCountBadge">66</span></b>
+          </div>
+        </div>
+
+        <!-- Material Data Table Wrapper -->
+        <div class="card-table-wrapper">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <button type="button" class="g-btn g-btn-tonal" id="btnToggleDrawerFromTable" onclick="toggleDrawer()" title="展开/收起左侧分类树">
+                <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                <span id="txtToggleDrawerFromTable">分类侧栏</span>
+              </button>
+              <div class="table-title">用例执行清单</div>
+              <span style="font-size:11px; color:var(--g-text-tertiary);" id="filteredCasesCount">(显示 66 项)</span>
+
+              <div style="height:16px; width:1px; background:var(--g-border); margin:0 4px;"></div>
+
+              <!-- Quick Switch for Headless / Visible Execution -->
+              <label class="m-switch" id="lblHeadlessSwitch" title="勾选后实测将在桌面打开实体独立 Chrome 窗口供实时观看">
+                <input type="checkbox" id="showBrowserCheck" onchange="onBrowserCheckChange(this)">
+                <span class="m-switch-track">
+                  <span class="m-switch-thumb"></span>
+                </span>
+                <span class="m-switch-text">
+                  <span id="headlessSwitchModeText" style="display:inline-flex; align-items:center; gap:4px;">
+                    <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> 窗口模式
+                  </span>
+                  <span class="m-switch-tip" id="headlessSwitchTipText">(可看页面在动)</span>
+                </span>
+              </label>
+            </div>
+
+            <div class="table-toolbar-right">
+              <button class="g-btn g-btn-tonal active" id="btnFilterAll" onclick="filterByStatus('ALL')">全部</button>
+              <button class="g-btn g-btn-outlined" style="color:var(--g-green); border-color:var(--g-green);" id="btnFilterPass" onclick="filterByStatus('通过')">通过</button>
+              <button class="g-btn g-btn-outlined" style="color:var(--g-red); border-color:var(--g-red);" id="btnFilterFail" onclick="filterByStatus('失败')">失败</button>
+              <button class="g-btn g-btn-outlined" style="color:var(--g-yellow); border-color:var(--g-yellow);" id="btnFilterBlock" onclick="filterByStatus('阻塞')">阻塞</button>
+              <button class="g-btn g-btn-outlined" id="btnFilterSkip" onclick="filterByStatus('跳过')">跳过</button>
+              <button class="g-btn g-btn-outlined" id="btnFilterUnexec" onclick="filterByStatus('未执行')">未执行</button>
+            </div>
+          </div>
+
+          <!-- Table Scroll Container -->
+          <div class="table-scroll-container" id="caseTableContainer">
+            <table class="g-table">
+              <thead>
                 <tr>
-                  <th style="padding:10px 12px; width:40px;"><input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)"></th>
-                  <th style="padding:10px 12px; width:90px;">用例ID</th>
-                  <th style="padding:10px 12px;">用例标题</th>
-                  <th style="padding:10px 12px; width:90px;">状态</th>
-                  <th style="padding:10px 12px; width:80px;">耗时</th>
-                  <th style="padding:10px 12px; width:130px; text-align:center;">操作</th>
+                  <th style="width: 44px; text-align:center;">
+                    <input type="checkbox" id="chkMasterCases" checked onchange="toggleSelectAll(this)" title="全选/全不选">
+                  </th>
+                  <th style="width: 140px;">用例 ID</th>
+                  <th>用例名称与说明</th>
+                  <th style="width: 110px;">状态</th>
+                  <th style="width: 90px;">耗时</th>
+                  <th style="width: 130px; text-align:center;">操作</th>
                 </tr>
               </thead>
               <tbody id="caseTableBody">
-                <!-- 由 JS 动态填充 -->
+                <!-- Dynamically populated by app.js -->
               </tbody>
             </table>
           </div>
         </div>
+      </section>
 
-        <!-- 台账 Excel 列表视图 -->
-        <div id="excelView" style="display:none;">
-          <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); overflow:hidden;">
-            <table style="width:100%; border-collapse:collapse; font-size:12px; text-align:left;">
-              <thead style="background:var(--g-surface-variant); border-bottom:1px solid var(--g-border); color:var(--g-text-secondary);">
+      <!-- Tab 2: 全院台账 (353项) -->
+      <section class="content-area" id="tab-excel">
+        <div class="card-table-wrapper">
+          <div class="table-toolbar">
+            <div class="table-toolbar-left">
+              <div class="table-title">全院回归用例总台账</div>
+              <span style="font-size:11px; color:var(--g-text-tertiary);" id="excelCasesCount">(共 353 行)</span>
+            </div>
+            <div class="table-toolbar-right">
+              <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue);">353 项业务覆盖</span>
+            </div>
+          </div>
+          <div class="table-scroll-container">
+            <table class="g-table">
+              <thead>
                 <tr>
-                  <th style="padding:8px 10px; width:80px;">用例ID</th>
-                  <th style="padding:8px 10px; width:100px;">所属域</th>
-                  <th style="padding:8px 10px; width:100px;">子系统</th>
-                  <th style="padding:8px 10px;">测试点 / 操作预期</th>
-                  <th style="padding:8px 10px; width:70px;">方式</th>
-                  <th style="padding:8px 10px; width:80px;">台账状态</th>
+                  <th style="width: 120px;">用例ID</th>
+                  <th style="width: 100px;">所属域</th>
+                  <th style="width: 120px;">子系统</th>
+                  <th>测试点与预期结果</th>
+                  <th style="width: 90px;">执行方式</th>
+                  <th style="width: 90px;">执行状态</th>
                 </tr>
               </thead>
               <tbody id="excelTableBody">
-                <!-- 由 JS 动态填充 -->
+                <!-- Dynamically populated by app.js -->
               </tbody>
             </table>
           </div>
         </div>
+      </section>
 
-        <!-- 实时终端控制台 -->
-        <div style="margin-top:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div style="font-size:13px; font-weight:600; color:var(--g-text-primary);">实时控制台输出 (Live Terminal)</div>
-            <div style="display:flex; gap:8px;">
-              <button class="btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="clearTerminal()">清空输出</button>
-              <button class="btn-secondary" style="font-size:11px; padding:3px 8px;" onclick="toggleTerminal()">折叠/展开</button>
-            </div>
+      <!-- Tab 3: 业务规则中心 -->
+      <section class="content-area" id="tab-rules">
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:10px 14px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div class="rule-search-input-wrap" style="height:30px; padding:0 10px; border-radius:15px; flex:1; max-width:400px;">
+            <span class="rule-search-icon" style="display:inline-flex; align-items:center; margin-right:6px;">
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            </span>
+            <input type="text" id="ruleSearchInput" class="rule-search-input" style="height:28px; font-size:12px;" placeholder="快速过滤业务规则 (编号/名称/陈述)..." oninput="onSearchRules()">
           </div>
-          <div id="terminal" class="terminal-container">正在就绪连接实时输出...</div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span class="badge" style="background:var(--g-green-surface); color:var(--g-green);">57 条规则已纳管</span>
+          </div>
+        </div>
+
+        <div id="rulesList" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:14px; margin-top:14px;">
+          <!-- Dynamically populated by app.js -->
         </div>
       </section>
 
-      <!-- ============================================================= -->
-      <!-- TAB 2: 运行日志                                               -->
-      <!-- ============================================================= -->
-      <section id="tab-logs" style="display:none;">
-        <div style="display:flex; gap:16px; height:calc(100vh - 170px);">
-          <!-- 左侧日志文件列表 -->
-          <div style="width:340px; background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); overflow-y:auto; padding:12px;">
-            <h3 style="font-size:14px; margin-bottom:10px;">产物与审计清单</h3>
-            <div id="logFileList" style="display:flex; flex-direction:column; gap:6px;">
-              <!-- 由 JS 动态加载 -->
+      <!-- Tab 4: 全院业务模块体检 -->
+      <section class="content-area" id="tab-health">
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+          <div class="module-card">
+            <div class="module-header">
+              <span class="module-name">回归闭环通过率</span>
+              <span class="module-badge">Closed-Loop</span>
+            </div>
+            <div style="font-size:24px; font-weight:700; color:var(--g-green);" id="healthPassRate">-- / -- 通过</div>
+            <div class="module-desc">66 项真业务校验全闭环执行指标</div>
+          </div>
+          <div class="module-card">
+            <div class="module-header">
+              <span class="module-name">业务规则基线</span>
+              <span class="module-badge">Rules</span>
+            </div>
+            <div style="font-size:24px; font-weight:700; color:var(--g-blue);" id="healthRuleCount">57 条</div>
+            <div class="module-desc">门诊、住院、医嘱、收费全域对账规则</div>
+          </div>
+          <div class="module-card">
+            <div class="module-header">
+              <span class="module-name">造数护栏净增</span>
+              <span class="module-badge">Guardrail</span>
+            </div>
+            <div style="font-size:16px; font-weight:600; color:var(--g-text-primary);" id="healthCreatedText">门诊患者净增 0 · 测试挂号净增 0</div>
+            <div class="module-desc">前置禁止非标写入，全生命周期清理</div>
+          </div>
+        </div>
+
+        <div class="ws-cards-grid" style="margin-top:16px;">
+          <div class="ws-card">
+            <div class="ws-card-header">
+              <div>
+                <div class="ws-card-title">门诊挂号与收费</div>
+                <div class="ws-card-tag">L0 · L1 · L2 业务域</div>
+              </div>
+              <div class="ws-icon-box" style="background:#e8f0fe; color:#1a73e8;">🏥</div>
+            </div>
+            <div class="ws-card-desc">覆盖患者建档、门诊退费、发票打印与作废对账</div>
+            <div class="ws-card-footer">
+              <span class="badge" style="background:#e6f4ea; color:#137333;">护栏受控</span>
+              <span style="font-size:11px; color:var(--g-text-secondary);">22 项用例</span>
             </div>
           </div>
-
-          <!-- 右侧内容查看器 -->
-          <div style="flex:1; background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); display:flex; flex-direction:column; overflow:hidden;">
-            <div style="padding:10px 16px; border-bottom:1px solid var(--g-border); background:var(--g-surface-variant); display:flex; justify-content:space-between; align-items:center;">
-              <span id="logViewerTitle" style="font-weight:600; font-size:13px;">请选择左侧文件查看</span>
-              <button id="downloadLogBtn" class="btn-secondary" style="font-size:12px;" onclick="downloadCurrentLog()" disabled>下载文件</button>
+          <div class="ws-card">
+            <div class="ws-card-header">
+              <div>
+                <div class="ws-card-title">住院医生与护士站</div>
+                <div class="ws-card-tag">L4 · L5 业务域</div>
+              </div>
+              <div class="ws-icon-box" style="background:#fef7e0; color:#b06000;">🩺</div>
             </div>
-            <pre id="logViewerContent" style="flex:1; margin:0; padding:14px; overflow:auto; font-family:var(--g-mono); font-size:12px; background:#1e1e1e; color:#d4d4d4;">点击左侧文件查看内容...</pre>
+            <div class="ws-card-desc">覆盖在院患者列表、床位分配、长期医嘱下达与停止</div>
+            <div class="ws-card-footer">
+              <span class="badge" style="background:#e6f4ea; color:#137333;">护栏受控</span>
+              <span style="font-size:11px; color:var(--g-text-secondary);">24 项用例</span>
+            </div>
+          </div>
+          <div class="ws-card">
+            <div class="ws-card-header">
+              <div>
+                <div class="ws-card-title">住院收费与出院结算</div>
+                <div class="ws-card-tag">L6 业务域</div>
+              </div>
+              <div class="ws-icon-box" style="background:#fce8e6; color:#c5221f;">💳</div>
+            </div>
+            <div class="ws-card-desc">覆盖预交金充值、一日清单对账、出院召回与结算对账</div>
+            <div class="ws-card-footer">
+              <span class="badge" style="background:#e6f4ea; color:#137333;">护栏受控</span>
+              <span style="font-size:11px; color:var(--g-text-secondary);">20 项用例</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <!-- ============================================================= -->
-      <!-- TAB 3: 业务规则（只读）                                       -->
-      <!-- ============================================================= -->
-      <section id="tab-rules" style="display:none;">
-        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:16px; margin-bottom:16px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
-            <div>
-              <h2 style="font-size:16px; font-weight:600; margin-bottom:4px;">业务规则库与测试口径 (只读)</h2>
-              <p style="font-size:12px; color:var(--g-text-secondary); margin:0;">
-                ℹ️ 规则库受 Schema 校验器保护（规则改动请走 git/YAML，前端不开放写入，防止随意篡改口径）
-              </p>
-            </div>
-            <div style="display:flex; gap:10px;">
-              <input type="text" id="ruleSearchInput" placeholder="搜索规则ID或陈述..." class="btn-secondary" style="width:240px; padding:6px 10px;" oninput="onSearchRules()">
-            </div>
-          </div>
-        </div>
-
-        <div id="rulesList" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(480px, 1fr)); gap:12px;">
-          <!-- 由 JS 动态填充规则卡片 -->
-        </div>
-      </section>
-
-      <!-- ============================================================= -->
-      <!-- TAB 4: 体检总览                                               -->
-      <!-- ============================================================= -->
-      <section id="tab-health" style="display:none;">
-        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:14px; margin-bottom:18px;">
-          <!-- 闭环总状态 -->
-          <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:16px;">
-            <div style="font-size:12px; color:var(--g-text-secondary); margin-bottom:6px;">66 条闭环真校验</div>
-            <div style="font-size:24px; font-weight:bold; color:#1e8e3e;" id="healthPassRate">58 / 66 通过</div>
-            <div style="font-size:12px; color:var(--g-text-secondary); margin-top:4px;">
-              通过 58 · 失败 1 · 阻塞 1 · 跳过 3 · 未执行 3
-            </div>
-          </div>
-
-          <!-- 唯一真缺陷 -->
-          <div style="background:var(--g-surface); border:1px solid #f28b82; border-radius:var(--g-radius-md); padding:16px; background:#fef2f2;">
-            <div style="font-size:12px; color:#d93025; font-weight:600; margin-bottom:6px;">🚨 唯一已知真缺陷</div>
-            <div style="font-size:16px; font-weight:bold; color:#d93025;">L5-027 病历封存与解封</div>
-            <div style="font-size:12px; color:#b91c1c; margin-top:4px;">
-              ORA-12899: PATIENT_TYPE 字段超长 (CHAR 1 vs 2)，全院封存功能受阻
-            </div>
-          </div>
-
-          <!-- 造数护栏 -->
-          <div style="background:var(--g-surface); border:1px solid #ceead6; border-radius:var(--g-radius-md); padding:16px; background:#f0fdf4;">
-            <div style="font-size:12px; color:#1e8e3e; font-weight:600; margin-bottom:6px;">🛡️ 造数护栏与探针</div>
-            <div style="font-size:16px; font-weight:bold; color:#16a34a;">零残留已确证</div>
-            <div style="font-size:12px; color:#15803d; margin-top:4px;" id="healthCreatedText">
-              门诊患者净增 0 · 测试挂号净增 0
-            </div>
-          </div>
-
-          <!-- 规则库统计 -->
-          <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:16px;">
-            <div style="font-size:12px; color:var(--g-text-secondary); margin-bottom:6px;">规则库覆盖</div>
-            <div style="font-size:24px; font-weight:bold; color:#1a73e8;" id="healthRuleCount">57 条</div>
-            <div style="font-size:12px; color:var(--g-text-secondary); margin-top:4px;">
-              Confirmed 56 · Suspected 1 · Schema 100% 校验
-            </div>
-          </div>
-        </div>
-
-        <!-- 详细说明 -->
-        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:20px;">
-          <h3 style="font-size:15px; margin-bottom:10px;">系统质量体检说明</h3>
-          <ul style="font-size:13px; line-height:1.8; color:var(--g-text-secondary); padding-left:20px;">
-            <li><b>真实缺陷不篡改</b>：L5-027 保持真实失败并如实报警，绝不掩盖真实数据库超长缺陷。</li>
-            <li><b>造数闸门默认开启</b>：门诊新建患者用例（L6-001/009/012）受闸门保护，默认判定为跳过，防止污染数据库。</li>
-            <li><b>不判通过模式</b>：在沙盒环境下只做通道与参数校验，结论降级为未执行，绝不假通过。</li>
-          </ul>
-        </div>
-      </section>
-
-      <!-- ============================================================= -->
-      <!-- TAB 5: 界面巡检 (UI Verify)                                   -->
-      <!-- ============================================================= -->
-      <section id="tab-ui" style="display:none;">
-        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:16px; margin-bottom:16px; display:flex; justify-content:space-between; align-items:center;">
+      <!-- Tab 5: 界面巡检视窗 -->
+      <section class="content-area" id="tab-screen">
+        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:16px 20px; display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
           <div>
-            <h2 style="font-size:16px; font-weight:600; margin-bottom:4px;">界面巡检与真实业务等式对账</h2>
-            <p style="font-size:12px; color:var(--g-text-secondary); margin:0;">
-              基于 Chrome CDP 真实表单登录，读取渲染 DOM 并与 Oracle 数据库真值对账
-            </p>
+            <div style="font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px;">
+              独立 Chrome 界面巡检与业务等式对账
+              <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue);">4 大核心巡检项</span>
+            </div>
+            <div style="font-size:12px; color:var(--g-text-secondary); margin-top:4px;">
+              在独立 Chrome 中加载真实前端页面，读取 DOM 列表并与后端数据库/网关全集进行数学等式对账。
+            </div>
           </div>
-          <button class="btn-primary" onclick="runUiVerifyNow()">▶ 立即执行界面巡检</button>
+          <button class="g-btn g-btn-primary" onclick="runUiVerifyNow()">
+            <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            <span>立即执行界面巡检</span>
+          </button>
         </div>
 
-        <div id="uiResultsGrid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:12px; margin-bottom:18px;">
-          <!-- 由 JS 填充 4 项界面断言结果 -->
+        <div id="uiResultsGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; margin-top:16px;">
+          <!-- Dynamically populated by app.js -->
         </div>
+      </section>
 
-        <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:16px;">
-          <h3 style="font-size:14px; margin-bottom:10px;">最新现场截图留痕</h3>
-          <div id="uiScreenshotBox" style="text-align:center; padding:20px; background:var(--g-surface-variant); border-radius:6px;">
-            <img id="uiScreenshotImg" src="" alt="现场截图" style="max-width:100%; max-height:480px; border-radius:4px; box-shadow:var(--g-shadow-1); display:none;">
-            <div id="uiScreenshotEmpty" style="color:var(--g-text-secondary); font-size:13px;">暂无截图，可点击上方「立即执行界面巡检」</div>
+      <!-- Tab 6: 运行与归档日志 -->
+      <section class="content-area" id="tab-logs">
+        <div style="display:flex; gap:16px; height:100%; min-height:480px;">
+          <!-- Left: 日志文件列表 -->
+          <div style="width:280px; background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:14px; display:flex; flex-direction:column; gap:10px; flex-shrink:0;">
+            <div style="font-size:13px; font-weight:600; color:var(--g-text-primary);">持久化日志归档</div>
+            <div id="logFileList" style="display:flex; flex-direction:column; gap:6px; overflow-y:auto; flex:1;">
+              <!-- Dynamically populated by app.js -->
+            </div>
+          </div>
+
+          <!-- Right: 日志查看器 -->
+          <div style="flex:1; background:var(--g-surface); border:1px solid var(--g-border); border-radius:var(--g-radius-md); padding:14px; display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div id="logViewerTitle" style="font-size:13px; font-weight:600; font-family:var(--g-mono);">请选择左侧日志文件</div>
+              <button class="g-btn g-btn-tonal" id="downloadLogBtn" onclick="downloadCurrentLog()" disabled>下载当前日志</button>
+            </div>
+            <pre id="logViewerContent" style="flex:1; background:#1e1e1e; color:#d4d4d4; font-family:var(--g-mono); font-size:12px; padding:12px; border-radius:6px; margin:0; overflow:auto; white-space:pre-wrap; word-break:break-all;">点击左侧日志文件以预览完整内容...</pre>
           </div>
         </div>
       </section>
 
+      <!-- Bottom Cloud Shell Terminal Drawer -->
+      <div class="terminal-drawer collapsed" id="termDrawer">
+        <div class="term-resize-handle" id="termResizeHandle" title="按住拖拽调节终端高度"></div>
+        <div class="terminal-topbar" id="termToggleBtn" onclick="toggleTerminalDrawer()">
+          <div style="display:flex; align-items:center; overflow:hidden; flex:1; margin-right:12px;">
+            <span>
+              <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="4 17 10 11 4 5"></polyline>
+                <line x1="12" y1="19" x2="20" y2="19"></line>
+              </svg>
+              Cloud Shell 实时日志终端
+            </span>
+            <span id="termLatestLine" style="font-size:11px; color:#888; font-weight:normal; margin-left:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;"></span>
+          </div>
+          <div style="display:flex; gap:6px; align-items:center; flex-shrink:0;" onclick="event.stopPropagation()">
+            <button class="g-btn g-btn-outlined" style="height:22px; font-size:11px; padding:0 8px; border-color:#555; color:#ccc;" id="btnClearTerm" onclick="clearTerminal()">清空</button>
+            <button class="g-btn g-btn-outlined" style="height:22px; font-size:11px; padding:0 8px; border-color:#555; color:#ccc;" id="btnToggleFloat" onclick="toggleTerminalFloat()">悬浮</button>
+            <button class="g-btn g-btn-outlined" style="height:22px; font-size:11px; padding:0 8px; border-color:#555; color:#ccc;" id="btnMinTerm" onclick="toggleTerminalDrawer()">展开</button>
+          </div>
+        </div>
+        <div class="terminal-logs" id="terminal">
+          <div class="t-line INFO">[就绪] FS.TestRunner 控制台已挂载，等待执行指令...</div>
+        </div>
+      </div>
     </main>
   </div>
 
-  <script src="/static/app.js"></script>
+  <script src="/static/app.js?v=2.3.0"></script>
 </body>
 </html>
