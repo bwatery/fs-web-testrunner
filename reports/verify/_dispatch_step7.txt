@@ -1,0 +1,98 @@
+【第 6 步 · 验收通过；进入第 7 步（规则库）＋两条架构收尾】
+
+## 一、第 6 步我独立验的结果：**三项全达标**
+
+| 要求 | 我核到的证据 |
+|---|---|
+| ① 防空跑写入**观测值** | ✅ 那 6 条「未执行」的 evidence 里都有观测量：`L5-022`/`L5-037`/`L6-026`/`L9-014` 有专门的 **`防空跑观测`** 字段；`L5-004` 有 `总结行总数/可判定行数/排除项逐类计数`；`L9-010` 有 `比对组合数` |
+| ② 变异自检**固化成子命令** | ✅ `cli.py` 有 `selfcheck` 子命令 + `--mutation`，转调 `fs_runner/selfcheck.py`；产物落 `reports/verify/mutation_latest.json` |
+| ③ **非数值变异**没退化 | ✅ `method` 写着「数值+1 / 日期+1天 / '0'-'1'翻转 / 字符串加后缀」，**66 条 = 55 红 / 5 绿 / 6 未执行** |
+
+回归三轮全绿、66 条状态不变 ✓
+
+（那 5 条「仍绿」我看过，还是行为/结构类断言：`L5-025 签名审签`/`L6-008 排班联动`/`L6-046`/`L6-047` 退费类、
+`L9-013` 是自检自身的假象。**不是新问题**。）
+
+**两点提醒**：
+1. 你**没交回执**（27 分钟超时切断）—— 本轮请把回执补上，别只做事不落纸。
+2. 第 6 步的改动**还没提交**（8+ 个 flow 文件是 `M`）。**先提交再往下走**：
+   ```
+   git add -A && git commit -m "refactor(step6): 防空跑写入观测值 + 变异自检固化为 selfcheck 子命令"
+   ```
+
+---
+
+## 二、两条架构收尾（我量出来的，不是感觉）
+
+### 收尾 1 · `run_verify.py` 与 `fs_runner/cli.py` 是**两套并行实现**
+
+```
+run_verify.py      601 行    _resolve_oracle_cfg · _run_ui_walk · _run_workstations · _run_closed_loop
+fs_runner/cli.py   542 行    _resolve_oracle_cfg · run_ui_walk  · run_workstations  · run_closed_loop
+                             ↑ 连私有函数名都撞上
+```
+
+第 2 步的要求是"把 `run_verify.py` 的四个模式**收进** CLI"——实际做成了**新建一份、旧的那份没变薄壳**。
+用例层是共享的（两边 import 同一个套件，改 `closed_loop.py` 都跟着变），
+**但入口层自己的逻辑是两份**（参数解析、报告生成、异常兜底）——**修了 A 不会修 B**。
+
+**要做**：把 `run_verify.py` 变成**薄转发**（照 `tools/collect.py` 的样子，10 行以内），
+或者直接删、让 `python -m fs_runner` 成为唯一入口。
+**验收**：两者不得再有同名/同职责的成对函数。
+
+### 收尾 2 · `python -I -m fs_runner` **跑不了**
+
+`-I`（隔离模式）会把当前目录从 `sys.path` 去掉（且忽略 `PYTHONPATH`），
+所以 `python -I -m fs_runner selfcheck` 报 `No module named fs_runner`。
+而**本项目的约定是 `python -I`**（`tools/collect.py` / `run_verify.py` 都在脚本里 `sys.path.insert` 才跑得起来）。
+
+**要做**：给一个新入口脚本（例如 `fsrun.py`，里面 `sys.path.insert(0, BASE_DIR)` 后转调 `fs_runner.cli.main()`），
+并把文档里的命令统一成 `python -I fsrun.py <子命令>`。
+**验收**：`python -I fsrun.py selfcheck --mutation` 能跑通。
+
+---
+
+## 三、第 7 步 · 建立「规则库」，让用例与规则互相可查
+
+方案第五节第 7 步，完整设计见那份文档。**这里只列你要做到的**：
+
+**产物**：`rules/business_rules.yaml`（系统业务规则）＋ `rules/conventions.yaml`（测试口径）
+
+**schema（字段全必填）**：
+```yaml
+- id: RULE_PHA_DISPENSE_PRIORITY
+  domain: 药房
+  statement: 分类按 priorityOrder 升序求值；无条件的兜底规则必须排在最后
+  evidence: IN02 退药明细落在「退药单」(1)，而非无条件兜底的「通用摆药单」(5)
+  discovered: 2026-10-10
+  status: confirmed          # confirmed | suspected
+  affected_cases: [L9-011, L9-010]
+```
+
+**两条硬约束**：
+- **`status` 必须区分 `confirmed` / `suspected`** —— **推断出来的规则不许当事实写进断言**
+  （L9-011 的"大输液规则校验 drugQuality"就是 `suspected`，至今未证实）
+- 每条必须有 `evidence`
+
+**三个机制**：
+1. **用例声明依赖**：flow 里标注 `requires_rules=[...]`，载入时收集成反查表
+2. **反查可见**：给用例 ID → 列出依赖的规则；给规则 ID → 列出受影响的用例
+3. **可自动化的规则落成检查**，至少两条：
+   - **死配置扫描**：无条件规则（条件字段全空）的优先级**高于**有条件规则 → 报出。
+     **当前配置必须命中一条**（通用摆药单(5) 挡住 口服摆药单(6)）——跑不出红说明扫描写错了
+   - **采样规范抽查**：取样本处必须写清"为什么这条样本能代表"；
+     禁止用"最新一条"这类**会被测试自己改变**的排序键（L2-107 就栽在这）
+
+**初始内容**：
+- `data/business_rules.json` 那 16 条**先复核再迁入** —— 它是给**旧的自愈引擎**写的，**不许照搬**
+- 交接文档 §5 的 **32 条陷阱**结构化迁入 `conventions.yaml`（它们已是规则库雏形，只是写成散文、机器读不到）
+
+**验收**：
+- `rules/` 两份文件存在，且有 **schema 校验器**（缺 `evidence` 或 `status` 就报错）
+- **反查表能生成**（用例 → 规则；规则 → 用例）
+- **死配置扫描能跑，且当前配置命中一条**
+- 页面上能看到 **用例 ↔ 规则** 的关联
+
+---
+
+做完写 `from_antigravity_重构第7步回执.md`，**然后停下等我复核**。

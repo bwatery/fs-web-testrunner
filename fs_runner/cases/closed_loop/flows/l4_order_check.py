@@ -42,6 +42,7 @@ def flow_L4_048(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = "库中无青霉素过敏且有效关联住院登记的患者样本"
+            res.evidence = {"防空跑观测": {"过敏患者样本数": 0}}
             return res
 
         reg_id, pat_id, allergy_drug_id, allergy_drug_name = allergy_row
@@ -102,9 +103,11 @@ def flow_L4_048(ctx: Ctx) -> LoopResult:
 
         # 6. 库表字典对账：验证药品基础表中皮试属性一致性
         cur.execute("SELECT skin_test_flag FROM com_bd_drug WHERE drug_id = :1", [allergy_drug_id])
-        db_skin_flag = cur.fetchone()[0]
+        r_skin = cur.fetchone()
+        db_skin_flag = r_skin[0] if r_skin else None
         cur.execute("SELECT skin_test_flag FROM com_bd_drug WHERE drug_id = '100150'")
-        db_noskin_flag = cur.fetchone()[0]
+        r_noskin = cur.fetchone()
+        db_noskin_flag = r_noskin[0] if r_noskin else None
 
         if db_skin_flag != "1":
             bad.append(f"COM_BD_DRUG 青霉素皮试标志异常: 期待='1', 库中='{db_skin_flag}'")
@@ -114,6 +117,11 @@ def flow_L4_048(ctx: Ctx) -> LoopResult:
         conn.close()
 
         ev = {
+            "防空跑观测": {
+                "过敏患者样本数": 1,
+                "就诊流水号": reg_id,
+                "过敏药品": allergy_drug_name,
+            },
             "就诊流水号": reg_id,
             "患者ID": pat_id,
             "负向拦截": f"HTTP code={neg_code}, msg={neg_msg}",

@@ -39,6 +39,7 @@ def flow_L6_064(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = "库中无 GHFP 打印单据配置样本"
+            res.evidence = {"防空跑观测": {"GHFP配置样本存在": False}}
             return res
 
         (db_pid, db_pcode, db_pname, db_printer, db_page, db_dept,
@@ -89,6 +90,11 @@ def flow_L6_064(ctx: Ctx) -> LoopResult:
             bad.append(f"负向测试未拦截: 传入非法代码仍返回了数据 {neg_res.get('data')}")
 
         ev = {
+            "防空跑观测": {
+                "GHFP配置样本存在": True,
+                "库中总配置数": db_total_count,
+                "接口返回数": list_total,
+            },
             "配置代码": db_pcode,
             "配置名称": db_pname,
             "打印机路由": db_printer,

@@ -47,6 +47,7 @@ def flow_L6_063(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = "库中无有效 SI_IP_BALANCE 医保结算样本"
+            res.evidence = {"防空跑观测": {"有效SI_IP_BALANCE样本数": 0}}
             return res
 
         (bal_id, reg_id, db_tot, db_own, db_over, db_min_limit,
@@ -106,6 +107,11 @@ def flow_L6_063(ctx: Ctx) -> LoopResult:
             bad.append(f"虚假结算ID未拦截: 期待 code=400, 实际 code={neg_code}")
 
         ev = {
+            "防空跑观测": {
+                "有效SI_IP_BALANCE样本数": 1,
+                "结算ID": bal_id,
+                "就诊ID": reg_id,
+            },
             "结算ID": bal_id,
             "就诊ID": reg_id,
             "患者姓名": data.get("patientName"),
@@ -159,6 +165,7 @@ def flow_L6_068(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = "库中无有效 SI_IP_BALANCE 医保结算记录"
+            res.evidence = {"防空跑观测": {"有效SI_IP_BALANCE记录数": 0}}
             return res
 
         bal_id, reg_id, db_tot, db_med_no, db_pat_name, db_ident_no = row
@@ -202,6 +209,11 @@ def flow_L6_068(ctx: Ctx) -> LoopResult:
             bad.append("多次补打参保人识别号不幂等")
 
         ev = {
+            "防空跑观测": {
+                "有效SI_IP_BALANCE记录数": 1,
+                "结算ID": bal_id,
+                "就诊ID": reg_id,
+            },
             "结算ID": bal_id,
             "就诊ID": reg_id,
             "数据源规范": f"{src} ({d1.get('dataSourceName')})",

@@ -48,6 +48,7 @@ def flow_L6_038(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = "防空跑拦截：SI_IP_REGISTER 库中无医保登记流水记录"
+            res.evidence = {"防空跑观测": {"总医保登记数": total_reg_cnt}}
             return res
 
         cur.execute("""
@@ -82,6 +83,7 @@ def flow_L6_038(ctx: Ctx) -> LoopResult:
         if not db_101_row:
             res.status = "未执行"
             res.note = "未在 SI_IP_REGISTER 中找到基准样本 insuranceId=101"
+            res.evidence = {"防空跑观测": {"总医保登记数": total_reg_cnt, "就诊552登记数": cnt_552, "样本101存在": False}}
             return res
 
         db_101 = {
@@ -169,6 +171,12 @@ def flow_L6_038(ctx: Ctx) -> LoopResult:
             bad.append(f"非法就诊号查询未返回空: data={r_neg.get('data')}")
 
         ev = {
+            "防空跑观测": {
+                "总医保登记数": total_reg_cnt,
+                "就诊552登记数": cnt_552,
+                "就诊546登记数": cnt_546,
+                "样本101存在": True,
+            },
             "总登记分布": {"总笔数": total_reg_cnt, "各就诊分布": reg_dist},
             "登记样本101比对": {"api": list_552[0] if list_552 else None, "db": db_101},
             "有效登记过滤": {"接口条数": len(list_valid), "库有效条数": valid_cnt_552},

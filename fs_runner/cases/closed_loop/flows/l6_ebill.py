@@ -61,6 +61,7 @@ def flow_L6_056(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = "防空跑拦截：FIN_EBILL 表无电子发票数据"
+            res.evidence = {"防空跑观测": {"总电子发票数": total_ebill_cnt, "冲红分布": scarlet_dist}}
             return res
 
         # ② 有效票据不重号核验 (valid_flag='1')
@@ -100,6 +101,7 @@ def flow_L6_056(ctx: Ctx) -> LoopResult:
         if not sample_row:
             res.status = "未执行"
             res.note = "未定位到基准有效电子发票样本 (ebill_id=86)"
+            res.evidence = {"防空跑观测": {"总电子发票数": total_ebill_cnt, "样本86存在": False}}
             return res
 
         sample_ebill = {
@@ -204,6 +206,12 @@ def flow_L6_056(ctx: Ctx) -> LoopResult:
         }
 
         ev = {
+            "防空跑观测": {
+                "总电子发票数": total_ebill_cnt,
+                "正常蓝票数": scarlet_dist.get("0", 0),
+                "冲红红票数": scarlet_dist.get("1", 0),
+                "样本86存在": True,
+            },
             "电子发票全量分布": {
                 "总票据数": total_ebill_cnt,
                 "正常蓝票数": scarlet_dist.get("0", 0),

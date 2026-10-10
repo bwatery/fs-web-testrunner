@@ -57,6 +57,7 @@ def flow_L6_026(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = f"防空跑拦截：FIN_OP_INVOICE_RECEIPT 中有效自费发票({cnt_o})或医保发票({cnt_m})样本不足"
+            res.evidence = {"防空跑观测": {"有效自费发票数": cnt_o, "有效医保发票数": cnt_m, "全量分布": summary_rows}}
             return res
 
         # ② 提取自费发票样本 (收据 1683) 与支付明细
@@ -96,6 +97,8 @@ def flow_L6_026(ctx: Ctx) -> LoopResult:
         if not o_row or not m_row:
             res.status = "未执行"
             res.note = "未定位到指定自费(1683)或医保(1400)对比发票样本"
+            res.evidence = {"防空跑观测": {"有效自费发票数": cnt_o, "有效医保发票数": cnt_m,
+                                           "自费样本1683命中": bool(o_row), "医保样本1400命中": bool(m_row)}}
             return res
 
         bad: List[str] = []
@@ -176,6 +179,12 @@ def flow_L6_026(ctx: Ctx) -> LoopResult:
             bad.append(f"非法收据号查询未返回空: data={r_neg.get('data')}")
 
         ev = {
+            "防空跑观测": {
+                "有效自费发票数": cnt_o,
+                "有效医保发票数": cnt_m,
+                "自费样本1683命中": True,
+                "医保样本1400命中": True,
+            },
             "全量发票分布": summary_rows,
             "自费收银样本(1683)": {
                 "发票号": "1683",

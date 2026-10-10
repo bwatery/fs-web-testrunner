@@ -45,6 +45,7 @@ def flow_L6_043(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = "库里没有有效床位费记录，无法核对计提规则"
+            res.evidence = {"防空跑观测": {"有效床位费条数": n_all}}
             return res
 
         # ① 同就诊+同服务日+同项目 的重复
@@ -80,7 +81,8 @@ def flow_L6_043(ctx: Ctx) -> LoopResult:
         batch_n, day_n = int(batch_n), int(day_n)
         conn.close()
 
-        ev = {"有效床位费条数": n_all,
+        ev = {"防空跑观测": {"有效床位费条数": n_all, "服务天数": day_n, "补录批次数": batch_n},
+              "有效床位费条数": n_all,
               "不重复检查": {"同就诊+同服务日+同项目 的重复组数": len(dup),
                              "样例": [f"就诊{r[0]} 服务日{str(r[1])[:10]} {r[2]} ×{r[3]}"
                                       for r in dup[:3]]},
@@ -157,6 +159,7 @@ def flow_L6_055(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = "库里没有已挂收据的住院结算日结记录（type='I'），无法核对"
+            res.evidence = {"防空跑观测": {"住院结算日结候选数": len(cands)}}
             return res
 
         chosen = None
@@ -171,6 +174,7 @@ def flow_L6_055(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "失败"
             res.note = f"有 {len(cands)} 条住院日结，但报表对每条都返回空分项"
+            res.evidence = {"防空跑观测": {"住院结算日结候选数": len(cands), "有效报表分项日结数": 0}}
             return res
         bid, b, e, d = chosen
 
@@ -197,7 +201,8 @@ def flow_L6_055(ctx: Ctx) -> LoopResult:
         nos_txt = str(d.get("allReceiptNoList") or "")
         a_nos = {x.strip() for x in re.split(r"[,，\s]+", nos_txt) if x.strip().isdigit()}
 
-        ev = {"dayBalanceId": bid, "日结区间": f"{b} ~ {e}",
+        ev = {"防空跑观测": {"住院结算日结候选数": len(cands), "选定日结ID": bid, "收据张数": o_dist},
+              "dayBalanceId": bid, "日结区间": f"{b} ~ {e}",
               "库": {"收据金额合计": o_tot, "收据张数": o_dist,
                      "非预交款支付": o_pay, "预交款": o_prepay},
               "报表": {"feeInfoList合计": a_fee, "payInfoList": a_pay,

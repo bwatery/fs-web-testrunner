@@ -59,6 +59,7 @@ def flow_L9_012(ctx: Ctx) -> LoopResult:
         if not terms:
             res.status = "未执行"
             res.note = "西药房(910125)没有配置住院调配终端，无法核对摆药"
+            res.evidence = {"防空跑观测": {"住院调配终端数": len(terms)}}
             return res
         terminal_id = terms[0].get("terminalId")
 
@@ -83,6 +84,7 @@ def flow_L9_012(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = "库里没有「已挂摆药单且有效」的发药明细，构不成比对"
+            res.evidence = {"防空跑观测": {"住院调配终端数": len(terms), "有效发药明细数": len(db)}}
             return res
 
         bills = sorted({k[0] for k in db})
@@ -242,6 +244,9 @@ def flow_L9_012(ctx: Ctx) -> LoopResult:
             f"{k}({otype_dict.get(k, ('?', '?'))[0]})": v for k, v in sorted(types.items())}
         n_long = sum(v for k, v in types.items() if otype_dict.get(k, ("", ""))[1] == "L")
         ev["⑤长期医嘱派生明细条数"] = n_long
+        ev["防空跑观测"] = {"摆药单数": len(bills),
+                       "有效发药明细条数": sum(len(v) for v in db.values()),
+                       "长期医嘱派生条数": n_long}
         if n_long == 0:
             bad.append("⑤没有任何摆药明细来自长期医嘱(CZ/ZC)，无法印证「长期医嘱自动摆药」")
 
@@ -325,7 +330,11 @@ def flow_L9_013(ctx: Ctx) -> LoopResult:
         ev = {"出院带药(CD)医嘱条数": len(rows), "明细": detail,
               "有发药明细的CD医嘱条数": sum(1 for r in rows if r[7]),
               "有出库明细的CD医嘱条数": sum(1 for r in rows if r[8]),
-              "全库门诊发药明细条数(对照)": n_op_disp_all}
+              "全库门诊发药明细条数(对照)": n_op_disp_all,
+              "防空跑观测": {"CD医嘱数": len(rows),
+                             "发药明细数": sum(1 for r in rows if r[7]),
+                             "出库明细数": sum(1 for r in rows if r[8]),
+                             "全库门诊发药对照数": n_op_disp_all}}
 
         if not rows:
             res.status = "未执行"

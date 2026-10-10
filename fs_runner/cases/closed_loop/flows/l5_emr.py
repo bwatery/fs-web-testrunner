@@ -1422,7 +1422,8 @@ def flow_L5_022(ctx: Ctx) -> LoopResult:
         citable = flags.get("1", 0)
         ev = {"翻过的元素条数": n, "citationFlag 分布": flags,
               "库表里的引用列数": col_n,
-              "说明": "引用标志由接口按规则计算，不是库里的列；全为 0/空表示没有可引用元素"}
+              "说明": "引用标志由接口按规则计算，不是库里的列；全为 0/空表示没有可引用元素",
+              "防空跑观测": {"翻过元素数": n, "可引用元素数": citable, "库表引用列数": col_n}}
         if citable == 0:
             res.status = "未执行"
             res.note = (f"翻了 {n} 条文书元素，`citationFlag` 全是 0/空——**本环境没有任何"
@@ -1600,7 +1601,11 @@ def flow_L5_037(ctx: Ctx) -> LoopResult:
         ev = {"已归档病案首页(RECORD_STATUS='4')": fp_archived,
               "已归档病历文书(RECORD_STATE='4')": rec_archived,
               "在用病历文书(RECORD_STATE<>'0')": rec_alive,
-              "接口清单里的检索类接口": hits or "（EMR 518 条 + HIS 1590 条里都没有）"}
+              "接口清单里的检索类接口": hits or "（EMR 518 条 + HIS 1590 条里都没有）",
+              "防空跑观测": {"已归档病案首页数": fp_archived,
+                             "已归档病历文书数": rec_archived,
+                             "在用病历文书数": rec_alive,
+                             "检索接口命中数": len(hits)}}
 
         if not hits:
             res.status = "未执行"

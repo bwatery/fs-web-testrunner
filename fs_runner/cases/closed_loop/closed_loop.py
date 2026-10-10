@@ -3099,9 +3099,11 @@ def flow_L9_014(ctx: Ctx) -> LoopResult:
                             f"{int(last[2])}/{int(last[3])} 条明细流转到已发药、库存按退药量回补、"
                             f"出入库流水 BEFORE/AFTER 自洽、并与原医嘱镜像对应（详见本轮报告）。")
                 res.evidence = {"最近执行": {"退药单": last[0], "执行时间": last[1],
-                                             "完成明细": int(last[2]), "明细数": int(last[3])}}
+                                             "完成明细": int(last[2]), "明细数": int(last[3])},
+                                "防空跑观测": {"待执行退药单数": 0, "历史已执行单数": 1, "最近退药单": last[0]}}
             else:
                 res.note = "库里从来没有执行过住院退药单，也没有待执行的，本轮无可验证的退药回库"
+                res.evidence = {"防空跑观测": {"待执行退药单数": 0, "历史已执行单数": 0}}
             return res
         bid, bno = int(head[0]), head[1]
 
@@ -3112,7 +3114,8 @@ def flow_L9_014(ctx: Ctx) -> LoopResult:
         lines = cur.fetchall()
         ev = {"退药单": f"{bno}({bid})", "退药明细": [
             {"applyId": int(r[0]), "药品": r[5], "数量": float(r[6]),
-             "医嘱号": r[1], "就诊": r[2], "患者": r[3]} for r in lines]}
+             "医嘱号": r[1], "就诊": r[2], "患者": r[3]} for r in lines],
+             "防空跑观测": {"待执行退药单数": 1, "退药单号": bno, "退药单ID": bid, "待退明细数": len(lines)}}
 
         # ⑤(前置) 医嘱关联：每条退药都要有同医嘱的已发药镜像
         link_bad = []
@@ -3384,8 +3387,15 @@ def flow_L2_107(ctx: Ctx) -> LoopResult:
         rid = int(row[0])
 
         # 取一条该就诊的既有医嘱当模板（字段照搬，只换看诊号/处方号）
-        cur.execute("""SELECT * FROM med_op_order WHERE register_id=:1
-                       ORDER BY order_id DESC FETCH FIRST 1 ROWS ONLY""", [rid])
+        # ⚠️ **必须限定"是药品且仍在药品字典里且有效"** —— 我原来只按 order_id DESC 取最新一条，
+        #    结果偶发抽到**诊疗项目**（如"中药贴敷"、"中医拔罐"，ITEM_NO 不在 COM_BD_DRUG 里），
+        #    开医嘱直接报「未找到药品药品信息」，用例偶发红灯。
+        #    （2026-10-10 实测：就诊 300011115 最新四条全是诊疗项目，第五条"续断"才是药品。）
+        cur.execute("""SELECT * FROM med_op_order o
+                       WHERE o.register_id=:1
+                         AND EXISTS (SELECT 1 FROM com_bd_drug d
+                                      WHERE d.drug_id = o.item_no AND d.valid_flag='1')
+                       ORDER BY o.order_id DESC FETCH FIRST 1 ROWS ONLY""", [rid])
         names = [d[0] for d in cur.description]
         tpl = dict(zip(names, cur.fetchone()))
         skip = {"orderId", "applyId", "parentOrderId", "platformOrderId", "createTime",

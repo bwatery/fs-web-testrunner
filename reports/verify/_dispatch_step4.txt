@@ -1,0 +1,46 @@
+【重构第 3 步 · 验收通过，进入第 4 步（清理旧物）】
+
+## 第 3 步我独立验的结果：全部通过
+
+- 沙盒模式输出：`未执行 241 / 异常 19 / 查无数据 27`，**一条「通过」都没有** ✓
+- `evidence.env`：闭环 66 条 **66/66** 全部带上 ✓
+- `import fs_runner` 后 `requests.post` / `oracledb.connect` 仍是原生 ✓（隔离是显式的）
+- 真实环境回归三轮全绿；66 条 = 通过 61 / 失败 1 / 未执行 4 不变 ✓
+
+（顺带说明：我一度以为沙盒输出了 3 条「通过」—— 那是我用**词频**统计的错，
+输出里有「0 条判定为通过」「沙盒永不判通过」这类**说明文字**。按状态行看就是 0 条。**不是你的问题。**）
+
+## 第 4 步 · 清理旧物
+
+按《重构方案》第五节第 4 步。**这是破坏性操作，规矩比前几步严**：
+
+1. **只能在 `refactor/fs-runner` 分支上做**，master 绝不碰
+2. **必须走 git 的版本控制删除**（要留可回滚痕迹）。只有 `scratch/` 若本来就未纳入版本管理，
+   才用普通目录清理方式，并在回执里注明它是未跟踪目录
+3. **动手前先把完整清单列出来**（路径 + 文件数 + 体积），执行后同样列出
+4. **清理完必须再跑一次回归**，仍三轮全绿、66 条状态不变
+
+要清理的（按方案第五节）：
+
+- `core/`（旧引擎：自愈 + 沙盒 + **导入即接管**）
+- `suites/`（27 文件，旧引擎用例集，紧耦合 core）
+- `web_runner/`（旧的 8989 UI，界面本身在推荐「全绿灯」）
+- `logs/`（旧引擎日志）
+- `scratch/`（616 文件 23M，未纳入版本管理）
+- 顶层一次性脚本：`inspect_*`(17) `check_*`(11) `test_*`(12) `find_*`(6) `click_*`(3) `get_*`(3)
+  以及 `nav_*` `capture_*` `reload_*` `interact_*`
+  —— 已核实**没有任何文件 import 它们**
+- 已被 CLI 取代的 `run_*.py`：`run_cli_tests` / `run_outpatient_tests` / `run_rules_tests` /
+  `run_single_test` / `run_invasive_only` / `run_non_invasive_only` / `run_login_validator` / `run_runner.py`
+- **AI 工具面 `cli_agent.py` / `his_agent_sdk.py` / `mcp_server.py`** —— 它们是旧 WebRunner 的 `/api/*` 客户端，
+  旧 UI 清理后就是死的。**按方案默认一并清理**（若用户后面要「用 AI 指挥测试」的能力，另做，不要复活旧 UI）
+
+**必须保留**：`fs_runner/`、`verify/`（薄壳）、`tools/`（collect / fetch_emr_spec / mutation_selfcheck）、
+`data/`、`reports/`、`run_verify.py`、`update_tracking_excel.py`、`export_*_excel.py`、
+`sync_insurance_status.py`、`config.py`、`cleanup_fake_pass.py`
+
+⚠️ **清理完还要确认一件事**（这是第 2 步成果的延续）：
+`python -I tools/collect.py regression` 与 `run_verify.py --closed-loop` **在 `core/` 被清掉之后仍然能跑** ——
+如果还残留对 `core` 的引用，这一步会立刻暴露出来，那正是我们要的。
+
+做完写 `from_antigravity_重构第4步回执.md`（含清理清单 + 清理后回归结果），**然后停下等我复核**。

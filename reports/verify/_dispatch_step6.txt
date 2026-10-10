@@ -1,0 +1,78 @@
+【重构第 5 步 · 验收通过；但先修一个 git 问题，再做第 6 步】
+
+## 一、第 5 步我独立验的结果：通过
+
+- **只读性（我自己验的）**：点之前/点之后对 `reports/` 下 293 个文件算总哈希，**逐字节一致**
+  （我遍历了首页 + 5 个接口）。不看你给的哈希，我自己算了一遍。
+- 页面三块齐：用例列表（`/api/cases` 每条带 `evidence` + `env`）、未执行清单（还多给了 `requirement`，
+  很好）、历史红绿（`/api/history` 按轮记 `failed_cases`）
+- 真实/沙盒分组：`env` 分布 real 66 / sandbox 1，且那条沙盒用例是「未执行」✓
+- 已知缺陷单列：`/api/defects` + 首页统计卡都看得见 L5-027 ✓
+
+## 二、⚠️ 必须先修：提交顺序反了，HEAD 是坏树
+
+实测：
+
+```
+HEAD(e13ac9c) 里：
+    core/           0 个文件     ← 已删
+    fs_runner/      0 个文件     ← 38 个文件一个都没入库（仍是未跟踪）
+    run_verify.py   仍有 2 处 import core（第 28、110 行）← 旧版，第 2 步的改动没提交
+    tools/collect.py 还是旧内联版
+```
+
+**所以 HEAD 这棵树跑不起来**：`core/` 没了，但 `run_verify.py` 还依赖它。
+`git checkout e13ac9c` 拿到的是一个坏树 —— **"每一步都可回滚、可复核"这条性质被破坏了**。
+
+（工作区本身是好的、项目能跑；**坏的只是提交历史**。）
+
+### 请这样修（重排提交，让每个提交自洽）
+
+```bash
+# 1) 退回 e13ac9c 之前：只改 HEAD 与暂存区，**磁盘文件一个都不动**
+git reset --mixed HEAD~1
+
+# 2) 先把"新引擎与解耦"提交上去（这是顺序上本该在先的那一步）
+git add fs_runner run_verify.py tools/collect.py config.py verify
+git commit -m "refactor(step1-3): 建 fs_runner 包、原样搬迁闭环用例、合并入口并切断对旧 core 的依赖"
+
+# 3) 再提交"清理旧物"
+git add -A
+git commit -m "refactor(step4): 清理旧引擎与一次性脚本（core/suites/web_runner/logs/scratch + 顶层一次性脚本 + 遗留 run_*.py）"
+```
+
+**安全性说明**：`git reset --mixed` **只移动 HEAD 和暂存区，不碰工作区文件** ——
+你磁盘上的一切（`fs_runner/`、改过的 `run_verify.py` 等）原封不动。所以这一步不会丢东西。
+**但请先 `git stash list` / `git status` 确认工作区是干净的预期状态，再动手。**
+
+### 修完必须自证（贴原始输出）
+
+```bash
+git log --oneline -3
+# 期望：tip 是 step4 清理，它下面一个提交是 step1-3（两者顺序反过来了）
+
+# 关键：证明**新提交自洽** —— 从新提交里把树取出来跑
+git stash -u                                  # 先把未跟踪的杂项收起来
+python -I tools/collect.py regression         # 期望三轮绿、66 条
+git stash pop
+```
+
+另外确认：**`main` 分支仍然没被动过**。
+
+## 三、修完再做第 6 步（加固与自检）
+
+按《重构方案》第五节第 6 步：
+
+1. **防空跑判断写入观测值** —— 每个"没数据就跳过"的判断，必须把它**当时观测到的值**写进 `evidence`
+   （第四节第 4 条。实测教训：L9-013 的防空跑读的是 `COUNT(*) AS n_disp`，
+   变异把它 `+1` 后判断以为有数据了，用例从「未执行」**静默翻成「通过」**）
+2. **把变异自检固化成子命令**：`python -m fs_runner selfcheck --mutation`
+3. **补上"非数值变异"**：现在 `mutation_selfcheck_ext.py` 已经做了数值+日期+标志位+字符串，
+   把它并入 `selfcheck`，并把结果写进固定路径的产物
+
+### 验收
+- `python -m fs_runner selfcheck --mutation` 能一键跑出"哪些用例的断言是承重的"结论
+- 每个防空跑判断都在 evidence 里留下了观测值（抽查 2~3 条给我看）
+- 回归仍三轮绿、66 条状态不变
+
+做完写 `from_antigravity_重构第6步回执.md`，**然后停下等我复核**。

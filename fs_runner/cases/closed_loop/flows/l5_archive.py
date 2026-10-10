@@ -69,6 +69,7 @@ def flow_L5_028(ctx: Ctx) -> LoopResult:
         if not db_rows:
             res.status = "未执行"
             res.note = "EMR_RECORD_MASTER 库中无归档、封存或调阅状态记录，缺少真实流转样本"
+            res.evidence = {"防空跑观测": {"主记录流转样本数": 0}}
             return res
 
         # 按就诊号分组组织基准数据
@@ -160,6 +161,12 @@ def flow_L5_028(ctx: Ctx) -> LoopResult:
                 })
 
         ev = {
+            "防空跑观测": {
+                "主记录流转样本数": len(db_rows),
+                "比对就诊数": len(reg_map),
+                "命中已归档数": archived_count,
+                "命中已封存数": sealed_count,
+            },
             "比对就诊数": len(reg_map),
             "比对主记录数": total_checked_records,
             "命中已归档(1)记录数": archived_count,

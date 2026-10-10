@@ -506,10 +506,19 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_serve = subparsers.add_parser("serve", help="启动只读 Web 报告服务")
     p_serve.add_argument("--port", type=int, default=8990)
 
+    # selfcheck 子命令
+    p_check = subparsers.add_parser("selfcheck", help="自检与变异承重分析")
+    p_check.add_argument("--mutation", action="store_true", help="执行变异自检（回答通过率是否虚高）")
+    p_check.add_argument("--gateway", default=None, help="指定网关地址")
+
     parsed = parser.parse_args(args_list)
 
     if parsed.command == "regression":
         return run_regression()
+
+    if parsed.command == "selfcheck":
+        from .selfcheck import run_selfcheck
+        return run_selfcheck(parsed)
 
     if parsed.command == "run":
         if parsed.suite == "closed-loop":

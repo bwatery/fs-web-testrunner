@@ -61,6 +61,7 @@ def flow_L0_010(ctx: Ctx) -> LoopResult:
             conn.close()
             res.status = "未执行"
             res.note = f"防空跑拦截：SI_BD_CENTER_ITEM({db_center_cnt}) 或 SI_BD_ITEM_COMPARE_DATE({db_compared_cnt}) 无基础数据"
+            res.evidence = {"防空跑观测": {"中心目录数": db_center_cnt, "已对照数": db_compared_cnt, "未对照数": db_uncompare_cnt}}
             return res
 
         # ④ 提取测试样本行（包含限价标志 limit_flag='1' 与不同 item_grade 的中心目录记录）
@@ -173,6 +174,12 @@ def flow_L0_010(ctx: Ctx) -> LoopResult:
             bad.append(f"负向不存在项目检索未返回空: total={r_none.get('total')}")
 
         ev = {
+            "防空跑观测": {
+                "中心目录总数": db_center_cnt,
+                "已对照总数": db_compared_cnt,
+                "未对照总数": db_uncompare_cnt,
+                "诊断对照总数": db_icd_cnt,
+            },
             "中心目录对账": {
                 "接口总数": api_center_total,
                 "库总数": db_center_cnt,
