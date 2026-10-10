@@ -6,27 +6,33 @@ ws = websocket.create_connection(page['webSocketDebuggerUrl'])
 
 def eval_js(expr):
     ws.send(json.dumps({'id': 1, 'method': 'Runtime.evaluate', 'params': {'expression': expr, 'returnByValue': True}}))
-    return json.loads(ws.recv()).get('result', {}).get('result', {}).get('value')
+    msg = json.loads(ws.recv())
+    return msg.get('result', {}).get('result', {}).get('value')
 
-# Check current page and dialog
-js_check = """(() => {
-    const d = document.querySelector('.el-dialog:not([style*="display: none"])');
-    if (!d) return { err: 'no dialog' };
+info = eval_js("""(() => {
+    const dialog = document.querySelector('.el-dialog:not([style*="display: none"])');
+    if (!dialog) return { hasDialog: false };
     
-    // Check search input and dropdown
-    const select = d.querySelector('.el-select');
-    const input = Array.from(d.querySelectorAll('input')).find(i => i.placeholder === '请输入' || i.value === '陈新强');
-    const treeSelected = d.querySelector('.el-tree-node.is-current, .el-tree-node.is-checked');
-    const tableRows = Array.from(d.querySelectorAll('.el-table__row, .vxe-body--row, tr')).map(r => r.innerText.replace(/\\s+/g, ' ').trim()).filter(Boolean);
+    const inputs = Array.from(dialog.querySelectorAll('input')).map(i => ({
+        placeholder: i.placeholder,
+        value: i.value,
+        className: i.className
+    }));
+    
+    const labels = Array.from(dialog.querySelectorAll('label, .el-form-item__label')).map(l => l.innerText.trim());
+    const btns = Array.from(dialog.querySelectorAll('button')).map(b => b.innerText.trim());
     
     return {
-        selectText: select?.innerText?.trim(),
-        inputVal: input?.value,
-        treeSelected: treeSelected?.innerText?.trim(),
-        tableRows
+        hasDialog: true,
+        title: dialog.querySelector('.el-dialog__title') ? dialog.querySelector('.el-dialog__title').innerText.trim() : '',
+        labels,
+        inputs,
+        btns
     };
-})()"""
+})()""")
 
-res = eval_js(js_check)
-print("Current dialog state:", json.dumps(res, ensure_ascii=False, indent=2))
+with open("scratch/search_dialog_info.json", "w", encoding="utf-8") as f:
+    json.dump(info, f, ensure_ascii=False, indent=2)
+
+print("Dialog info:", json.dumps(info, ensure_ascii=False, indent=2))
 ws.close()

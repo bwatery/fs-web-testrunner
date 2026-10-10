@@ -1,0 +1,21 @@
+{
+ "meta": {
+  "started": "2026-10-09 16:54:43",
+  "gateway": "http://192.168.1.198:8081"
+ },
+ "summary": {
+  "通过": 0,
+  "失败": 1,
+  "未执行": 0
+ },
+ "results": [
+  {
+   "case_id": "L5-008",
+   "title": "住院文书·既往史与过敏史引用",
+   "status": "失败",
+   "note": "执行异常: InterfaceError: DPY-1001: not connected to database",
+   "evidence": {},
+   "duration_ms": 98.4
+  }
+ ]
+}

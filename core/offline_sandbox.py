@@ -468,6 +468,8 @@ def _patched_oracledb_connect(*args, **kwargs):
         if _CURRENT_MODE in ("AUTO", "MOCK"):
             return MockOracleConnection()
         raise e
+    if _CURRENT_MODE == "LIVE":
+        raise ConnectionError("内网直连模式下未能建立 Oracle 数据库连接，请检查数据库服务状态与连接参数")
     return MockOracleConnection()
 
 

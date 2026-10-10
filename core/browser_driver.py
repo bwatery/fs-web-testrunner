@@ -300,6 +300,46 @@ class BrowserDriver:
         # Enable runtime & page events
         self.send_cdp_command("Runtime.enable")
         self.send_cdp_command("Page.enable")
+
+        # 注入高对比度导航样式修复：彻底解决 HIS 顶栏白色背景下白色字体导致“看起来像一片空白”的问题
+        contrast_fix_js = """
+        (() => {
+            function applyContrastFix() {
+                let style = document.getElementById('his-runner-contrast-fix');
+                if (!style) {
+                    style = document.createElement('style');
+                    style.id = 'his-runner-contrast-fix';
+                    if (document.head) document.head.appendChild(style);
+                }
+                if (style) {
+                    style.innerHTML = `
+                        .el-menu--horizontal .el-sub-menu__title,
+                        .el-menu--horizontal .el-menu-item {
+                            color: #303133 !important;
+                            font-weight: 500 !important;
+                        }
+                        .el-menu--horizontal .el-sub-menu__title:hover,
+                        .el-menu--horizontal .el-menu-item:hover,
+                        .el-menu--horizontal .is-active .el-sub-menu__title,
+                        .el-menu--horizontal .el-menu-item.is-active {
+                            color: #409EFF !important;
+                        }
+                        .vab-layout-header, .vab-header {
+                            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08) !important;
+                        }
+                    `;
+                }
+            }
+            applyContrastFix();
+            document.addEventListener('DOMContentLoaded', applyContrastFix);
+        })()
+        """
+        try:
+            self.send_cdp_command("Page.addScriptToEvaluateOnNewDocument", {"source": contrast_fix_js})
+            self.evaluate(contrast_fix_js)
+        except Exception:
+            pass
+
         return True
 
     def send_cdp_command(self, method: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:

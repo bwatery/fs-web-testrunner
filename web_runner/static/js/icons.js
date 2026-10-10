@@ -72,8 +72,10 @@
       if (cat.includes("门诊")) return Icons.clinic;
       if (cat.includes("住院")) return Icons.bed;
       if (cat.includes("药房") || cat.includes("药库") || cat.includes("药品")) return Icons.pill;
+      if (cat.includes("收费") || cat.includes("医保")) return Icons.card;
+      if (cat.includes("医技") || cat.includes("LIS") || cat.includes("PACS")) return Icons.activity;
       if (cat.includes("病历") || cat.includes("EMR") || cat.includes("文本") || cat.includes("数值") || cat.includes("单选") || cat.includes("控件") || cat.includes("表达式") || cat.includes("XML")) return Icons.document;
-      if (cat.includes("底座") || cat.includes("接口") || cat.includes("系统") || cat.includes("巡检") || cat.includes("健康")) return Icons.shield;
+      if (cat.includes("底座") || cat.includes("接口") || cat.includes("集成") || cat.includes("系统") || cat.includes("巡检") || cat.includes("健康")) return Icons.shield;
       return Icons.folder;
     }
 

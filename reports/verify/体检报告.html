@@ -1,0 +1,177 @@
+<!doctype html><html lang='zh-CN'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>HIS 系统功能体检报告</title><style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1f2328;--muted:#6b7280;--line:#e3e6ea;
+--bad:#c0392b;--badbg:#fdecea;--ok:#1e7e34;--okbg:#e8f5e9;
+--warn:#8a6100;--warnbg:#fff8e1;--info:#1a5fb4;--infobg:#e8f1fb;}
+@media (prefers-color-scheme:dark){:root{--bg:#14171a;--card:#1c2024;--fg:#e6e8ea;
+--muted:#9aa3ad;--line:#2c3238;--bad:#ff8a80;--badbg:#3a1f1d;--ok:#81c995;
+--okbg:#1b2e1f;--warn:#ffd54f;--warnbg:#33290d;--info:#8ab4f8;--infobg:#16283f;}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:14px/1.6 -apple-system,"Segoe UI","Microsoft YaHei",sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:16px;margin:32px 0 12px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+.sub{color:var(--muted);font-size:13px;margin-bottom:22px}
+.verdict{display:flex;gap:14px;flex-wrap:wrap;margin:18px 0 8px}
+.tile{flex:1 1 150px;background:var(--card);border:1px solid var(--line);
+border-radius:10px;padding:14px 16px}
+.tile .n{font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.tile .k{font-size:12px;color:var(--muted);margin-top:2px}
+.big{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--ok);
+border-radius:10px;padding:16px 18px;margin:16px 0 4px;font-size:15px}
+.big.bad{border-left-color:var(--bad)}
+table{width:100%;border-collapse:collapse;background:var(--card);
+border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13px}
+th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--bg);font-weight:600;font-size:12px;color:var(--muted)}
+tr:last-child td{border-bottom:none}
+code{font-family:ui-monospace,Consolas,monospace;font-size:12px;
+background:var(--bg);padding:1px 5px;border-radius:4px;word-break:break-all}
+.pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600}
+.p-bad{background:var(--badbg);color:var(--bad)}
+.p-ok{background:var(--okbg);color:var(--ok)}
+.p-warn{background:var(--warnbg);color:var(--warn)}
+.p-info{background:var(--infobg);color:var(--info)}
+.why{color:var(--bad);font-size:12.5px}
+details{margin-top:6px}
+summary{cursor:pointer;color:var(--muted);font-size:12px}
+pre{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:9px;
+overflow:auto;max-height:220px;font-size:11.5px;margin:6px 0 0}
+.note{color:var(--muted);font-size:12.5px;margin:8px 0 0}
+</style></head><body><div class='wrap'><h1>HIS 系统功能体检报告</h1><div class='sub'>生成时间 2026-10-09 12:15:10　·　前端 http://192.168.1.198:8088　·　网关 http://192.168.1.198:8081　·　数据库 配置账号 his_test 无效，已改用实测可用账号 xchis（建议修正 environment_config.json）</div><div class='big bad'><b>结论：发现 10 处功能异常</b>（菜单页面 7 处，工作站 3 处）</div><div class='verdict'><div class='tile'><div class='n'>5</div><div class='k'>后端接口探针</div></div><div class='tile'><div class='n' style='color:var(--bad)'>0</div><div class='k'>后端异常</div></div><div class='tile'><div class='n'>12</div><div class='k'>前端页面巡检</div></div><div class='tile'><div class='n' style='color:var(--bad)'>7</div><div class='k'>前端页面异常</div></div></div><h2>一、工作站功能巡检（逐角色真实换权 + 点击 + 接口监测）</h2><p class='note'>方式：逐个角色真实换取身份令牌后，以真实用户的方式点击侧边栏菜单进入页面，并<b>监听该页面发出的每一次接口调用</b>——页面打得开但数据拉不到，在用户看来同样是坏的。</p><table><tr><th style='width:110px'>角色</th><th style='width:170px'>页面</th><th>原因</th></tr><tr><td>住院医生</td><td>医生返修<br><code>#/inpatient/qualityControlManage/qualityControlDoctorRework</code></td><td><span class="pill p-bad">异常</span><div class='why'>· 页面弹出错误提示: 『### Error querying database. Cause: java.sql.SQLSyntaxErrorException: ORA-00904: &quot;MASTER_TYPE&quot;: 标识符无效 ### The error may 』</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/inpatient/qualityControlManage/qualityControlDoctorRework&quot;,
+ &quot;内容文字&quot;: 432,
+ &quot;表格&quot;: 0,
+ &quot;表单&quot;: 0,
+ &quot;接口调用次数&quot;: 288,
+ &quot;失败调用&quot;: []
+}</pre></details></td></tr><tr><td>住院药房</td><td>药品入库<br><code>#/storage/drugInStorage</code></td><td><span class="pill p-bad">异常</span><div class='why'>· 页面加载时 1 个后端接口调用失败，例如 HTTP 400 http://192.168.1.198:8081/faith/pharmacy/input/queryTypeList</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/storage/drugInStorage&quot;,
+ &quot;内容文字&quot;: 34,
+ &quot;表格&quot;: 0,
+ &quot;表单&quot;: 1,
+ &quot;接口调用次数&quot;: 99,
+ &quot;失败调用&quot;: [
+  {
+   &quot;url&quot;: &quot;http://192.168.1.198:8081/faith/pharmacy/input/queryTypeList&quot;,
+   &quot;status&quot;: 400,
+   &quot;layer&quot;: &quot;网关&quot;
+  }
+ ]
+}</pre></details></td></tr><tr><td>住院药房</td><td>药品出库<br><code>#/storage/drugOutStorage</code></td><td><span class="pill p-bad">异常</span><div class='why'>· 页面加载时 1 个后端接口调用失败，例如 HTTP 400 http://192.168.1.198:8081/faith/pharmacy/output/queryTypeList</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/storage/drugOutStorage&quot;,
+ &quot;内容文字&quot;: 36,
+ &quot;表格&quot;: 0,
+ &quot;表单&quot;: 1,
+ &quot;接口调用次数&quot;: 74,
+ &quot;失败调用&quot;: [
+  {
+   &quot;url&quot;: &quot;http://192.168.1.198:8081/faith/pharmacy/output/queryTypeList&quot;,
+   &quot;status&quot;: 400,
+   &quot;layer&quot;: &quot;网关&quot;
+  }
+ ]
+}</pre></details></td></tr></table><h2>工作站页面一览（含通过项）</h2><table><tr><th>角色</th><th>页面</th><th>结果</th><th>路由</th><th>接口调用</th></tr><tr><td>门诊收费</td><td>首页</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>59 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>患者信息</td><td><span class="pill p-ok">正常</span></td><td><code>#/patient/patientInformation</code></td><td>108 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>预约挂号</td><td><span class="pill p-ok">正常</span></td><td><code>#/registration/appointmentRegistration</code></td><td>91 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>挂号日结</td><td><span class="pill p-ok">正常</span></td><td><code>#/registration/registrationDailySettlement</code></td><td>73 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>门诊挂号</td><td><span class="pill p-ok">正常</span></td><td><code>#/registration/registrationMain</code></td><td>148 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>门诊退号</td><td><span class="pill p-ok">正常</span></td><td><code>#/registration/cancelRegistration</code></td><td>77 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>诊室管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/Schedule/clinicManagement</code></td><td>67 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>诊台管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/Schedule/consultationManagement</code></td><td>57 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>科室排班</td><td><span class="pill p-ok">正常</span></td><td><code>#/Schedule/deptSchedule</code></td><td>86 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>医生排班</td><td><span class="pill p-ok">正常</span></td><td><code>#/Schedule/DoctSchedule</code></td><td>74 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>门诊收费</td><td><span class="pill p-ok">正常</span></td><td><code>#/outpatient/charge/chargeMain</code></td><td>131 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>门诊退费</td><td><span class="pill p-ok">正常</span></td><td><code>#/outpatient/charge/returnmoney</code></td><td>85 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>收费日结</td><td><span class="pill p-ok">正常</span></td><td><code>#/outpatient/charge/outpatientDailyPay</code></td><td>63 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>发票管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/outpatient/charge/invoiceManagement</code></td><td>119 次 / 失败 0</td></tr><tr><td>门诊收费</td><td>门诊收费明细表</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>首页</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>门诊医生工作站</td><td><span class="pill p-ok">正常</span></td><td><code>#/outpatient/doctor/workstation</code></td><td>262 次 / 失败 5</td></tr><tr><td>门诊医生</td><td>检查信息查询</td><td><span class="pill p-ok">正常</span></td><td><code>#/outpatient/doctor/examinationInfoQuery</code></td><td>86 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>检验信息查询</td><td><span class="pill p-ok">正常</span></td><td><code>#/outpatient/doctor/inspectionInfoQuery</code></td><td>81 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>预约入院</td><td><span class="pill p-ok">正常</span></td><td><code>#/outpatient/doctor/inpatientBooking</code></td><td>127 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>门诊退费管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/outpatient/doctor/returnmoneymanage</code></td><td>83 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>门诊就诊日志查询</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>65 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>门诊医生工作量统计</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>门诊科室收入汇总表</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>门诊收入汇总</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>门诊医生收入汇总</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>门诊医生</td><td>门诊诊疗人均费用统计</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>住院收费</td><td>首页</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>59 次 / 失败 0</td></tr><tr><td>住院收费</td><td>患者信息</td><td><span class="pill p-ok">正常</span></td><td><code>#/patient/patientInformation</code></td><td>102 次 / 失败 0</td></tr><tr><td>住院收费</td><td>医保登记结算管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/registration/medicalInsuranceRegistration</code></td><td>49 次 / 失败 0</td></tr><tr><td>住院收费</td><td>住院登记</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/registration/inpatientmodification</code></td><td>136 次 / 失败 0</td></tr><tr><td>住院收费</td><td>住院信息修改</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/registration/inpatientchange</code></td><td>112 次 / 失败 0</td></tr><tr><td>住院收费</td><td>取消住院登记</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/registration/cancelbehospital</code></td><td>65 次 / 失败 0</td></tr><tr><td>住院收费</td><td>病案患者管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/registration/patientswithmedicalrecord</code></td><td>70 次 / 失败 0</td></tr><tr><td>住院收费</td><td>医保补登记</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/registration/medicalInsuranceRepair</code></td><td>88 次 / 失败 0</td></tr><tr><td>住院收费</td><td>患者费用查询</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/finance/calculateList</code></td><td>62 次 / 失败 0</td></tr><tr><td>住院收费</td><td>出院结算</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/finance/leavehospitalcalculate</code></td><td>83 次 / 失败 0</td></tr><tr><td>住院收费</td><td>预交金收费</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/finance/prepaycharge</code></td><td>82 次 / 失败 0</td></tr><tr><td>住院收费</td><td>住院日结</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/finance/inpatientdaliy</code></td><td>68 次 / 失败 0</td></tr><tr><td>住院收费</td><td>预交金日结</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/finance/prepaymoneydaily</code></td><td>62 次 / 失败 0</td></tr><tr><td>住院收费</td><td>费用综合查询</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/finance/syntheticfquery</code></td><td>80 次 / 失败 0</td></tr><tr><td>住院医生</td><td>首页</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>59 次 / 失败 0</td></tr><tr><td>住院医生</td><td>病历提交统计</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/doctor/recordMaster</code></td><td>68 次 / 失败 0</td></tr><tr><td>住院医生</td><td>病案上传</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/doctor/medicalRecordUpload</code></td><td>65 次 / 失败 0</td></tr><tr><td>住院医生</td><td>病案管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/doctor/medicalRecordFrontPage</code></td><td>111 次 / 失败 0</td></tr><tr><td>住院医生</td><td>住院医生工作站</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/doctor/workstation</code></td><td>165 次 / 失败 5</td></tr><tr><td>住院医生</td><td>住院工作站</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/doctor/medicalRecord</code></td><td>397 次 / 失败 0</td></tr><tr><td>住院医生</td><td>提交病历一览</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/doctor/submittedDocumentList</code></td><td>156 次 / 失败 0</td></tr><tr><td>住院医生</td><td>住院组套维护</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/doctor/group</code></td><td>95 次 / 失败 0</td></tr><tr><td>住院医生</td><td>质控总览</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/qualityControlManage/qualityControlOverview</code></td><td>53 次 / 失败 0</td></tr><tr><td>住院医生</td><td>闭环总览</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/qualityControlManage/closedLoopOverview</code></td><td>52 次 / 失败 0</td></tr><tr><td>住院医生</td><td>病历抽取与任务分派</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/qualityControlManage/medicalRecordExtractionAndTaskAssignment</code></td><td>49 次 / 失败 0</td></tr><tr><td>住院医生</td><td>质控沟通记录</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/qualityControlManage/qualityControlCommRecords</code></td><td>53 次 / 失败 0</td></tr><tr><td>住院医生</td><td>医生返修</td><td><span class="pill p-bad">异常</span></td><td><code>#/inpatient/qualityControlManage/qualityControlDoctorRework</code></td><td>288 次 / 失败 0</td></tr><tr><td>住院医生</td><td>科室质控</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/qualityControlManage/QualityControlDeptRework</code></td><td>217 次 / 失败 0</td></tr><tr><td>住院医生</td><td>终末质控</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/qualityControlManage/QualityControlFinalRework</code></td><td>191 次 / 失败 0</td></tr><tr><td>住院医生</td><td>质控管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/qualityControlManage/qualityControlManagement</code></td><td>162 次 / 失败 0</td></tr><tr><td>住院医生</td><td>质控任务</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/qualityControlManage/qualityControlTask</code></td><td>182 次 / 失败 0</td></tr><tr><td>住院护士</td><td>首页</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>59 次 / 失败 0</td></tr><tr><td>住院护士</td><td>科室套餐维护</td><td><span class="pill p-ok">正常</span></td><td><code>#/other/deptPackageMaintain</code></td><td>69 次 / 失败 0</td></tr><tr><td>住院护士</td><td>科室常用项目</td><td><span class="pill p-ok">正常</span></td><td><code>#/other/deptCommonItem</code></td><td>55 次 / 失败 0</td></tr><tr><td>住院护士</td><td>警戒线设置</td><td><span class="pill p-ok">正常</span></td><td><code>#/other/warningLine</code></td><td>69 次 / 失败 0</td></tr><tr><td>住院护士</td><td>执行单维护</td><td><span class="pill p-ok">正常</span></td><td><code>#/other/execBillMaintenance</code></td><td>79 次 / 失败 0</td></tr><tr><td>住院护士</td><td>费用综合查询</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/finance/syntheticfquery</code></td><td>77 次 / 失败 0</td></tr><tr><td>住院护士</td><td>住院工作站</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/doctor/medicalRecord</code></td><td>466 次 / 失败 0</td></tr><tr><td>住院护士</td><td>病房管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/theRoomManagement</code></td><td>87 次 / 失败 0</td></tr><tr><td>住院护士</td><td>医嘱处理</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/labelprint</code></td><td>78 次 / 失败 0</td></tr><tr><td>住院护士</td><td>费用补录</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/feecollection</code></td><td>96 次 / 失败 0</td></tr><tr><td>住院护士</td><td>退费申请</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/returnpremium</code></td><td>90 次 / 失败 0</td></tr><tr><td>住院护士</td><td>医嘱执行查询</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/orderExecutionQuery</code></td><td>163 次 / 失败 0</td></tr><tr><td>住院护士</td><td>退费确认</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/confirmPatient</code></td><td>66 次 / 失败 0</td></tr><tr><td>住院护士</td><td>科室领药</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/requisitionDep</code></td><td>49 次 / 失败 0</td></tr><tr><td>住院护士</td><td>病房工作日志</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/wardWorkLog</code></td><td>63 次 / 失败 0</td></tr><tr><td>住院护士</td><td>领药申请单</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/requisition</code></td><td>49 次 / 失败 0</td></tr><tr><td>住院护士</td><td>危急值提醒</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/crisisValueReminder</code></td><td>49 次 / 失败 0</td></tr><tr><td>住院护士</td><td>手术排班</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/surgicalScheduling</code></td><td>49 次 / 失败 0</td></tr><tr><td>住院护士</td><td>患者日清单</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/daylist</code></td><td>82 次 / 失败 0</td></tr><tr><td>住院护士</td><td>住院摆药查询</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/nurse/disoensingcheck</code></td><td>61 次 / 失败 0</td></tr><tr><td>住院护士</td><td>出院病人金额统计</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>住院护士</td><td>已结算病人列表</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>住院药房</td><td>首页</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>59 次 / 失败 0</td></tr><tr><td>住院药房</td><td>住院摆药</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/pharmacy/inhospitalputmedicine</code></td><td>99 次 / 失败 0</td></tr><tr><td>住院药房</td><td>摆药单补打</td><td><span class="pill p-ok">正常</span></td><td><code>#/inpatient/pharmacy/disoensingreprint</code></td><td>64 次 / 失败 0</td></tr><tr><td>住院药房</td><td>出库汇总表</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>住院药房</td><td>出库明细表</td><td><span class="pill p-ok">正常</span></td><td><code>#/index</code></td><td>60 次 / 失败 0</td></tr><tr><td>住院药房</td><td>库存管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/storage/storageInfo</code></td><td>80 次 / 失败 0</td></tr><tr><td>住院药房</td><td>药品入库</td><td><span class="pill p-bad">异常</span></td><td><code>#/storage/drugInStorage</code></td><td>99 次 / 失败 1</td></tr><tr><td>住院药房</td><td>药品出库</td><td><span class="pill p-bad">异常</span></td><td><code>#/storage/drugOutStorage</code></td><td>74 次 / 失败 1</td></tr><tr><td>住院药房</td><td>采购管理</td><td><span class="pill p-ok">正常</span></td><td><code>#/storage/purchaseMange</code></td><td>55 次 / 失败 0</td></tr><tr><td>住院药房</td><td>药品盘点</td><td><span class="pill p-ok">正常</span></td><td><code>#/storage/inventory</code></td><td>80 次 / 失败 0</td></tr></table><h2>二、当前角色全菜单点击巡检</h2><p class='note'>方式：用真实浏览器登录后，<b>逐个点击侧边栏菜单</b>（不拼 URL 直达），对每个页面断言：路由 404 / 白屏 / 内容为空 / 错误浮窗 / JS 异常 / 内嵌报表可达性 / 点击无反应。</p><table><tr><th style='width:150px'>菜单</th><th style='width:90px'>结果</th><th>原因与证据</th></tr><tr><td>门诊退费管理</td><td><span class="pill p-bad">异常</span></td><td><code>#/outpatient/doctor/returnmoneymanage</code><div class='why'>· 前端 JS 异常[console.error]: [vxe ui v4.17.17 table v4.21.1] [table] column.field=&quot;dcQty&quot; 重复了，这可能会导致某些功能无法使用</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/outpatient/doctor/returnmoneymanage&quot;,
+ &quot;tabTitle&quot;: &quot;门诊退费管理&quot;,
+ &quot;contentTextLen&quot;: 188,
+ &quot;tables&quot;: 0,
+ &quot;forms&quot;: 0,
+ &quot;iframes&quot;: []
+}</pre></details><div class='note'>截图：uiwalk_fail_当前角色_门诊退费管理_1791514855174.png</div></td></tr><tr><td>门诊就诊日志查询</td><td><span class="pill p-bad">异常</span></td><td><code>#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%2F%E9%97%A8%E8%AF%8A%E5%B0%B1%E8%AF%8A%E6%97%A5%E5%BF%97%E6%9F%A5%E8%AF%A2.cpt&amp;title=%E9%97%A8%E8%AF%8A%E5%B0%B1%E8%AF%8A%E6%97%A5%E5%BF%97%E6%9F%A5%E8%AF%A2</code><div class='why'>· 内嵌报表服务返回 HTTP 502（真人看到的是空白报表框）</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%2F%E9%97%A8%E8%AF%8A%E5%B0%B1%E8%AF%8A%E6%97%A5%E5%BF%97%E6%9F%A5%E8%AF%A2.cpt&amp;title=%E9%97%A8%E8%AF%8A%E5%B0%B1%E8%AF%8A%E6%97%A5%E5%BF%97%E6%9F%A5%E8%AF%A2&quot;,
+ &quot;tabTitle&quot;: &quot;门诊就诊日志查询&quot;,
+ &quot;contentTextLen&quot;: 0,
+ &quot;tables&quot;: 0,
+ &quot;forms&quot;: 0,
+ &quot;iframes&quot;: [
+  {
+   &quot;src&quot;: &quot;http://117.72.115.37:9019/webroot/decision/view/report?op=view&amp;viewlet=HIS/报表/门诊医生/门诊就诊日志查询.cpt&quot;,
+   &quot;loaded&quot;: true,
+   &quot;innerLen&quot;: 0,
+   &quot;crossOrigin&quot;: false,
+   &quot;w&quot;: 1695,
+   &quot;h&quot;: 691
+  }
+ ]
+}</pre></details><div class='note'>截图：uiwalk_fail_当前角色_门诊就诊日志查询_1791514861833.png</div></td></tr><tr><td>门诊医生工作量统计</td><td><span class="pill p-bad">异常</span></td><td><code>#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%2F%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%E5%B7%A5%E4%BD%9C%E9%87%8F%E7%BB%9F%E8%AE%A1.cpt&amp;title=%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%E5%B7%A5%E4%BD%9C%E9%87%8F%E7%BB%9F%E8%AE%A1</code><div class='why'>· 内嵌报表服务返回 HTTP 502（真人看到的是空白报表框）</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%2F%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%E5%B7%A5%E4%BD%9C%E9%87%8F%E7%BB%9F%E8%AE%A1.cpt&amp;title=%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%E5%B7%A5%E4%BD%9C%E9%87%8F%E7%BB%9F%E8%AE%A1&quot;,
+ &quot;tabTitle&quot;: &quot;门诊医生工作量统计&quot;,
+ &quot;contentTextLen&quot;: 0,
+ &quot;tables&quot;: 0,
+ &quot;forms&quot;: 0,
+ &quot;iframes&quot;: [
+  {
+   &quot;src&quot;: &quot;http://117.72.115.37:9019/webroot/decision/view/report?op=view&amp;viewlet=HIS/报表/门诊医生/门诊医生工作量统计.cpt&quot;,
+   &quot;loaded&quot;: true,
+   &quot;innerLen&quot;: 0,
+   &quot;crossOrigin&quot;: false,
+   &quot;w&quot;: 1695,
+   &quot;h&quot;: 691
+  }
+ ]
+}</pre></details><div class='note'>截图：uiwalk_fail_当前角色_门诊医生工作量统计_1791514868485.png</div></td></tr><tr><td>门诊科室收入汇总表</td><td><span class="pill p-bad">异常</span></td><td><code>#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%2F%E9%97%A8%E8%AF%8A%E7%A7%91%E5%AE%A4%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB%E8%A1%A8%5B%E6%8C%89%E6%9C%80%E5%B0%8F%E8%B4%B9%E7%94%A8%E7%B1%BB%E5%88%AB%5D.cpt&amp;title=%E9%97%A8%E8%AF%8A%E7%A7%91%E5%AE%A4%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB%E8%A1%A8</code><div class='why'>· 内嵌报表服务返回 HTTP 502（真人看到的是空白报表框）</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%2F%E9%97%A8%E8%AF%8A%E7%A7%91%E5%AE%A4%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB%E8%A1%A8%5B%E6%8C%89%E6%9C%80%E5%B0%8F%E8%B4%B9%E7%94%A8%E7%B1%BB%E5%88%AB%5D.cpt&amp;title=%E9%97%A8%E8%AF%8A%E7%A7%91%E5%AE%A4%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB%E8%A1%A8&quot;,
+ &quot;tabTitle&quot;: &quot;门诊科室收入汇总表&quot;,
+ &quot;contentTextLen&quot;: 0,
+ &quot;tables&quot;: 0,
+ &quot;forms&quot;: 0,
+ &quot;iframes&quot;: [
+  {
+   &quot;src&quot;: &quot;http://117.72.115.37:9019/webroot/decision/view/report?op=view&amp;viewlet=HIS/报表/门诊收入/门诊科室收入汇总表[按最小费用类别].cpt&quot;,
+   &quot;loaded&quot;: true,
+   &quot;innerLen&quot;: 0,
+   &quot;crossOrigin&quot;: false,
+   &quot;w&quot;: 1695,
+   &quot;h&quot;: 691
+  }
+ ]
+}</pre></details><div class='note'>截图：uiwalk_fail_当前角色_门诊科室收入汇总表_1791514875238.png</div></td></tr><tr><td>门诊收入汇总</td><td><span class="pill p-bad">异常</span></td><td><code>#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB%E8%A1%A8.cpt&amp;title=%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB</code><div class='why'>· 内嵌报表服务返回 HTTP 502（真人看到的是空白报表框）</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB%E8%A1%A8.cpt&amp;title=%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB&quot;,
+ &quot;tabTitle&quot;: &quot;门诊收入汇总&quot;,
+ &quot;contentTextLen&quot;: 0,
+ &quot;tables&quot;: 0,
+ &quot;forms&quot;: 0,
+ &quot;iframes&quot;: [
+  {
+   &quot;src&quot;: &quot;http://117.72.115.37:9019/webroot/decision/view/report?op=view&amp;viewlet=HIS/报表/门诊收入/门诊收入汇总表.cpt&quot;,
+   &quot;loaded&quot;: true,
+   &quot;innerLen&quot;: 0,
+   &quot;crossOrigin&quot;: false,
+   &quot;w&quot;: 1695,
+   &quot;h&quot;: 691
+  }
+ ]
+}</pre></details><div class='note'>截图：uiwalk_fail_当前角色_门诊收入汇总_1791514882289.png</div></td></tr><tr><td>门诊医生收入汇总</td><td><span class="pill p-bad">异常</span></td><td><code>#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%2F%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB%E8%A1%A8.cpt&amp;title=%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB</code><div class='why'>· 内嵌报表服务返回 HTTP 502（真人看到的是空白报表框）</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%2F%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB%E8%A1%A8.cpt&amp;title=%E9%97%A8%E8%AF%8A%E5%8C%BB%E7%94%9F%E6%94%B6%E5%85%A5%E6%B1%87%E6%80%BB&quot;,
+ &quot;tabTitle&quot;: &quot;门诊医生收入汇总&quot;,
+ &quot;contentTextLen&quot;: 0,
+ &quot;tables&quot;: 0,
+ &quot;forms&quot;: 0,
+ &quot;iframes&quot;: [
+  {
+   &quot;src&quot;: &quot;http://117.72.115.37:9019/webroot/decision/view/report?op=view&amp;viewlet=HIS/报表/门诊收入/门诊医生收入汇总表.cpt&quot;,
+   &quot;loaded&quot;: true,
+   &quot;innerLen&quot;: 0,
+   &quot;crossOrigin&quot;: false,
+   &quot;w&quot;: 1695,
+   &quot;h&quot;: 691
+  }
+ ]
+}</pre></details><div class='note'>截图：uiwalk_fail_当前角色_门诊医生收入汇总_1791514888905.png</div></td></tr><tr><td>门诊诊疗人均费用统计</td><td><span class="pill p-bad">异常</span></td><td><code>#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%2F%E9%97%A8%E8%AF%8A%E8%AF%8A%E7%96%97%E4%BA%BA%E5%9D%87%E8%B4%B9%E7%94%A8%E7%BB%9F%E8%AE%A1.cpt&amp;title=%E9%97%A8%E8%AF%8A%E8%AF%8A%E7%96%97%E4%BA%BA%E5%9D%87%E8%B4%B9%E7%94%A8%E7%BB%9F%E8%AE%A1</code><div class='why'>· 内嵌报表服务返回 HTTP 502（真人看到的是空白报表框）</div><details><summary>页面证据</summary><pre>{
+ &quot;hash&quot;: &quot;#/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E9%97%A8%E8%AF%8A%E6%94%B6%E5%85%A5%2F%E9%97%A8%E8%AF%8A%E8%AF%8A%E7%96%97%E4%BA%BA%E5%9D%87%E8%B4%B9%E7%94%A8%E7%BB%9F%E8%AE%A1.cpt&amp;title=%E9%97%A8%E8%AF%8A%E8%AF%8A%E7%96%97%E4%BA%BA%E5%9D%87%E8%B4%B9%E7%94%A8%E7%BB%9F%E8%AE%A1&quot;,
+ &quot;tabTitle&quot;: &quot;门诊诊疗人均费用统计&quot;,
+ &quot;contentTextLen&quot;: 0,
+ &quot;tables&quot;: 0,
+ &quot;forms&quot;: 0,
+ &quot;iframes&quot;: [
+  {
+   &quot;src&quot;: &quot;http://117.72.115.37:9019/webroot/decision/view/report?op=view&amp;viewlet=HIS/报表/门诊收入/门诊诊疗人均费用统计.cpt&quot;,
+   &quot;loaded&quot;: true,
+   &quot;innerLen&quot;: 0,
+   &quot;crossOrigin&quot;: false,
+   &quot;w&quot;: 1695,
+   &quot;h&quot;: 691
+  }
+ ]
+}</pre></details><div class='note'>截图：uiwalk_fail_当前角色_门诊诊疗人均费用统计_1791514895601.png</div></td></tr></table><h2>三、后端接口（真实调用巡检）</h2><p class='note'>方式：以管理员身份登录后，对全部<b>5</b> 条只读接口发起真实调用（两轮探针：第一轮按接口文档传参，第二轮补真实数据）。写操作接口（1279 条）不做盲调，避免污染业务数据。</p><div class='verdict'><div class='tile'><div class='n'>3</div><div class='k'>真实成功</div></div><div class='tile'><div class='n'>0</div><div class='k'>真实异常</div></div><div class='tile'><div class='n'>2</div><div class='k'>无法判定</div></div><div class='tile'><div class='n'>0</div><div class='k'>缺参数</div></div><div class='tile'><div class='n'>0</div><div class='k'>查无数据</div></div><div class='tile'><div class='n'>0</div><div class='k'>配置缺失</div></div><div class='tile'><div class='n'>0</div><div class='k'>权限不足</div></div></div><h2>说明</h2><p class='note'>本报告由 <code>run_verify.py</code> 生成，与旧的 Excel 用例套件相互独立：不经过离线沙盒、不启用页面自愈、不产生无断言的“通过”。「无法判定 / 缺参数 / 查无数据 / 配置缺失 / 权限不足」都不是功能故障，已单独归类，不会被计入异常。</p></div></body></html>

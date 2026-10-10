@@ -462,9 +462,12 @@
         if (t.category.includes("医嘱")) { catBadgeStyle = "background:#e0f2fe; color:#0369a1;"; }
         else if (t.category.includes("门诊")) { catBadgeStyle = "background:#ecfdf5; color:#047857;"; }
         else if (t.category.includes("住院")) { catBadgeStyle = "background:#f3e8ff; color:#7e22ce;"; }
-        else if (t.category.includes("药房")) { catBadgeStyle = "background:#fef3c7; color:#b45309;"; }
+        else if (t.category.includes("药房") || t.category.includes("药库")) { catBadgeStyle = "background:#fef3c7; color:#b45309;"; }
+        else if (t.category.includes("收费") || t.category.includes("医保")) { catBadgeStyle = "background:#fef2f2; color:#b91c1c;"; }
+        else if (t.category.includes("医技") || t.category.includes("LIS") || t.category.includes("PACS")) { catBadgeStyle = "background:#f0fdf4; color:#15803d;"; }
+        else if (t.category.includes("接口") || t.category.includes("集成")) { catBadgeStyle = "background:#faf5ff; color:#6b21a8;"; }
         else if (t.category.includes("病历") || t.category.includes("EMR") || t.category.includes("文本") || t.category.includes("数值") || t.category.includes("单选") || t.category.includes("控件") || t.category.includes("表达式") || t.category.includes("XML")) { catBadgeStyle = "background:#eef2ff; color:#4338ca;"; }
-        else if (t.category.includes("巡检") || t.category.includes("健康")) { catBadgeStyle = "background:#ecfeff; color:#0e7490;"; }
+        else if (t.category.includes("巡检") || t.category.includes("健康") || t.category.includes("底座")) { catBadgeStyle = "background:#ecfeff; color:#0e7490;"; }
 
         const isInvasive = t.mode === 'INVASIVE';
         const modeBadge = isInvasive
@@ -531,7 +534,18 @@
       } else if (type === 'order') {
         renderTableRows(allTestCases.filter(t => t.category.includes('医嘱') || t.name.includes('医嘱') || t.id.includes('order')));
       } else if (type === 'his') {
-        renderTableRows(allTestCases.filter(t => t.category.includes('门诊') || t.category.includes('住院') || t.category.includes('药房') || t.category.includes('字典') || t.category.includes('HIS')));
+        renderTableRows(allTestCases.filter(t => t.category.includes('门诊') || t.category.includes('住院') || t.category.includes('药房') || t.category.includes('收费') || t.category.includes('医保') || t.category.includes('医技') || t.category.includes('字典') || t.category.includes('HIS')));
+      } else if (type === 'billing') {
+        renderTableRows(allTestCases.filter(t => 
+          t.category.includes('收费') || 
+          t.category.includes('医保') || 
+          t.workstation_code === 'OUTPATIENT_BILLING' || 
+          t.workstation_code === 'INPATIENT_BILLING' || 
+          (t.workstation && (t.workstation.includes('收费') || t.workstation.includes('医保'))) ||
+          t.id.includes('l6') || 
+          t.id.includes('bill') || 
+          t.id.includes('charge')
+        ));
       } else if (type === 'emr') {
         renderTableRows(allTestCases.filter(t => t.category.includes('病历') || t.id.startsWith('text_') || t.id.startsWith('num_') || t.id.startsWith('choice_') || t.id.startsWith('med_') || t.id.startsWith('expr_') || t.id.startsWith('xml_')));
       } else if (type === 'health') {
@@ -540,6 +554,11 @@
         renderTableRows(allTestCases.filter(t => {
           const chip = document.getElementById(`status-${t.id}`);
           return chip && chip.innerText.includes('失败');
+        }));
+      } else if (type === 'healed') {
+        renderTableRows(allTestCases.filter(t => {
+          const chip = document.getElementById(`status-${t.id}`);
+          return chip && chip.innerText.includes('自愈');
         }));
       }
     };

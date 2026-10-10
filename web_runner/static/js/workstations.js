@@ -236,6 +236,114 @@ function renderWorkstationDetail(code) {
     `;
   }
 
+  // Render Outpatient Billing Core Cases Showcase (用户指定门诊收费处四大核心测试用例及页面)
+  const showcaseElem = document.getElementById('wsCoreShowcaseContainer');
+  if (showcaseElem) {
+    if (ws.code === 'OUTPATIENT_BILLING') {
+      showcaseElem.innerHTML = `
+        <div style="background:linear-gradient(135deg, rgba(217,119,6,0.08), rgba(245,158,11,0.02)); border:1px solid rgba(217,119,6,0.25); border-radius:10px; padding:16px 18px; margin-bottom:16px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span style="font-size:18px;">💳</span>
+              <strong style="font-size:14px; color:#b45309;">门诊收费处 · 核心业务测试用例专区 (挂号/办档/号序/发票/快捷键)</strong>
+              <span class="badge" style="background:#fef3c7; color:#92400e; font-size:11px; padding:2px 8px; border-radius:10px; font-weight:600;">门诊收费处 100% 页面可达实测</span>
+            </div>
+            <div style="font-size:12px; color:var(--g-text-secondary);">
+              角色: 14 (门诊收费员) | 科室: 2 (收费处) | 基础路由: <code>#/outpatient/charge/chargeMain</code>
+            </div>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px;">
+            <!-- Card 1: L6-009 -->
+            <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span class="badge" style="background:#e0f2fe; color:#0369a1; font-weight:600; font-size:11px;">L6-009 · 临时办档</span>
+                  <span id="showcase-status-ui_l6_009_charge_reg_create_patient" class="badge" style="background:var(--g-surface-variant); color:var(--g-text-secondary); font-size:11px;">检测中...</span>
+                </div>
+                <div style="font-weight:600; font-size:13px; color:var(--g-text-primary); margin-bottom:4px;">门诊收费_挂号新建患者(临时办档)字段完整与查重防重复主索引</div>
+                <div style="font-size:11.5px; color:var(--g-text-secondary); line-height:1.5;">
+                  <span style="color:#d97706; font-weight:600;">★ 验收准则:</span> 不产生重复主索引；办档字段完整；可立即收费打印
+                </div>
+                <div style="font-size:11px; color:var(--g-text-tertiary); margin-top:4px;">
+                  实测页面: <code style="font-family:monospace; background:var(--g-surface-variant); padding:1px 4px; border-radius:3px;">#/outpatient/charge/chargeMain</code>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px dashed var(--g-border);">
+                <button class="g-btn g-btn-tonal" style="height:26px; padding:0 10px; font-size:11.5px;" onclick="window.open('http://192.168.1.198:8088/#/outpatient/charge/chargeMain', '_blank')">查看页面</button>
+                <button class="g-btn g-btn-primary" style="height:26px; padding:0 12px; font-size:11.5px;" onclick="runSingleCase('ui_l6_009_charge_reg_create_patient')">▶ 单项实测</button>
+              </div>
+            </div>
+
+            <!-- Card 2: L6-012 -->
+            <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span class="badge" style="background:#f3e8ff; color:#7e22ce; font-weight:600; font-size:11px;">L6-012 · 号序与费用</span>
+                  <span id="showcase-status-ui_l6_012_charge_reg_number_sequence" class="badge" style="background:var(--g-surface-variant); color:var(--g-text-secondary); font-size:11px;">检测中...</span>
+                </div>
+                <div style="font-weight:600; font-size:13px; color:var(--g-text-primary); margin-bottom:4px;">门诊收费_号序连续不跳号不重号与结算类型挂号费变化</div>
+                <div style="font-size:11.5px; color:var(--g-text-secondary); line-height:1.5;">
+                  <span style="color:#d97706; font-weight:600;">★ 验收准则:</span> 号序不跳号不重号；退号后号序规则按配置；挂号费随结算类型正确变化
+                </div>
+                <div style="font-size:11px; color:var(--g-text-tertiary); margin-top:4px;">
+                  实测页面: <code style="font-family:monospace; background:var(--g-surface-variant); padding:1px 4px; border-radius:3px;">#/outpatient/charge/chargeMain</code>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px dashed var(--g-border);">
+                <button class="g-btn g-btn-tonal" style="height:26px; padding:0 10px; font-size:11.5px;" onclick="window.open('http://192.168.1.198:8088/#/outpatient/charge/chargeMain', '_blank')">查看页面</button>
+                <button class="g-btn g-btn-primary" style="height:26px; padding:0 12px; font-size:11.5px;" onclick="runSingleCase('ui_l6_012_charge_reg_number_sequence')">▶ 单项实测</button>
+              </div>
+            </div>
+
+            <!-- Card 3: L6-013 -->
+            <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span class="badge" style="background:#fef2f2; color:#b91c1c; font-weight:600; font-size:11px;">L6-013 · 票面与作废</span>
+                  <span id="showcase-status-ui_l6_013_charge_reg_ticket_reprint" class="badge" style="background:var(--g-surface-variant); color:var(--g-text-secondary); font-size:11px;">检测中...</span>
+                </div>
+                <div style="font-weight:600; font-size:13px; color:var(--g-text-primary); margin-bottom:4px;">门诊收费_挂号票面信息完整性与补打作废追溯</div>
+                <div style="font-size:11.5px; color:var(--g-text-secondary); line-height:1.5;">
+                  <span style="color:#d97706; font-weight:600;">★ 验收准则:</span> 票面信息完整；补打可追溯；作废票不可再使用
+                </div>
+                <div style="font-size:11px; color:var(--g-text-tertiary); margin-top:4px;">
+                  实测页面: <code style="font-family:monospace; background:var(--g-surface-variant); padding:1px 4px; border-radius:3px;">#/outpatient/charge/invoiceManagement</code>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px dashed var(--g-border);">
+                <button class="g-btn g-btn-tonal" style="height:26px; padding:0 10px; font-size:11.5px;" onclick="window.open('http://192.168.1.198:8088/#/outpatient/charge/invoiceManagement', '_blank')">查看页面</button>
+                <button class="g-btn g-btn-primary" style="height:26px; padding:0 12px; font-size:11.5px;" onclick="runSingleCase('ui_l6_013_charge_reg_ticket_reprint')">▶ 单项实测</button>
+              </div>
+            </div>
+
+            <!-- Card 4: L6-014 -->
+            <div style="background:var(--g-surface); border:1px solid var(--g-border); border-radius:8px; padding:12px 14px; display:flex; flex-direction:column; justify-content:space-between; gap:10px; box-shadow:0 1px 3px rgba(0,0,0,0.04);">
+              <div>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                  <span class="badge" style="background:#ecfdf5; color:#047857; font-weight:600; font-size:11px;">L6-014 · 快捷键防错</span>
+                  <span id="showcase-status-ui_l6_014_charge_reg_shortcuts_validation" class="badge" style="background:var(--g-surface-variant); color:var(--g-text-secondary); font-size:11px;">检测中...</span>
+                </div>
+                <div style="font-weight:600; font-size:13px; color:var(--g-text-primary); margin-bottom:4px;">门诊收费_院方习惯快捷键操作与前后端双重校验防脏记录</div>
+                <div style="font-size:11.5px; color:var(--g-text-secondary); line-height:1.5;">
+                  <span style="color:#d97706; font-weight:600;">★ 验收准则:</span> 快捷键符合院方操作习惯；非法值前后端双重校验；不产生脏挂号记录
+                </div>
+                <div style="font-size:11px; color:var(--g-text-tertiary); margin-top:4px;">
+                  实测页面: <code style="font-family:monospace; background:var(--g-surface-variant); padding:1px 4px; border-radius:3px;">#/outpatient/charge/chargeMain</code>
+                </div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; padding-top:6px; border-top:1px dashed var(--g-border);">
+                <button class="g-btn g-btn-tonal" style="height:26px; padding:0 10px; font-size:11.5px;" onclick="window.open('http://192.168.1.198:8088/#/outpatient/charge/chargeMain', '_blank')">查看页面</button>
+                <button class="g-btn g-btn-primary" style="height:26px; padding:0 12px; font-size:11.5px;" onclick="runSingleCase('ui_l6_014_charge_reg_shortcuts_validation')">▶ 单项实测</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else {
+      showcaseElem.innerHTML = '';
+    }
+  }
+
   // Load and render corresponding test cases
   fetchWorkstationTestResults(ws.code);
 }
@@ -253,6 +361,34 @@ async function fetchWorkstationTestResults(code) {
     const results = statusData.results || [];
     const resultMap = {};
     results.forEach(r => { resultMap[r.test_id] = r; });
+
+    // Update showcase status badges if present
+    ['ui_l6_009_charge_reg_create_patient', 'ui_l6_012_charge_reg_number_sequence', 'ui_l6_013_charge_reg_ticket_reprint', 'ui_l6_014_charge_reg_shortcuts_validation'].forEach(tid => {
+      const el = document.getElementById(`showcase-status-${tid}`);
+      if (el) {
+        const r = resultMap[tid];
+        if (r) {
+          if (r.status === 'PASSED') {
+            el.className = 'badge';
+            el.style.background = 'var(--g-green-surface)';
+            el.style.color = 'var(--g-green)';
+            el.style.fontWeight = '600';
+            el.innerText = '✓ 通过';
+          } else if (r.status === 'FAILED') {
+            el.className = 'badge';
+            el.style.background = 'var(--g-red-surface)';
+            el.style.color = 'var(--g-red)';
+            el.style.fontWeight = '600';
+            el.innerText = '✕ 失败';
+          }
+        } else {
+          el.className = 'badge';
+          el.style.background = 'var(--g-surface-variant)';
+          el.style.color = 'var(--g-text-secondary)';
+          el.innerText = '待运行';
+        }
+      }
+    });
 
     const filteredTests = allTests.filter(t => t.workstation_code === code || (t.workstation && t.workstation.includes(code)));
     const tableBody = document.getElementById('wsTestCasesTableBody');
@@ -316,14 +452,17 @@ async function runSingleWorkstation(code) {
   showToast(`正在启动【${name}】模块专项自动化测试...`, 'info');
 
   try {
-    const isHeadless = !!(document.getElementById('chkHeadless')?.checked || document.getElementById('chkHeadlessModal')?.checked);
+    const isWindow = !!(document.getElementById('chkHeadless')?.checked || document.getElementById('chkHeadlessModal')?.checked);
+    const isHeadless = !isWindow;
+    const isSelfHeal = (document.getElementById('chkSelfHeal') ? document.getElementById('chkSelfHeal').checked : (document.getElementById('chkSelfHealTable') ? document.getElementById('chkSelfHealTable').checked : true));
     const res = await fetch('/api/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         workstation: code,
         mode: 'ALL',
-        headless: isHeadless
+        headless: isHeadless,
+        self_heal: isSelfHeal
       })
     });
     const data = await res.json();
@@ -342,13 +481,16 @@ async function runSingleWorkstation(code) {
 async function runAllWorkstationsTests() {
   showToast('正在启动【全院六大工作站】全生命周期闭环模块测试...', 'info');
   try {
-    const isHeadless = !!(document.getElementById('chkHeadless')?.checked || document.getElementById('chkHeadlessModal')?.checked);
+    const isWindow = !!(document.getElementById('chkHeadless')?.checked || document.getElementById('chkHeadlessModal')?.checked);
+    const isHeadless = !isWindow;
+    const isSelfHeal = (document.getElementById('chkSelfHeal') ? document.getElementById('chkSelfHeal').checked : (document.getElementById('chkSelfHealTable') ? document.getElementById('chkSelfHealTable').checked : true));
     const res = await fetch('/api/run', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         mode: 'ALL',
-        headless: isHeadless
+        headless: isHeadless,
+        self_heal: isSelfHeal
       })
     });
     const data = await res.json();

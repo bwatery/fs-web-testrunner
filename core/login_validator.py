@@ -380,10 +380,10 @@ class LoginValidator:
             "roleId": 15,
             "roleName": "门诊医生",
             "roleKey": "MZYS",
-            "deptId": 910073,
-            "deptName": "内科门诊",
+            "deptId": 910054,
+            "deptName": "内一科门诊",
             "icon": "clinic",
-            "route": "#/outpatient/doctor",
+            "route": "#/inpatient/doctor/workstation",
             "desc": "门诊接诊、处方开立与诊断树录入"
         },
         {
@@ -393,18 +393,28 @@ class LoginValidator:
             "deptId": 2,
             "deptName": "收费处",
             "icon": "charge",
-            "route": "#/outpatient/charge",
+            "route": "#/outpatient/charge/chargeMain",
             "desc": "门诊处方划价收费与结算发票打印"
         },
         {
             "roleId": 14,
             "roleName": "门诊挂号",
             "roleKey": "MZSF",
-            "deptId": 910084,
-            "deptName": "门诊收费处",
+            "deptId": 2,
+            "deptName": "收费处",
             "icon": "document",
-            "route": "#/outpatient/registration",
-            "desc": "排班号源选择与现场门诊挂号"
+            "route": "#/outpatient/charge/chargeMain",
+            "desc": "门诊收费处窗口建档办卡、挂号与划价收费"
+        },
+        {
+            "roleId": 34,
+            "roleName": "住院收费",
+            "roleKey": "ZYSF",
+            "deptId": 2,
+            "deptName": "收费处",
+            "icon": "charge",
+            "route": "#/inpatient/finance/leavehospitalcalculate",
+            "desc": "住院登记、预交金收取与出院结算"
         },
         {
             "roleId": 33,
@@ -413,8 +423,18 @@ class LoginValidator:
             "deptId": 910125,
             "deptName": "西药房",
             "icon": "pill",
-            "route": "#/pharmacy/outpatient",
+            "route": "#/inpatient/pharmacy/inhospitalputmedicine",
             "desc": "门诊处方调配与窗口扫码发药"
+        },
+        {
+            "roleId": 37,
+            "roleName": "住院药房",
+            "roleKey": "ZYYF",
+            "deptId": 910127,
+            "deptName": "中心药房",
+            "icon": "pill",
+            "route": "#/inpatient/pharmacy/inhospitalputmedicine",
+            "desc": "住院病区医嘱批量自动摆药与发药"
         },
         {
             "roleId": 35,
@@ -423,7 +443,7 @@ class LoginValidator:
             "deptId": 910092,
             "deptName": "内一科",
             "icon": "bed",
-            "route": "#/inpatient/doctor/workstation",
+            "route": "#/inpatient/doctor/patient",
             "desc": "在院患者床位管理、长临医嘱开立与下达"
         },
         {
@@ -433,7 +453,7 @@ class LoginValidator:
             "deptId": 910131,
             "deptName": "内一科病区",
             "icon": "activity",
-            "route": "#/inpatient/nurse",
+            "route": "#/inpatient/nurse/orderExecutionQuery",
             "desc": "床位分配、医嘱执行批处理与体征录入"
         },
         {
@@ -443,17 +463,27 @@ class LoginValidator:
             "deptId": 910129,
             "deptName": "西药库",
             "icon": "database",
-            "route": "#/pharmacy/stock",
+            "route": "#/storage/inventory",
             "desc": "全院药品入库验收、出库调拨与盘点"
+        },
+        {
+            "roleId": 38,
+            "roleName": "终端确认",
+            "roleKey": "ZDQR",
+            "deptId": 910102,
+            "deptName": "检验科",
+            "icon": "monitor",
+            "route": "#/inpatient/doctor/inspectionInfo",
+            "desc": "医技检验检查执行确认与结果回传"
         },
         {
             "roleId": 41,
             "roleName": "EMR管理员",
             "roleKey": "EMRADMIN",
-            "deptId": 10072,
-            "deptName": "信息科",
+            "deptId": 2,
+            "deptName": "收费处",
             "icon": "document",
-            "route": "#/emr/templatesrecords/emrDesigner",
+            "route": "#/inpatient/doctor/medicalRecord",
             "desc": "病历模板制作、数据元管理与编辑器设计"
         },
         {
@@ -545,124 +575,98 @@ class LoginValidator:
             {"deptId": 10072, "deptName": "信息科", "deptType": "D"}
         ]
 
-    def switch_identity_in_browser(self, role_id: int, dept_id: int, target_route: str = "") -> Dict[str, Any]:
+    def switch_identity_in_browser(self, role_id: int, dept_id: int, target_route: str = "", browser_driver: Any = None) -> Dict[str, Any]:
         """Perform seamless identity exchange via CDP in the live Chrome browser."""
         from fs_web_testrunner.core.offline_sandbox import get_environment_status
         is_mock = get_environment_status().get("is_mock", False)
 
         try:
-            tabs_resp = requests.get(
-                f"http://{CDP_HOST}:{self.cdp_port}/json",
-                timeout=1 if is_mock else 2,
-                proxies={"http": None, "https": None}
-            )
-            tabs = tabs_resp.json()
-            page = next((t for t in tabs if t.get("type") == "page"), None)
-            if not page:
-                if is_mock:
-                    return {
-                        "status": "SUCCESS",
-                        "message": f"【离线沙盒】已快速置换为角色 [{role_id}] 与科室 [{dept_id}] (免内网模拟)",
-                        "details": {"success": True, "roleId": role_id, "deptId": dept_id}
-                    }
-                return {"status": "FAIL", "message": "未连接到 Chrome 浏览器"}
-
-            import websocket
-            ws = websocket.create_connection(page["webSocketDebuggerUrl"], timeout=2 if is_mock else 5)
-
             # Map default route for this role if not provided
             if not target_route:
                 preset = next((p for p in self.ROLE_PRESETS if p["roleId"] == role_id), None)
                 target_route = preset["route"] if preset else "#/index"
 
             if is_mock:
-                # In offline mock mode: directly inject mock token without waiting for unreachable 192.168.1.198
-                js_code = f"""(() => {{
-                    let cache = {{}};
-                    try {{ cache = JSON.parse(localStorage.getItem('userRoleDeptCache') || '{{}}'); }} catch(e) {{}}
-                    cache["1"] = cache["1"] || {{}};
-                    cache["1"][String({role_id})] = {dept_id};
-                    localStorage.setItem('userRoleDeptCache', JSON.stringify(cache));
-                    localStorage.removeItem('caughtRoutes');
-                    sessionStorage.setItem('shop-vite-token', 'mock_token_role_{role_id}');
-                    return {{
-                        success: true,
-                        roleId: {role_id},
-                        deptId: {dept_id},
-                        targetRoute: '{target_route}',
-                        exchanged: true,
-                        is_mock: true
-                    }};
-                }})()"""
+                new_token = f"mock_token_role_{role_id}"
             else:
-                exchange_api = _api('/exchangeLogin')
-                frontend_base = env_config.get_frontend_url().rstrip('/')
-                clean_route = target_route.lstrip('/')
-                js_code = f"""(async () => {{
-                    const token = sessionStorage.getItem('shop-vite-token');
-                    const roleId = {role_id};
-                    const deptId = {dept_id};
-                    const targetRoute = '{clean_route}';
+                try:
+                    no_proxy = {"http": None, "https": None}
+                    r_login = requests.post(_api("/login"), json={"username": "admin", "password": "admin123"}, proxies=no_proxy, timeout=4)
+                    login_tok = r_login.json().get("data")
+                    r_ex = requests.post(
+                        _api("/exchangeLogin"),
+                        headers={"Authorization": f"Bearer {login_tok}"},
+                        json={"roleId": role_id, "deptId": dept_id},
+                        proxies=no_proxy,
+                        timeout=4
+                    )
+                    ex_res = r_ex.json()
+                    if ex_res.get("code") == 200 and ex_res.get("data"):
+                        new_token = ex_res["data"]
+                    else:
+                        return {
+                            "status": "FAIL",
+                            "message": f"换权接口拒绝: {ex_res.get('msg', '未知错误')}",
+                            "details": ex_res
+                        }
+                except Exception as e:
+                    return {
+                        "status": "FAIL",
+                        "network_error": True,
+                        "message": f"换权网络异常: {e}"
+                    }
 
-                    // 1. Update localStorage userRoleDeptCache
-                    let cache = {{}};
-                    try {{ cache = JSON.parse(localStorage.getItem('userRoleDeptCache') || '{{}}'); }} catch(e) {{}}
-                    cache["1"] = cache["1"] || {{}};
-                    cache["1"][String(roleId)] = deptId;
-                    localStorage.setItem('userRoleDeptCache', JSON.stringify(cache));
+            clean_route = target_route if target_route.startswith("#") else f"#/{target_route.lstrip('/')}"
+            js_code = f"""(() => {{
+                try {{
+                    document.querySelectorAll('.el-message, .el-notification').forEach(e => e.remove());
+                }} catch(e) {{}}
+                sessionStorage.setItem('shop-vite-token', '{new_token}');
+                let cache = {{}};
+                try {{ cache = JSON.parse(localStorage.getItem('userRoleDeptCache') || '{{}}'); }} catch(e) {{}}
+                cache["1"] = cache["1"] || {{}};
+                cache["1"][String({role_id})] = {dept_id};
+                localStorage.setItem('userRoleDeptCache', JSON.stringify(cache));
+                localStorage.removeItem('caughtRoutes');
+                window.location.hash = '{clean_route}';
+                window.location.reload();
+                return {{ success: true, roleId: {role_id}, deptId: {dept_id}, targetRoute: '{clean_route}' }};
+            }})()"""
 
-                    // 2. Clear visited routes to prevent 404
-                    localStorage.removeItem('caughtRoutes');
+            if browser_driver:
+                res_val = browser_driver.evaluate(js_code)
+                time.sleep(2.0)
+            else:
+                tabs_resp = requests.get(
+                    f"http://{CDP_HOST}:{self.cdp_port}/json",
+                    timeout=1 if is_mock else 2,
+                    proxies={"http": None, "https": None}
+                )
+                tabs = tabs_resp.json()
+                page = next((t for t in tabs if t.get("type") == "page"), None)
+                if not page:
+                    return {"status": "FAIL", "message": "未连接到 Chrome 浏览器"}
 
-                    // 3. Exchange Token via backend if currently logged in
-                    let exchanged = false;
-                    if (token) {{
-                        try {{
-                            const resp = await fetch('{exchange_api}', {{
-                                method: 'POST',
-                                headers: {{
-                                    'Content-Type': 'application/json',
-                                    'Authorization': 'Bearer ' + token
-                                }},
-                                body: JSON.stringify({{ roleId: roleId, deptId: deptId }})
-                            }});
-                            const res = await resp.json();
-                            if (res.code === 200 && res.data) {{
-                                sessionStorage.setItem('shop-vite-token', res.data);
-                                exchanged = true;
-                            }}
-                        }} catch(e) {{}}
-                    }}
+                import websocket
+                ws = websocket.create_connection(page["webSocketDebuggerUrl"], timeout=2 if is_mock else 5)
+                ws.send(json.dumps({
+                    "id": 99,
+                    "method": "Runtime.evaluate",
+                    "params": {"expression": js_code, "returnByValue": True}
+                }))
 
-                    // 4. Redirect smoothly to target workstation route
-                    const fullUrl = '{frontend_base}/' + targetRoute;
-                    window.location.href = fullUrl;
-                    window.location.reload();
-
-                    return {{
-                        success: true,
-                        roleId: roleId,
-                        deptId: deptId,
-                        targetRoute: targetRoute,
-                        exchanged: exchanged
-                    }};
-                }})()"""
-
-            ws.send(json.dumps({
-                "id": 99,
-                "method": "Runtime.evaluate",
-                "params": {"expression": js_code, "awaitPromise": not is_mock, "returnByValue": True}
-            }))
-
-            start_t = time.time()
-            res_val = {}
-            while time.time() - start_t < (1.5 if is_mock else 4):
-                raw = ws.recv()
-                msg = json.loads(raw)
-                if msg.get("id") == 99:
-                    res_val = msg.get("result", {}).get("result", {}).get("value", {})
-                    break
-            ws.close()
+                start_t = time.time()
+                res_val = {}
+                while time.time() - start_t < 2:
+                    try:
+                        raw = ws.recv()
+                        msg = json.loads(raw)
+                        if msg.get("id") == 99:
+                            res_val = msg.get("result", {}).get("result", {}).get("value", {})
+                            break
+                    except Exception:
+                        break
+                ws.close()
 
             return {
                 "status": "SUCCESS",

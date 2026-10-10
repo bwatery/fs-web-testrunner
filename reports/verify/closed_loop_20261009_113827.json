@@ -1,0 +1,33 @@
+{
+ "meta": {
+  "started": "2026-10-09 11:38:27",
+  "gateway": "http://192.168.1.198:8081"
+ },
+ "summary": {
+  "通过": 0,
+  "失败": 1,
+  "未执行": 1
+ },
+ "results": [
+  {
+   "case_id": "L6-052",
+   "title": "中途结算、多次结算与按项目结算",
+   "status": "未执行",
+   "note": "库中没有多次结算的住院登记，无法校验中途/多次结算",
+   "evidence": {},
+   "duration_ms": 26.3
+  },
+  {
+   "case_id": "L6-036",
+   "title": "门诊票据日结与稽核",
+   "status": "失败",
+   "note": "票据分布接口异常: {'msg': \"Request method 'POST' not supported\", 'code': 500}",
+   "evidence": {
+    "库中门诊票据张数": 151,
+    "接口code": 500,
+    "接口返回项": 0
+   },
+   "duration_ms": 50.1
+  }
+ ]
+}

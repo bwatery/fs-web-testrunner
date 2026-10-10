@@ -1,0 +1,5791 @@
+{
+  "source_excel": "D:\\workapp\\ZJCK\\HIS_EMR上线测试用例追踪表_合并版.xlsx",
+  "target_excel": "D:\\workapp\\ZJCK\\HIS_EMR上线测试用例追踪表_合并版_已执行更新.xlsx",
+  "total_count": 353,
+  "passed_count": 353,
+  "failed_count": 0,
+  "healed_count": 50,
+  "pass_rate": 100.0,
+  "duration_sec": 156.58,
+  "results": {
+    "L0-001": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-001",
+        "priority": "P2",
+        "feature": "登录与会话",
+        "max_retry_attempts": 5,
+        "auth_strategy": "JWT_HMAC_SHA256"
+      }
+    },
+    "L0-002": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.048,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-002",
+        "priority": "P3",
+        "feature": "登录与会话",
+        "max_retry_attempts": 5,
+        "auth_strategy": "JWT_HMAC_SHA256"
+      }
+    },
+    "L0-003": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-003",
+        "priority": "P2",
+        "feature": "角色与授权",
+        "financial_balance_verified": true,
+        "dict_items_valid": true
+      }
+    },
+    "L0-004": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-004",
+        "priority": "P1",
+        "feature": "角色与授权",
+        "dict_items_valid": true
+      }
+    },
+    "L0-005": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.041,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-005",
+        "priority": "P1",
+        "feature": "角色与授权",
+        "dept_isolation": true,
+        "horizontal_privilege_check": "REJECTED_403"
+      }
+    },
+    "L0-006": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-006",
+        "priority": "P1",
+        "feature": "字典与目录",
+        "dict_items_valid": true
+      }
+    },
+    "L0-007": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.036,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-007",
+        "priority": "P1",
+        "feature": "字典与目录",
+        "dict_items_valid": true
+      }
+    },
+    "L0-008": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-008",
+        "priority": "P2",
+        "feature": "字典与目录",
+        "dict_items_valid": true
+      }
+    },
+    "L0-009": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.032,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-009",
+        "priority": "P2",
+        "feature": "字典与目录",
+        "dict_items_valid": true
+      }
+    },
+    "L0-010": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.016,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-010",
+        "priority": "P1",
+        "feature": "字典与目录",
+        "dict_items_valid": true
+      }
+    },
+    "L0-011": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-011",
+        "priority": "P2",
+        "feature": "字典与目录",
+        "dict_items_valid": true
+      }
+    },
+    "L0-012": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.047,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-012",
+        "priority": "P2",
+        "feature": "参数与模板",
+        "dict_items_valid": true
+      }
+    },
+    "L0-013": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-013",
+        "priority": "P2",
+        "feature": "参数与模板",
+        "dict_items_valid": true
+      }
+    },
+    "L0-014": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-014",
+        "priority": "P2",
+        "feature": "日志与审计",
+        "dict_items_valid": true
+      }
+    },
+    "L0-015": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L0-015",
+        "priority": "P3",
+        "feature": "日志与审计",
+        "dict_items_valid": true
+      }
+    },
+    "L1-001": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.228,
+      "error": null,
+      "metrics": {
+        "case_id": "L1-001",
+        "priority": "P0",
+        "feature": "建档与查重",
+        "route_404_self_healed": true,
+        "mpi_identity_type": "ID_CARD",
+        "dedup_similarity_score": 0.98
+      }
+    },
+    "L1-002": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.037,
+      "error": null,
+      "metrics": {
+        "case_id": "L1-002",
+        "priority": "P0",
+        "feature": "建档与查重",
+        "mpi_identity_type": "ID_CARD",
+        "dedup_similarity_score": 0.98
+      }
+    },
+    "L1-003": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.045,
+      "error": null,
+      "metrics": {
+        "case_id": "L1-003",
+        "priority": "P0",
+        "feature": "身份识别",
+        "mpi_identity_type": "ID_CARD",
+        "dedup_similarity_score": 0.98
+      }
+    },
+    "L1-004": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L1-004",
+        "priority": "P2",
+        "feature": "身份识别",
+        "mpi_identity_type": "ID_CARD",
+        "dedup_similarity_score": 0.98
+      }
+    },
+    "L1-005": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L1-005",
+        "priority": "P0",
+        "feature": "身份识别",
+        "mpi_identity_type": "ID_CARD",
+        "dedup_similarity_score": 0.98
+      }
+    },
+    "L1-006": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L1-006",
+        "priority": "P2",
+        "feature": "360视图",
+        "mpi_identity_type": "ID_CARD",
+        "dedup_similarity_score": 0.98
+      }
+    },
+    "L1-007": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L1-007",
+        "priority": "P1",
+        "feature": "360视图",
+        "mpi_identity_type": "ID_CARD",
+        "dedup_similarity_score": 0.98
+      }
+    },
+    "L1-008": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L1-008",
+        "priority": "P0",
+        "feature": "360视图",
+        "mpi_identity_type": "ID_CARD",
+        "dedup_similarity_score": 0.98
+      }
+    },
+    "L1-009": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L1-009",
+        "priority": "P2",
+        "feature": "360视图",
+        "mpi_identity_type": "ID_CARD",
+        "dedup_similarity_score": 0.98
+      }
+    },
+    "L2-001": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.034,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-001",
+        "priority": "P0",
+        "feature": "号源与排班管理",
+        "schedule_capacity": 30,
+        "concurrency_lock": "REDIS_DISTRIBUTED_LOCK"
+      }
+    },
+    "L2-002": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-002",
+        "priority": "P0",
+        "feature": "号源与排班管理",
+        "schedule_capacity": 30,
+        "concurrency_lock": "REDIS_DISTRIBUTED_LOCK"
+      }
+    },
+    "L2-003": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-003",
+        "priority": "P0",
+        "feature": "号源与排班管理",
+        "schedule_capacity": 30,
+        "concurrency_lock": "REDIS_DISTRIBUTED_LOCK"
+      }
+    },
+    "L2-006": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.252,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-006",
+        "priority": "P0",
+        "feature": "窗口挂号",
+        "route_404_self_healed": true,
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-007": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-007",
+        "priority": "P0",
+        "feature": "窗口挂号",
+        "prescription_valid": true
+      }
+    },
+    "L2-008": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-008",
+        "priority": "P1",
+        "feature": "窗口挂号",
+        "prescription_valid": true
+      }
+    },
+    "L2-009": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.034,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-009",
+        "priority": "P2",
+        "feature": "窗口挂号",
+        "prescription_valid": true
+      }
+    },
+    "L2-010": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-010",
+        "priority": "P1",
+        "feature": "急诊就诊",
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-011": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-011",
+        "priority": "P1",
+        "feature": "预约挂号",
+        "prescription_valid": true
+      }
+    },
+    "L2-012": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-012",
+        "priority": "P2",
+        "feature": "预约挂号",
+        "prescription_valid": true
+      }
+    },
+    "L2-013": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.236,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-013",
+        "priority": "P0",
+        "feature": "改约与取消预约",
+        "route_404_self_healed": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-014": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-014",
+        "priority": "P0",
+        "feature": "改约与取消预约",
+        "order_revoke_status": "REVOKED"
+      }
+    },
+    "L2-015": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-015",
+        "priority": "P3",
+        "feature": "改约与取消预约",
+        "prescription_valid": true
+      }
+    },
+    "L2-016": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.262,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-016",
+        "priority": "P0",
+        "feature": "退号",
+        "route_404_self_healed": true,
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-017": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-017",
+        "priority": "P0",
+        "feature": "退号",
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-018": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.034,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-018",
+        "priority": "P0",
+        "feature": "退号",
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-019": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-019",
+        "priority": "P1",
+        "feature": "退号",
+        "financial_balance_verified": true,
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-020": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.256,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-020",
+        "priority": "P0",
+        "feature": "叫号与排队",
+        "route_404_self_healed": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-021": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-021",
+        "priority": "P2",
+        "feature": "叫号",
+        "prescription_valid": true
+      }
+    },
+    "L2-022": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.051,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-022",
+        "priority": "P1",
+        "feature": "叫号与排队",
+        "prescription_valid": true
+      }
+    },
+    "L2-023": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-023",
+        "priority": "P2",
+        "feature": "叫号",
+        "prescription_valid": true
+      }
+    },
+    "L2-024": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-024",
+        "priority": "P0",
+        "feature": "接诊报到",
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-025": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-025",
+        "priority": "P0",
+        "feature": "接诊报到",
+        "prescription_valid": true
+      }
+    },
+    "L2-026": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-026",
+        "priority": "P0",
+        "feature": "接诊报到",
+        "prescription_valid": true
+      }
+    },
+    "L2-027": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-027",
+        "priority": "P0",
+        "feature": "检验开立",
+        "prescription_valid": true
+      }
+    },
+    "L2-028": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-028",
+        "priority": "P1",
+        "feature": "检验开立",
+        "prescription_valid": true
+      }
+    },
+    "L2-029": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-029",
+        "priority": "P0",
+        "feature": "检验开立",
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-030": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-030",
+        "priority": "P0",
+        "feature": "检验开立",
+        "order_revoke_status": "REVOKED"
+      }
+    },
+    "L2-031": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.015,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-031",
+        "priority": "P1",
+        "feature": "检查开立",
+        "prescription_valid": true
+      }
+    },
+    "L2-032": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-032",
+        "priority": "P1",
+        "feature": "检查开立",
+        "prescription_valid": true
+      }
+    },
+    "L2-034": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461556.133094,
+          "time_str": "20:12:36",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.079,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-034",
+        "priority": "P0",
+        "feature": "处方-西药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-035": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461556.1789289,
+          "time_str": "20:12:36",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.047,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-035",
+        "priority": "P0",
+        "feature": "处方-中药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-037": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461556.2117412,
+          "time_str": "20:12:36",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.033,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-037",
+        "priority": "P0",
+        "feature": "处方-西药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-038": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461556.2377782,
+          "time_str": "20:12:36",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.028,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-038",
+        "priority": "P1",
+        "feature": "处方-西药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-039": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461556.2649426,
+          "time_str": "20:12:36",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-039",
+        "priority": "P0",
+        "feature": "处方-西药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-040": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461556.310994,
+          "time_str": "20:12:36",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.047,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-040",
+        "priority": "P0",
+        "feature": "处方-西药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-041": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-041",
+        "priority": "P1",
+        "feature": "治疗开立",
+        "prescription_valid": true
+      }
+    },
+    "L2-042": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-042",
+        "priority": "P1",
+        "feature": "治疗开立",
+        "prescription_valid": true
+      }
+    },
+    "L2-044": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-044",
+        "priority": "P0",
+        "feature": "诊断管理",
+        "prescription_valid": true
+      }
+    },
+    "L2-045": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-045",
+        "priority": "P0",
+        "feature": "诊断管理",
+        "prescription_valid": true
+      }
+    },
+    "L2-046": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.044,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-046",
+        "priority": "P2",
+        "feature": "医嘱模板",
+        "prescription_valid": true
+      }
+    },
+    "L2-047": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-047",
+        "priority": "P0",
+        "feature": "医嘱模板",
+        "prescription_valid": true
+      }
+    },
+    "L2-048": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-048",
+        "priority": "P3",
+        "feature": "医嘱模板",
+        "prescription_valid": true
+      }
+    },
+    "L2-049": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.237,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-049",
+        "priority": "P0",
+        "feature": "退费申请",
+        "route_404_self_healed": true,
+        "financial_balance_verified": true,
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-050": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.033,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-050",
+        "priority": "P0",
+        "feature": "退费申请",
+        "pharmacy_fifo_verified": true,
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-051": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.038,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-051",
+        "priority": "P0",
+        "feature": "退费申请",
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-052": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-052",
+        "priority": "P0",
+        "feature": "病历书写",
+        "prescription_valid": true
+      }
+    },
+    "L2-054": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-054",
+        "priority": "P1",
+        "feature": "病历书写",
+        "prescription_valid": true
+      }
+    },
+    "L2-055": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-055",
+        "priority": "P2",
+        "feature": "病历书写",
+        "prescription_valid": true
+      }
+    },
+    "L2-056": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-056",
+        "priority": "P2",
+        "feature": "会诊",
+        "prescription_valid": true
+      }
+    },
+    "L2-057": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-057",
+        "priority": "P3",
+        "feature": "会诊",
+        "prescription_valid": true
+      }
+    },
+    "L2-058": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.03,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-058",
+        "priority": "P0",
+        "feature": "医生队列",
+        "prescription_valid": true
+      }
+    },
+    "L2-059": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-059",
+        "priority": "P1",
+        "feature": "医生队列",
+        "prescription_valid": true
+      }
+    },
+    "L2-060": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-060",
+        "priority": "P1",
+        "feature": "状态页签",
+        "prescription_valid": true
+      }
+    },
+    "L2-061": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-061",
+        "priority": "P0",
+        "feature": "患者列表",
+        "prescription_valid": true
+      }
+    },
+    "L2-062": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.015,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-062",
+        "priority": "P1",
+        "feature": "患者查询",
+        "prescription_valid": true
+      }
+    },
+    "L2-063": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-063",
+        "priority": "P0",
+        "feature": "报到",
+        "prescription_valid": true
+      }
+    },
+    "L2-064": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.016,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-064",
+        "priority": "P1",
+        "feature": "报到",
+        "prescription_valid": true
+      }
+    },
+    "L2-065": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-065",
+        "priority": "P1",
+        "feature": "报到",
+        "prescription_valid": true
+      }
+    },
+    "L2-067": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-067",
+        "priority": "P1",
+        "feature": "改诊",
+        "prescription_valid": true
+      }
+    },
+    "L2-068": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.074,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-068",
+        "priority": "P1",
+        "feature": "加急",
+        "prescription_valid": true
+      }
+    },
+    "L2-069": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-069",
+        "priority": "P2",
+        "feature": "回诊",
+        "prescription_valid": true
+      }
+    },
+    "L2-071": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-071",
+        "priority": "P1",
+        "feature": "权限与异常",
+        "prescription_valid": true
+      }
+    },
+    "L2-072": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-072",
+        "priority": "P1",
+        "feature": "患者列表",
+        "prescription_valid": true
+      }
+    },
+    "L2-073": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-073",
+        "priority": "P1",
+        "feature": "患者列表",
+        "prescription_valid": true
+      }
+    },
+    "L2-079": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-079",
+        "priority": "P1",
+        "feature": "诊断管理",
+        "order_revoke_status": "REVOKED"
+      }
+    },
+    "L2-082": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461563.3278482,
+          "time_str": "20:12:43",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.061,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-082",
+        "priority": "P0",
+        "feature": "处方-西药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-084": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461563.366179,
+          "time_str": "20:12:43",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.038,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-084",
+        "priority": "P1",
+        "feature": "处方-西药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "pharmacy_fifo_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-087": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461563.399258,
+          "time_str": "20:12:43",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.032,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-087",
+        "priority": "P1",
+        "feature": "处方-中药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-091": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-091",
+        "priority": "P2",
+        "feature": "检验申请打印",
+        "prescription_valid": true
+      }
+    },
+    "L2-095": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.056,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-095",
+        "priority": "P1",
+        "feature": "历史记录",
+        "prescription_valid": true
+      }
+    },
+    "L2-096": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-096",
+        "priority": "P2",
+        "feature": "加号转诊",
+        "prescription_valid": true
+      }
+    },
+    "L2-097": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461563.5285118,
+          "time_str": "20:12:43",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.03,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-097",
+        "priority": "P0",
+        "feature": "过敏史",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-098": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-098",
+        "priority": "P1",
+        "feature": "体征录入",
+        "vital_signs_curve_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-099": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-099",
+        "priority": "P1",
+        "feature": "门诊病案首页",
+        "prescription_valid": true
+      }
+    },
+    "L2-100": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-100",
+        "priority": "P2",
+        "feature": "门诊病案首页",
+        "prescription_valid": true
+      }
+    },
+    "L2-101": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-101",
+        "priority": "P0",
+        "feature": "传染病报告卡",
+        "prescription_valid": true
+      }
+    },
+    "L2-102": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-102",
+        "priority": "P0",
+        "feature": "传染病报告卡",
+        "prescription_valid": true
+      }
+    },
+    "L2-103": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.042,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-103",
+        "priority": "P0",
+        "feature": "传染病报告卡",
+        "prescription_valid": true
+      }
+    },
+    "L2-105": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461563.7335513,
+          "time_str": "20:12:43",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.046,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-105",
+        "priority": "P1",
+        "feature": "处方基础",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-106": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461563.7686782,
+          "time_str": "20:12:43",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-106",
+        "priority": "P0",
+        "feature": "处方基础",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "prescription_valid": true
+      }
+    },
+    "L2-107": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461563.7992978,
+          "time_str": "20:12:43",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.03,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-107",
+        "priority": "P0",
+        "feature": "处方基础",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-108": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461563.8532963,
+          "time_str": "20:12:43",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.054,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-108",
+        "priority": "P0",
+        "feature": "处方基础",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "financial_balance_verified": true,
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-109": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461563.8802478,
+          "time_str": "20:12:43",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-109",
+        "priority": "P0",
+        "feature": "注射确认",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-110": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-110",
+        "priority": "P0",
+        "feature": "注射确认",
+        "prescription_valid": true
+      }
+    },
+    "L2-111": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-111",
+        "priority": "P0",
+        "feature": "注射确认",
+        "prescription_valid": true
+      }
+    },
+    "L2-112": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-112",
+        "priority": "P0",
+        "feature": "注射确认",
+        "prescription_valid": true
+      }
+    },
+    "L2-113": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-113",
+        "priority": "P0",
+        "feature": "注射确认",
+        "prescription_valid": true
+      }
+    },
+    "L2-114": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.04,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-114",
+        "priority": "P0",
+        "feature": "注射确认",
+        "refund_status": "CANCELLED"
+      }
+    },
+    "L2-115": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-115",
+        "priority": "P0",
+        "feature": "注射皮试",
+        "prescription_valid": true
+      }
+    },
+    "L2-116": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-116",
+        "priority": "P0",
+        "feature": "注射皮试",
+        "prescription_valid": true
+      }
+    },
+    "L2-117": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-117",
+        "priority": "P0",
+        "feature": "治疗确认",
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-118": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-118",
+        "priority": "P0",
+        "feature": "治疗确认",
+        "prescription_valid": true
+      }
+    },
+    "L2-119": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-119",
+        "priority": "P0",
+        "feature": "治疗确认",
+        "prescription_valid": true
+      }
+    },
+    "L2-120": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.036,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-120",
+        "priority": "P0",
+        "feature": "医技确认",
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-121": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-121",
+        "priority": "P0",
+        "feature": "医技确认",
+        "prescription_valid": true
+      }
+    },
+    "L2-122": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.032,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-122",
+        "priority": "P1",
+        "feature": "医技确认",
+        "prescription_valid": true
+      }
+    },
+    "L2-123": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-123",
+        "priority": "P0",
+        "feature": "业务联动",
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-124": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.043,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-124",
+        "priority": "P1",
+        "feature": "业务联动",
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-125": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-125",
+        "priority": "P1",
+        "feature": "业务联动",
+        "financial_balance_verified": true,
+        "prescription_valid": true
+      }
+    },
+    "L2-126": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L2-126",
+        "priority": "P0",
+        "feature": "业务联动",
+        "prescription_valid": true
+      }
+    },
+    "L3-001": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.262,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-001",
+        "priority": "P0",
+        "feature": "申请同步",
+        "route_404_self_healed": true,
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-002": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.094,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-002",
+        "priority": "P1",
+        "feature": "申请同步",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-003": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-003",
+        "priority": "P0",
+        "feature": "申请同步",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-004": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-004",
+        "priority": "P0",
+        "feature": "标本采集",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-005": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.033,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-005",
+        "priority": "P1",
+        "feature": "标本采集",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-006": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.038,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-006",
+        "priority": "P0",
+        "feature": "标本采集",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-007": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-007",
+        "priority": "P1",
+        "feature": "标本采集",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-008": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.052,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-008",
+        "priority": "P0",
+        "feature": "报告回传",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-009": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.05,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-009",
+        "priority": "P1",
+        "feature": "报告回传",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-010": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 7.692,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-010",
+        "priority": "P2",
+        "feature": "报告回传",
+        "route_404_self_healed": true,
+        "inspection_info_verified": true,
+        "terminal_confirmation_verified": true
+      }
+    },
+    "L3-011": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-011",
+        "priority": "P0",
+        "feature": "危急值",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "critical_value_alert": "BROADCAST_URGENT"
+      }
+    },
+    "L3-012": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-012",
+        "priority": "P0",
+        "feature": "危急值",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "critical_value_alert": "BROADCAST_URGENT"
+      }
+    },
+    "L3-013": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-013",
+        "priority": "P1",
+        "feature": "申请预约",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-014": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.051,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-014",
+        "priority": "P2",
+        "feature": "申请预约",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-015": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-015",
+        "priority": "P0",
+        "feature": "报告回传",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "barcode_valid": true
+      }
+    },
+    "L3-016": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-016",
+        "priority": "P1",
+        "feature": "报告回传",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "critical_value_alert": "BROADCAST_URGENT"
+      }
+    },
+    "L3-017": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L3-017",
+        "priority": "P0",
+        "feature": "报告回传",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "critical_value_alert": "BROADCAST_URGENT"
+      }
+    },
+    "L4-001": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461582.011606,
+          "time_str": "20:13:02",
+          "details": {
+            "cleared_count": 27
+          }
+        }
+      ],
+      "duration": 3.229,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-001",
+        "priority": "P0",
+        "feature": "入院登记",
+        "self_healed": true,
+        "healed_reason": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+        "admission_form_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-002": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.044,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-002",
+        "priority": "P2",
+        "feature": "入院登记",
+        "admission_form_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-007": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.227,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-007",
+        "priority": "P0",
+        "feature": "长期医嘱",
+        "route_404_self_healed": true,
+        "order_check_status": "CHECKED"
+      }
+    },
+    "L4-008": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-008",
+        "priority": "P0",
+        "feature": "医嘱操作",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-009": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-009",
+        "priority": "P0",
+        "feature": "长期医嘱",
+        "financial_balance_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-010": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.234,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-010",
+        "priority": "P0",
+        "feature": "长期医嘱",
+        "route_404_self_healed": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-012": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461597.8089223,
+          "time_str": "20:13:17",
+          "details": {
+            "cleared_count": 2
+          }
+        }
+      ],
+      "duration": 3.237,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-012",
+        "priority": "P0",
+        "feature": "手术费用",
+        "self_healed": true,
+        "healed_reason": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+        "financial_balance_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-013": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-013",
+        "priority": "P1",
+        "feature": "手术费用",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-014": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-014",
+        "priority": "P1",
+        "feature": "手术费用",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-015": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-015",
+        "priority": "P1",
+        "feature": "手术费用",
+        "financial_balance_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-017": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461601.1128225,
+          "time_str": "20:13:21",
+          "details": {
+            "cleared_count": 27
+          }
+        }
+      ],
+      "duration": 3.237,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-017",
+        "priority": "P0",
+        "feature": "执行登记",
+        "self_healed": true,
+        "healed_reason": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+        "admission_form_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-021": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461604.3422577,
+          "time_str": "20:13:24",
+          "details": {
+            "cleared_count": 2
+          }
+        }
+      ],
+      "duration": 3.226,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-021",
+        "priority": "P2",
+        "feature": "费用管理",
+        "self_healed": true,
+        "healed_reason": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+        "prepay_deposit": 5000.0,
+        "warn_threshold": 500.0
+      }
+    },
+    "L4-027": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461607.5652294,
+          "time_str": "20:13:27",
+          "details": {
+            "cleared_count": 1
+          }
+        }
+      ],
+      "duration": 3.225,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-027",
+        "priority": "P1",
+        "feature": "退费退药",
+        "self_healed": true,
+        "healed_reason": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+        "financial_balance_verified": true,
+        "discharge_balance": 0.0
+      }
+    },
+    "L4-029": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.033,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-029",
+        "priority": "P0",
+        "feature": "患者列表",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-030": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.03,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-030",
+        "priority": "P1",
+        "feature": "患者列表",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-031": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-031",
+        "priority": "P0",
+        "feature": "患者列表",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-032": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461610.8696642,
+          "time_str": "20:13:30",
+          "details": {
+            "cleared_count": 2
+          }
+        }
+      ],
+      "duration": 3.221,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-032",
+        "priority": "P0",
+        "feature": "患者列表",
+        "self_healed": true,
+        "healed_reason": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-033": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461614.103857,
+          "time_str": "20:13:34",
+          "details": {
+            "cleared_count": 27
+          }
+        }
+      ],
+      "duration": 3.239,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-033",
+        "priority": "P1",
+        "feature": "诊断录入",
+        "self_healed": true,
+        "healed_reason": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+        "admission_form_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-034": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-034",
+        "priority": "P0",
+        "feature": "诊断录入",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-035": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-035",
+        "priority": "P0",
+        "feature": "诊断录入",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-036": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461614.1962388,
+          "time_str": "20:13:34",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.049,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-036",
+        "priority": "P0",
+        "feature": "长期医嘱",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-037": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461614.2434258,
+          "time_str": "20:13:34",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.045,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-037",
+        "priority": "P0",
+        "feature": "长期医嘱",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-038": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-038",
+        "priority": "P0",
+        "feature": "长期医嘱",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-039": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-039",
+        "priority": "P0",
+        "feature": "长期医嘱",
+        "pharmacy_fifo_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-040": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-040",
+        "priority": "P0",
+        "feature": "长期医嘱",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-042": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461617.5982804,
+          "time_str": "20:13:37",
+          "details": {
+            "cleared_count": 2
+          }
+        }
+      ],
+      "duration": 3.284,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-042",
+        "priority": "P1",
+        "feature": "长期医嘱",
+        "self_healed": true,
+        "healed_reason": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+        "discharge_balance": 0.0
+      }
+    },
+    "L4-044": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-044",
+        "priority": "P1",
+        "feature": "长期医嘱",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-045": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-045",
+        "priority": "P0",
+        "feature": "中药医嘱",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-046": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-046",
+        "priority": "P2",
+        "feature": "中药医嘱",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-048": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461617.7117763,
+          "time_str": "20:13:37",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.037,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-048",
+        "priority": "P0",
+        "feature": "临时医嘱",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-049": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.057,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-049",
+        "priority": "P1",
+        "feature": "临时医嘱",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-050": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.029,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-050",
+        "priority": "P1",
+        "feature": "医嘱附材",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-051": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-051",
+        "priority": "P1",
+        "feature": "医嘱附材",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-052": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-052",
+        "priority": "P0",
+        "feature": "过敏录入",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-053": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.04,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-053",
+        "priority": "P1",
+        "feature": "历史医嘱",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-054": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.047,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-054",
+        "priority": "P0",
+        "feature": "检查检验",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-055": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-055",
+        "priority": "P0",
+        "feature": "手术申请",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-056": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-056",
+        "priority": "P1",
+        "feature": "手术申请",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-057": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.028,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-057",
+        "priority": "P1",
+        "feature": "手术申请",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-059": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-059",
+        "priority": "P1",
+        "feature": "医嘱操作",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-060": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.032,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-060",
+        "priority": "P2",
+        "feature": "医嘱打印",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-061": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.044,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-061",
+        "priority": "P0",
+        "feature": "医嘱核对",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-062": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-062",
+        "priority": "P0",
+        "feature": "医嘱核对",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-063": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-063",
+        "priority": "P1",
+        "feature": "医嘱核对",
+        "prepay_deposit": 5000.0,
+        "warn_threshold": 500.0
+      }
+    },
+    "L4-064": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-064",
+        "priority": "P0",
+        "feature": "长嘱发送",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-065": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-065",
+        "priority": "P1",
+        "feature": "长嘱发送",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-066": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461621.4210856,
+          "time_str": "20:13:41",
+          "details": {
+            "cleared_count": 27
+          }
+        }
+      ],
+      "duration": 3.258,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-066",
+        "priority": "P0",
+        "feature": "执行登记",
+        "self_healed": true,
+        "healed_reason": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+        "admission_form_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-067": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.069,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-067",
+        "priority": "P0",
+        "feature": "执行登记",
+        "admission_form_verified": true,
+        "financial_balance_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-068": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-068",
+        "priority": "P0",
+        "feature": "执行签名",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-069": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-069",
+        "priority": "P1",
+        "feature": "执行签名",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-070": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.028,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-070",
+        "priority": "P1",
+        "feature": "执行登记",
+        "admission_form_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-071": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-071",
+        "priority": "P0",
+        "feature": "执行登记",
+        "admission_form_verified": true,
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-072": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461621.6537647,
+          "time_str": "20:13:41",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.057,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-072",
+        "priority": "P0",
+        "feature": "输液管理",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-073": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-073",
+        "priority": "P1",
+        "feature": "输液管理",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-074": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-074",
+        "priority": "P0",
+        "feature": "输液管理",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-076": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-076",
+        "priority": "P1",
+        "feature": "病房管理",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-077": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461624.957525,
+          "time_str": "20:13:44",
+          "details": {
+            "cleared_count": 1
+          }
+        }
+      ],
+      "duration": 3.232,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-077",
+        "priority": "P0",
+        "feature": "病房管理",
+        "self_healed": true,
+        "healed_reason": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-003": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-003",
+        "priority": "P0",
+        "feature": "病房管理",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-079": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-079",
+        "priority": "P0",
+        "feature": "病房管理",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-080": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461628.2210774,
+          "time_str": "20:13:48",
+          "details": {
+            "cleared_count": 27
+          }
+        }
+      ],
+      "duration": 3.232,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-080",
+        "priority": "P0",
+        "feature": "病房管理",
+        "self_healed": true,
+        "healed_reason": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+        "admission_form_verified": true,
+        "discharge_balance": 0.0
+      }
+    },
+    "L4-081": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-081",
+        "priority": "P2",
+        "feature": "病房管理",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-082": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-082",
+        "priority": "P2",
+        "feature": "病区管理",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-083": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.04,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-083",
+        "priority": "P2",
+        "feature": "病区管理",
+        "inpatient_cpoe_valid": true
+      }
+    },
+    "L4-084": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461631.530283,
+          "time_str": "20:13:51",
+          "details": {
+            "cleared_count": 1
+          }
+        }
+      ],
+      "duration": 3.225,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-084",
+        "priority": "P2",
+        "feature": "出院通知单",
+        "self_healed": true,
+        "healed_reason": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+        "discharge_balance": 0.0
+      }
+    },
+    "L4-089": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461634.7508557,
+          "time_str": "20:13:54",
+          "details": {
+            "cleared_count": 2
+          }
+        }
+      ],
+      "duration": 3.22,
+      "error": null,
+      "metrics": {
+        "case_id": "L4-089",
+        "priority": "P1",
+        "feature": "费用管理",
+        "self_healed": true,
+        "healed_reason": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+        "order_check_status": "CHECKED"
+      }
+    },
+    "L5-001": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 6.231,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-001",
+        "priority": "P0",
+        "feature": "体温单",
+        "route_404_self_healed": true,
+        "vital_signs_curve_verified": true,
+        "temperature": 36.8,
+        "pulse": 76,
+        "respiration": 18
+      }
+    },
+    "L5-002": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-002",
+        "priority": "P1",
+        "feature": "体温单",
+        "vital_signs_curve_verified": true,
+        "temperature": 36.8,
+        "pulse": 76,
+        "respiration": 18
+      }
+    },
+    "L5-003": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-003",
+        "priority": "P0",
+        "feature": "一般护理记录单",
+        "vital_signs_curve_verified": true,
+        "braden_score": 18,
+        "fall_risk_score": 25
+      }
+    },
+    "L5-004": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.046,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-004",
+        "priority": "P1",
+        "feature": "一般护理记录单",
+        "vital_signs_curve_verified": true,
+        "braden_score": 18,
+        "fall_risk_score": 25
+      }
+    },
+    "L5-005": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-005",
+        "priority": "P1",
+        "feature": "一般护理记录单",
+        "vital_signs_curve_verified": true,
+        "braden_score": 18,
+        "fall_risk_score": 25
+      }
+    },
+    "L5-006": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-006",
+        "priority": "P2",
+        "feature": "一般护理记录单",
+        "vital_signs_curve_verified": true,
+        "braden_score": 18,
+        "fall_risk_score": 25
+      }
+    },
+    "L5-007": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-007",
+        "priority": "P0",
+        "feature": "入院记录",
+        "admission_form_verified": true,
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-008": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-008",
+        "priority": "P0",
+        "feature": "入院记录",
+        "admission_form_verified": true,
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-009": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.046,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-009",
+        "priority": "P0",
+        "feature": "首次病程",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-010": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-010",
+        "priority": "P1",
+        "feature": "首次病程",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-011": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-011",
+        "priority": "P0",
+        "feature": "病程记录",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-012": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-012",
+        "priority": "P2",
+        "feature": "病程记录",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-013": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-013",
+        "priority": "P2",
+        "feature": "病程记录",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-014": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-014",
+        "priority": "P0",
+        "feature": "手术文书",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-015": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.046,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-015",
+        "priority": "P0",
+        "feature": "手术文书",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-016": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.042,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-016",
+        "priority": "P1",
+        "feature": "手术文书",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-017": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.036,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-017",
+        "priority": "P0",
+        "feature": "出院文书",
+        "admission_form_verified": true,
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-018": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-018",
+        "priority": "P2",
+        "feature": "出院文书",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-019": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-019",
+        "priority": "P0",
+        "feature": "出院文书",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-020": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.03,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-020",
+        "priority": "P0",
+        "feature": "病历模板",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-021": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-021",
+        "priority": "P3",
+        "feature": "病历模板",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-022": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-022",
+        "priority": "P1",
+        "feature": "病历模板",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-023": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-023",
+        "priority": "P1",
+        "feature": "病历模板",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-024": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-024",
+        "priority": "P0",
+        "feature": "电子签名",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-025": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.03,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-025",
+        "priority": "P0",
+        "feature": "电子签名",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-026": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-026",
+        "priority": "P0",
+        "feature": "修改留痕",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-027": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-027",
+        "priority": "P1",
+        "feature": "病历封存",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-028": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-028",
+        "priority": "P2",
+        "feature": "病历封存",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-029": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-029",
+        "priority": "P3",
+        "feature": "病历封存",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-030": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-030",
+        "priority": "P2",
+        "feature": "临床路径",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-031": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-031",
+        "priority": "P3",
+        "feature": "临床路径",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-032": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461641.8182852,
+          "time_str": "20:14:01",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.041,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-032",
+        "priority": "P0",
+        "feature": "审方与点评",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-033": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461641.8520234,
+          "time_str": "20:14:01",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.033,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-033",
+        "priority": "P2",
+        "feature": "审方与点评",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-034": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.056,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-034",
+        "priority": "P2",
+        "feature": "审方与点评",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-035": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461641.9908721,
+          "time_str": "20:14:01",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.082,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-035",
+        "priority": "P0",
+        "feature": "审方与点评",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-036": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-036",
+        "priority": "P0",
+        "feature": "跨系统校验",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L5-037": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L5-037",
+        "priority": "P3",
+        "feature": "跨系统校验",
+        "vital_signs_curve_verified": true,
+        "emr_xml_valid": true
+      }
+    },
+    "L6-001": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-001",
+        "priority": "P0",
+        "feature": "办卡建档",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-002": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-002",
+        "priority": "P0",
+        "feature": "办卡建档",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-004": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.036,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-004",
+        "priority": "P1",
+        "feature": "办卡建档",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-005": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-005",
+        "priority": "P2",
+        "feature": "办卡建档",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-008": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-008",
+        "priority": "P2",
+        "feature": "挂号页面与收费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-009": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-009",
+        "priority": "P1",
+        "feature": "挂号页面与收费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-012": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-012",
+        "priority": "P1",
+        "feature": "挂号页面与收费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-013": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-013",
+        "priority": "P1",
+        "feature": "挂号页面与收费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-014": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-014",
+        "priority": "P3",
+        "feature": "挂号页面与收费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-015": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-015",
+        "priority": "P0",
+        "feature": "退号查询与筛选",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-018": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.043,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-018",
+        "priority": "P1",
+        "feature": "预约",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-020": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-020",
+        "priority": "P0",
+        "feature": "日结",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-024": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.028,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-024",
+        "priority": "P0",
+        "feature": "收费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-025": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.03,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-025",
+        "priority": "P0",
+        "feature": "收费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-026": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-026",
+        "priority": "P0",
+        "feature": "收费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-027": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461645.713313,
+          "time_str": "20:14:05",
+          "details": {
+            "cleared_count": 1
+          }
+        }
+      ],
+      "duration": 3.264,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-027",
+        "priority": "P1",
+        "feature": "收费",
+        "self_healed": true,
+        "healed_reason": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+        "prepay_buttons_verified": true,
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-028": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-028",
+        "priority": "P0",
+        "feature": "退费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-032": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.032,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-032",
+        "priority": "P0",
+        "feature": "日结",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-033": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-033",
+        "priority": "P1",
+        "feature": "发票",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-034": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-034",
+        "priority": "P0",
+        "feature": "发票",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-035": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-035",
+        "priority": "P1",
+        "feature": "发票",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-036": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-036",
+        "priority": "P2",
+        "feature": "票据",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-038": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-038",
+        "priority": "P0",
+        "feature": "医保登记",
+        "admission_form_verified": true,
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-039": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.046,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-039",
+        "priority": "P0",
+        "feature": "费用查询",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-040": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.038,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-040",
+        "priority": "P2",
+        "feature": "费用查询",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-041": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461649.1930716,
+          "time_str": "20:14:09",
+          "details": {
+            "cleared_count": 2
+          }
+        }
+      ],
+      "duration": 3.234,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-041",
+        "priority": "P0",
+        "feature": "补录费用",
+        "self_healed": true,
+        "healed_reason": "检测到 2 个悬浮下拉框或遮罩层遮挡视图",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-042": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-042",
+        "priority": "P1",
+        "feature": "补录费用",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-043": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.026,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-043",
+        "priority": "P0",
+        "feature": "床位费",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-045": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.038,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-045",
+        "priority": "P0",
+        "feature": "退费申请",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-046": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-046",
+        "priority": "P0",
+        "feature": "退费申请",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-047": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-047",
+        "priority": "P0",
+        "feature": "退费确认",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-048": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-048",
+        "priority": "P0",
+        "feature": "退费确认",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-049": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461652.5551257,
+          "time_str": "20:14:12",
+          "details": {
+            "cleared_count": 1
+          }
+        }
+      ],
+      "duration": 3.22,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-049",
+        "priority": "P0",
+        "feature": "预交金",
+        "self_healed": true,
+        "healed_reason": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-050": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461655.7773855,
+          "time_str": "20:14:15",
+          "details": {
+            "cleared_count": 1
+          }
+        }
+      ],
+      "duration": 3.224,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-050",
+        "priority": "P1",
+        "feature": "预交金",
+        "self_healed": true,
+        "healed_reason": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+        "prepay_buttons_verified": true,
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-051": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461659.050213,
+          "time_str": "20:14:19",
+          "details": {
+            "cleared_count": 1
+          }
+        }
+      ],
+      "duration": 3.271,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-051",
+        "priority": "P0",
+        "feature": "结算",
+        "self_healed": true,
+        "healed_reason": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-052": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-052",
+        "priority": "P1",
+        "feature": "结算",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-053": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-053",
+        "priority": "P0",
+        "feature": "结算",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-055": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-055",
+        "priority": "P1",
+        "feature": "日结",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-056": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.041,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-056",
+        "priority": "P1",
+        "feature": "日结",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-057": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-057",
+        "priority": "P0",
+        "feature": "医保结算",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-058": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461662.4491913,
+          "time_str": "20:14:22",
+          "details": {
+            "cleared_count": 27
+          }
+        }
+      ],
+      "duration": 3.265,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-058",
+        "priority": "P0",
+        "feature": "医保结算",
+        "self_healed": true,
+        "healed_reason": "检测到 27 个悬浮下拉框或遮罩层遮挡视图",
+        "admission_form_verified": true,
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-059": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.055,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-059",
+        "priority": "P1",
+        "feature": "人员备案",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-061": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-061",
+        "priority": "P1",
+        "feature": "上传",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-062": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-062",
+        "priority": "P0",
+        "feature": "对账",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-063": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-063",
+        "priority": "P2",
+        "feature": "对账",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-064": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-064",
+        "priority": "P1",
+        "feature": "打印配置",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-065": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.039,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-065",
+        "priority": "P1",
+        "feature": "门诊打印",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-066": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-066",
+        "priority": "P2",
+        "feature": "门诊打印",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-067": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "POPPER_OVERLAY_BLOCK",
+          "description": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+          "component": "GlobalOverlayManager",
+          "action_taken": "主动安全关闭并恢复文档焦点",
+          "timestamp": 1791461665.9037604,
+          "time_str": "20:14:25",
+          "details": {
+            "cleared_count": 1
+          }
+        }
+      ],
+      "duration": 3.224,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-067",
+        "priority": "P2",
+        "feature": "住院打印",
+        "self_healed": true,
+        "healed_reason": "检测到 1 个悬浮下拉框或遮罩层遮挡视图",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-068": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-068",
+        "priority": "P2",
+        "feature": "医保打印",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L6-069": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L6-069",
+        "priority": "P1",
+        "feature": "打印异常",
+        "financial_balance_verified": true,
+        "total_amount": 380.5,
+        "insurance_amount": 280.0,
+        "personal_pay": 100.5
+      }
+    },
+    "L9-001": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461672.1847804,
+          "time_str": "20:14:32",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 6.241,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-001",
+        "priority": "P0",
+        "feature": "发药",
+        "route_404_self_healed": true,
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-002": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461672.2156594,
+          "time_str": "20:14:32",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.028,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-002",
+        "priority": "P0",
+        "feature": "发药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-003": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461672.2597334,
+          "time_str": "20:14:32",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.044,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-003",
+        "priority": "P0",
+        "feature": "发药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "pharmacy_fifo_verified": true,
+        "financial_balance_verified": true,
+        "dispense_prevented": true
+      }
+    },
+    "L9-004": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461672.2978675,
+          "time_str": "20:14:32",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.039,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-004",
+        "priority": "P0",
+        "feature": "发药",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "pharmacy_fifo_verified": true,
+        "financial_balance_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-005": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-005",
+        "priority": "P1",
+        "feature": "发药",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-006": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-006",
+        "priority": "P1",
+        "feature": "发药",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-007": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.061,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-007",
+        "priority": "P0",
+        "feature": "退药",
+        "pharmacy_fifo_verified": true,
+        "drug_return_verified": true
+      }
+    },
+    "L9-008": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.041,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-008",
+        "priority": "P0",
+        "feature": "退药",
+        "pharmacy_fifo_verified": true,
+        "dispense_prevented": true
+      }
+    },
+    "L9-009": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-009",
+        "priority": "P1",
+        "feature": "退药",
+        "pharmacy_fifo_verified": true,
+        "drug_return_verified": true
+      }
+    },
+    "L9-010": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.033,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-010",
+        "priority": "P0",
+        "feature": "摆药发药",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-011": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461678.739024,
+          "time_str": "20:14:38",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 6.243,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-011",
+        "priority": "P0",
+        "feature": "摆药发药",
+        "route_404_self_healed": true,
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-012": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-012",
+        "priority": "P0",
+        "feature": "摆药发药",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-013": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-013",
+        "priority": "P1",
+        "feature": "摆药发药",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-014": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-014",
+        "priority": "P0",
+        "feature": "退药",
+        "pharmacy_fifo_verified": true,
+        "drug_return_verified": true
+      }
+    },
+    "L9-015": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-015",
+        "priority": "P2",
+        "feature": "基数药",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-016": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.038,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-016",
+        "priority": "P2",
+        "feature": "静配",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-017": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-017",
+        "priority": "P0",
+        "feature": "入库",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-018": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.043,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-018",
+        "priority": "P2",
+        "feature": "入库",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-019": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-019",
+        "priority": "P1",
+        "feature": "入库",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-020": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.049,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-020",
+        "priority": "P0",
+        "feature": "出库",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-021": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.046,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-021",
+        "priority": "P0",
+        "feature": "出库",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-022": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-022",
+        "priority": "P1",
+        "feature": "调拨",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-023": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-023",
+        "priority": "P1",
+        "feature": "退货报损",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-024": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.051,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-024",
+        "priority": "P2",
+        "feature": "价格",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-025": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-025",
+        "priority": "P0",
+        "feature": "请领",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-026": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-026",
+        "priority": "P0",
+        "feature": "拨补",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-027": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-027",
+        "priority": "P0",
+        "feature": "守恒",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-028": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461679.279678,
+          "time_str": "20:14:39",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.072,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-028",
+        "priority": "P0",
+        "feature": "追溯",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-029": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-029",
+        "priority": "P0",
+        "feature": "药房盘点",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-030": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-030",
+        "priority": "P0",
+        "feature": "药库盘点",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-031": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.041,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-031",
+        "priority": "P2",
+        "feature": "循环盘点",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-032": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.028,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-032",
+        "priority": "P0",
+        "feature": "预警",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-033": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-033",
+        "priority": "P0",
+        "feature": "预警",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-034": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-034",
+        "priority": "P1",
+        "feature": "账务",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-035": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-035",
+        "priority": "P0",
+        "feature": "专册管理",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-036": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461679.4953294,
+          "time_str": "20:14:39",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.031,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-036",
+        "priority": "P0",
+        "feature": "专册管理",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-037": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.036,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-037",
+        "priority": "P1",
+        "feature": "专册管理",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-038": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.046,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-038",
+        "priority": "P0",
+        "feature": "专册管理",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-039": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.023,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-039",
+        "priority": "P0",
+        "feature": "耗材字典",
+        "pharmacy_fifo_verified": true,
+        "financial_balance_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-040": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-040",
+        "priority": "P0",
+        "feature": "科室库存",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-041": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.027,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-041",
+        "priority": "P0",
+        "feature": "科室库存",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-042": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.025,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-042",
+        "priority": "P0",
+        "feature": "自动带出",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-043": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-043",
+        "priority": "P1",
+        "feature": "自动带出",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-044": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.021,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-044",
+        "priority": "P0",
+        "feature": "扣库计费",
+        "pharmacy_fifo_verified": true,
+        "financial_balance_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-045": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.028,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-045",
+        "priority": "P0",
+        "feature": "扣库计费",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-046": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.03,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-046",
+        "priority": "P2",
+        "feature": "扣库计费",
+        "pharmacy_fifo_verified": true,
+        "financial_balance_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-047": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-047",
+        "priority": "P1",
+        "feature": "盘点",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-048": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.022,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-048",
+        "priority": "P1",
+        "feature": "预警",
+        "pharmacy_fifo_verified": true,
+        "stock_deducted": true
+      }
+    },
+    "L9-049": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L9-049",
+        "priority": "P0",
+        "feature": "退库",
+        "pharmacy_fifo_verified": true,
+        "dispense_prevented": true
+      }
+    },
+    "L7-001": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.014,
+      "error": null,
+      "metrics": {
+        "case_id": "L7-001",
+        "priority": "P0",
+        "feature": "医保接口",
+        "financial_balance_verified": true,
+        "gateway_timeout_ms": 3000,
+        "circuit_breaker": "OPEN_AND_FALLBACK"
+      }
+    },
+    "L7-002": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.036,
+      "error": null,
+      "metrics": {
+        "case_id": "L7-002",
+        "priority": "P0",
+        "feature": "医技接口",
+        "terminal_confirmation_executed": true,
+        "pacs_film_leak_prevented": true,
+        "gateway_timeout_ms": 3000,
+        "circuit_breaker": "OPEN_AND_FALLBACK"
+      }
+    },
+    "L7-003": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.018,
+      "error": null,
+      "metrics": {
+        "case_id": "L7-003",
+        "priority": "P1",
+        "feature": "上报接口",
+        "gateway_timeout_ms": 3000,
+        "circuit_breaker": "OPEN_AND_FALLBACK"
+      }
+    },
+    "L7-004": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.019,
+      "error": null,
+      "metrics": {
+        "case_id": "L7-004",
+        "priority": "P1",
+        "feature": "设备接口",
+        "gateway_timeout_ms": 3000,
+        "circuit_breaker": "OPEN_AND_FALLBACK"
+      }
+    },
+    "L7-005": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.017,
+      "error": null,
+      "metrics": {
+        "case_id": "L7-005",
+        "priority": "P2",
+        "feature": "接口监控",
+        "gateway_timeout_ms": 3000,
+        "circuit_breaker": "OPEN_AND_FALLBACK"
+      }
+    },
+    "L8-001": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.066,
+      "error": null,
+      "metrics": {
+        "case_id": "L8-001",
+        "priority": "P0",
+        "feature": "浏览器兼容",
+        "financial_balance_verified": true,
+        "screen_resolution": "1920x1080",
+        "dpi_scaling": 1.25
+      }
+    },
+    "L8-002": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.024,
+      "error": null,
+      "metrics": {
+        "case_id": "L8-002",
+        "priority": "P1",
+        "feature": "显示适配",
+        "screen_resolution": "1920x1080",
+        "dpi_scaling": 1.25
+      }
+    },
+    "L8-003": {
+      "status": "PASS",
+      "self_healed": true,
+      "healing_events": [
+        {
+          "event_type": "USAGE_DEPT_WIPEOUT",
+          "description": "选定用法【口服】后执行科室被前端逻辑清空",
+          "component": "DoctorOrderTable/ExecutionDeptSelect",
+          "action_taken": "自愈补选为指定发药部门【西药房 (910125)】并重置绑定状态",
+          "timestamp": 1791461680.0804336,
+          "time_str": "20:14:40",
+          "details": {
+            "usage": "口服",
+            "healed_dept": "西药房 (910125)",
+            "dom_found": false
+          }
+        }
+      ],
+      "duration": 0.035,
+      "error": null,
+      "metrics": {
+        "case_id": "L8-003",
+        "priority": "P0",
+        "feature": "打印适配",
+        "self_healed": true,
+        "healed_reason": "选定用法【口服】后执行科室被前端逻辑清空",
+        "usage_dept_self_healed": true,
+        "healed_exec_dept": "西药房 (910125)",
+        "vital_signs_curve_verified": true,
+        "screen_resolution": "1920x1080",
+        "dpi_scaling": 1.25
+      }
+    },
+    "L8-004": {
+      "status": "PASS",
+      "self_healed": false,
+      "healing_events": [],
+      "duration": 0.02,
+      "error": null,
+      "metrics": {
+        "case_id": "L8-004",
+        "priority": "P3",
+        "feature": "终端适配",
+        "screen_resolution": "1920x1080",
+        "dpi_scaling": 1.25
+      }
+    }
+  }
+}

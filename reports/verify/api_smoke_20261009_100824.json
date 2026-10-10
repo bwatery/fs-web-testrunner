@@ -1,0 +1,897 @@
+{
+ "meta": {
+  "started": "2026-10-09 10:08:24",
+  "gateway": "http://192.168.1.198:8081",
+  "frontend": "http://192.168.1.198:8088",
+  "oracle": "配置账号 his_test 无效，已改用实测可用账号 xchis（建议修正 environment_config.json）",
+  "spec_source": "/v2/api-docs",
+  "spec_fingerprint": "f594dc1fe9a3ef7c",
+  "readonly_total": 332,
+  "mutating_total": 1258,
+  "duration_sec": 3.8,
+  "fingerprint_ts": "2026-10-09 10:08:24"
+ },
+ "summary": {
+  "total_probed": 40,
+  "counts": {
+   "DEFECT": 7,
+   "NEEDS_PARAM": 6,
+   "OK": 27
+  },
+  "defect_count": 7,
+  "defects": [
+   {
+    "method": "GET",
+    "path": "/common/download",
+    "tag": "通用请求处理",
+    "summary": "通用下载请求",
+    "kind": "READ_ONLY",
+    "http": 200,
+    "code": null,
+    "msg": "",
+    "bucket": "DEFECT",
+    "detail": "未知业务码 None: ",
+    "duration_ms": 17.9,
+    "probe_query": {
+     "delete": "False",
+     "fileName": ""
+    },
+    "response_head": ""
+   },
+   {
+    "method": "GET",
+    "path": "/common/download/resource",
+    "tag": "通用请求处理",
+    "summary": "本地资源通用下载",
+    "kind": "READ_ONLY",
+    "http": 200,
+    "code": null,
+    "msg": "",
+    "bucket": "DEFECT",
+    "detail": "未知业务码 None: ",
+    "duration_ms": 38.2,
+    "probe_query": {
+     "resource": ""
+    },
+    "response_head": ""
+   },
+   {
+    "method": "GET",
+    "path": "/faith/esb/dict/all",
+    "tag": "平台接口/",
+    "summary": "查询平台术语记录列表",
+    "kind": "READ_ONLY",
+    "http": 500,
+    "code": 500,
+    "msg": "ESB网络异常，请重试",
+    "bucket": "DEFECT",
+    "detail": "HTTP 500 服务端错误",
+    "duration_ms": 3405.8,
+    "probe_query": {
+     "pageNo": "1",
+     "pageSize": "1",
+     "termCode": ""
+    },
+    "response_head": "{\"msg\":\"ESB网络异常，请重试\",\"code\":500}"
+   },
+   {
+    "method": "GET",
+    "path": "/faith/finance/item/part/getByApplyType",
+    "tag": "费用业务/非药品服务项目维护",
+    "summary": "根据申请单类型查询所有根部位",
+    "kind": "READ_ONLY",
+    "http": 400,
+    "code": 400,
+    "msg": "申请单类型不能为空",
+    "bucket": "DEFECT",
+    "detail": "HTTP 400 非预期状态码",
+    "duration_ms": 18.7,
+    "probe_query": {
+     "applyType": ""
+    },
+    "response_head": "{\"msg\":\"申请单类型不能为空\",\"code\":400}"
+   },
+   {
+    "method": "GET",
+    "path": "/faith/finance/item/part/getByParentId",
+    "tag": "费用业务/非药品服务项目维护",
+    "summary": "根据根部位ID查询所有子部位",
+    "kind": "READ_ONLY",
+    "http": 400,
+    "code": 400,
+    "msg": "根部位ID不能为空",
+    "bucket": "DEFECT",
+    "detail": "HTTP 400 非预期状态码",
+    "duration_ms": 13.9,
+    "probe_query": {
+     "parentId": ""
+    },
+    "response_head": "{\"msg\":\"根部位ID不能为空\",\"code\":400}"
+   },
+   {
+    "method": "GET",
+    "path": "/faith/finance/itemCompare/list",
+    "tag": "费用业务/项目医保对照管理",
+    "summary": "查询项目医保对照记录列表",
+    "kind": "READ_ONLY",
+    "http": 400,
+    "code": 400,
+    "msg": "项目主键不能为空",
+    "bucket": "DEFECT",
+    "detail": "HTTP 400 非预期状态码",
+    "duration_ms": 17.8,
+    "probe_query": {
+     "HisItemCompareCode": ""
+    },
+    "response_head": "{\"msg\":\"项目主键不能为空\",\"code\":400}"
+   },
+   {
+    "method": "GET",
+    "path": "/faith/finance/itemCompare/queryById",
+    "tag": "费用业务/项目医保对照管理",
+    "summary": "根据对照主键查询已对照综合视图详情",
+    "kind": "READ_ONLY",
+    "http": 400,
+    "code": 400,
+    "msg": "对照记录不存在",
+    "bucket": "DEFECT",
+    "detail": "HTTP 400 非预期状态码",
+    "duration_ms": 50.7,
+    "probe_query": {
+     "compareId": "1"
+    },
+    "response_head": "{\"msg\":\"对照记录不存在\",\"code\":400}"
+   }
+  ],
+  "by_tag": {
+   "通用请求处理": {
+    "total": 3,
+    "DEFECT": 2
+   },
+   "费用业务/非药品服务项目维护": {
+    "total": 11,
+    "DEFECT": 2
+   },
+   "费用业务/项目医保对照管理": {
+    "total": 2,
+    "DEFECT": 2
+   },
+   "平台接口/": {
+    "total": 1,
+    "DEFECT": 1
+   },
+   "费用业务/日结管理": {
+    "total": 2,
+    "DEFECT": 0
+   },
+   "费用业务/住院发票管理": {
+    "total": 3,
+    "DEFECT": 0
+   },
+   "费用业务/发票管理": {
+    "total": 2,
+    "DEFECT": 0
+   },
+   "费用业务/门诊发票管理": {
+    "total": 2,
+    "DEFECT": 0
+   },
+   "验证码管理": {
+    "total": 1,
+    "DEFECT": 0
+   },
+   "系统管理/登录管理": {
+    "total": 1,
+    "DEFECT": 0
+   },
+   "费用业务/字典管理": {
+    "total": 2,
+    "DEFECT": 0
+   },
+   "费用业务/住院预约管理": {
+    "total": 2,
+    "DEFECT": 0
+   },
+   "费用业务/住院预交金管理": {
+    "total": 1,
+    "DEFECT": 0
+   },
+   "费用业务/住院患者转科管理": {
+    "total": 1,
+    "DEFECT": 0
+   },
+   "费用业务/门诊预约管理": {
+    "total": 1,
+    "DEFECT": 0
+   },
+   "费用业务/划价": {
+    "total": 1,
+    "DEFECT": 0
+   },
+   "费用业务/门诊排班管理": {
+    "total": 4,
+    "DEFECT": 0
+   }
+  }
+ },
+ "results": [
+  {
+   "method": "GET",
+   "path": "/common/download",
+   "tag": "通用请求处理",
+   "summary": "通用下载请求",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": null,
+   "msg": "",
+   "bucket": "DEFECT",
+   "detail": "未知业务码 None: ",
+   "duration_ms": 17.9,
+   "probe_query": {
+    "delete": "False",
+    "fileName": ""
+   },
+   "response_head": ""
+  },
+  {
+   "method": "GET",
+   "path": "/common/download/resource",
+   "tag": "通用请求处理",
+   "summary": "本地资源通用下载",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": null,
+   "msg": "",
+   "bucket": "DEFECT",
+   "detail": "未知业务码 None: ",
+   "duration_ms": 38.2,
+   "probe_query": {
+    "resource": ""
+   },
+   "response_head": ""
+  },
+  {
+   "method": "GET",
+   "path": "/faith/esb/dict/all",
+   "tag": "平台接口/",
+   "summary": "查询平台术语记录列表",
+   "kind": "READ_ONLY",
+   "http": 500,
+   "code": 500,
+   "msg": "ESB网络异常，请重试",
+   "bucket": "DEFECT",
+   "detail": "HTTP 500 服务端错误",
+   "duration_ms": 3405.8,
+   "probe_query": {
+    "pageNo": "1",
+    "pageSize": "1",
+    "termCode": ""
+   },
+   "response_head": "{\"msg\":\"ESB网络异常，请重试\",\"code\":500}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/part/getByApplyType",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "根据申请单类型查询所有根部位",
+   "kind": "READ_ONLY",
+   "http": 400,
+   "code": 400,
+   "msg": "申请单类型不能为空",
+   "bucket": "DEFECT",
+   "detail": "HTTP 400 非预期状态码",
+   "duration_ms": 18.7,
+   "probe_query": {
+    "applyType": ""
+   },
+   "response_head": "{\"msg\":\"申请单类型不能为空\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/part/getByParentId",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "根据根部位ID查询所有子部位",
+   "kind": "READ_ONLY",
+   "http": 400,
+   "code": 400,
+   "msg": "根部位ID不能为空",
+   "bucket": "DEFECT",
+   "detail": "HTTP 400 非预期状态码",
+   "duration_ms": 13.9,
+   "probe_query": {
+    "parentId": ""
+   },
+   "response_head": "{\"msg\":\"根部位ID不能为空\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/itemCompare/list",
+   "tag": "费用业务/项目医保对照管理",
+   "summary": "查询项目医保对照记录列表",
+   "kind": "READ_ONLY",
+   "http": 400,
+   "code": 400,
+   "msg": "项目主键不能为空",
+   "bucket": "DEFECT",
+   "detail": "HTTP 400 非预期状态码",
+   "duration_ms": 17.8,
+   "probe_query": {
+    "HisItemCompareCode": ""
+   },
+   "response_head": "{\"msg\":\"项目主键不能为空\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/itemCompare/queryById",
+   "tag": "费用业务/项目医保对照管理",
+   "summary": "根据对照主键查询已对照综合视图详情",
+   "kind": "READ_ONLY",
+   "http": 400,
+   "code": 400,
+   "msg": "对照记录不存在",
+   "bucket": "DEFECT",
+   "detail": "HTTP 400 非预期状态码",
+   "duration_ms": 50.7,
+   "probe_query": {
+    "compareId": "1"
+   },
+   "response_head": "{\"msg\":\"对照记录不存在\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/dayBalance/last",
+   "tag": "费用业务/日结管理",
+   "summary": "查询最近一次日结记录",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 400,
+   "msg": "请求参数[type]不能为空",
+   "bucket": "NEEDS_PARAM",
+   "detail": "请求参数[type]不能为空",
+   "duration_ms": 19.4,
+   "probe_query": {
+    "type": ""
+   },
+   "response_head": "{\"msg\":\"请求参数[type]不能为空\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/dayBalance/listByMonth",
+   "tag": "费用业务/日结管理",
+   "summary": "查询指定月份的日结记录",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 400,
+   "msg": "请求参数[type]不能为空",
+   "bucket": "NEEDS_PARAM",
+   "detail": "请求参数[type]不能为空",
+   "duration_ms": 17.9,
+   "probe_query": {
+    "month": "",
+    "type": ""
+   },
+   "response_head": "{\"msg\":\"请求参数[type]不能为空\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/inpatient/receipt/cumulative/list",
+   "tag": "费用业务/住院发票管理",
+   "summary": "查询累计列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 400,
+   "msg": "请求参数[receiptType]不能为空",
+   "bucket": "NEEDS_PARAM",
+   "detail": "请求参数[receiptType]不能为空",
+   "duration_ms": 8.5,
+   "probe_query": {
+    "count": "1",
+    "receiptType": ""
+   },
+   "response_head": "{\"msg\":\"请求参数[receiptType]不能为空\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/invoice/list",
+   "tag": "费用业务/发票管理",
+   "summary": "获取人员发票列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 400,
+   "msg": "请求体不能为空且必须是合法JSON",
+   "bucket": "NEEDS_PARAM",
+   "detail": "请求体不能为空且必须是合法JSON",
+   "duration_ms": 5.1,
+   "probe_query": {},
+   "response_head": "{\"msg\":\"请求体不能为空且必须是合法JSON\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/package/getByPackageId",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "根据复合项目 ID 查询所有复合项目明细",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 400,
+   "msg": "请求参数[validFlag]不能为空",
+   "bucket": "NEEDS_PARAM",
+   "detail": "请求参数[validFlag]不能为空",
+   "duration_ms": 13.0,
+   "probe_query": {
+    "packageId": "",
+    "validFlag": ""
+   },
+   "response_head": "{\"msg\":\"请求参数[validFlag]不能为空\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/outpatient/receipt/cumulative/list",
+   "tag": "费用业务/门诊发票管理",
+   "summary": "查询累计列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 400,
+   "msg": "请求参数[receiptType]不能为空",
+   "bucket": "NEEDS_PARAM",
+   "detail": "请求参数[receiptType]不能为空",
+   "duration_ms": 9.4,
+   "probe_query": {
+    "count": "1",
+    "receiptType": ""
+   },
+   "response_head": "{\"msg\":\"请求参数[receiptType]不能为空\",\"code\":400}"
+  },
+  {
+   "method": "GET",
+   "path": "/captchaImage",
+   "tag": "验证码管理",
+   "summary": "生成验证码",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 8.2,
+   "probe_query": {},
+   "response_head": "{\"msg\":\"操作成功\",\"code\":200,\"captchaEnabled\":false}"
+  },
+  {
+   "method": "GET",
+   "path": "/common/getDbTime",
+   "tag": "通用请求处理",
+   "summary": "获取数据库时间",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 19.9,
+   "probe_query": {},
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":\"2026-10-09 10:07:56\"}"
+  },
+  {
+   "method": "GET",
+   "path": "/dept",
+   "tag": "系统管理/登录管理",
+   "summary": "获取科室列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 18.9,
+   "probe_query": {
+    "roleId": "1"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[{\"deptId\":10072,\"parentId\":910050,\"ancestors\":\"0,910050\",\"deptCode\":\"0007\",\"deptName\":\"信息科\",\"spellCode\":\"XXK\",\"fiveStrokeCode\":\"WTT\",\"engDeptName\":null,\"shortDeptName\":null,\"deptType\":\"D\",\"deptAddr\":null,\"businessFlag\":\"1\",\"stockFlag\":\"0\",\"maternityFlag\":\"0\",\"interfaceCode\":null,\"insuranceTypeCode\":null,\"insuranceTypeName\":null,\"insuranceDeptName\":null,\"validFlag\":"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/dictionary/medicalKind/statType/queryByCode",
+   "tag": "费用业务/字典管理",
+   "summary": "根据统计类型编码获取去重的项目统计类型列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 38.5,
+   "probe_query": {
+    "statTypeCode": ""
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[]}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/dictionary/medicalType/specialItem/dict/list",
+   "tag": "费用业务/字典管理",
+   "summary": "获取财务业务基础项目清单视图",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "查询成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 62.2,
+   "probe_query": {
+    "itemName": "",
+    "itemType": "",
+    "maxPrice": "1",
+    "minPrice": "1"
+   },
+   "response_head": "{\"total\":3,\"data\":[{\"itemId\":\"10000431\",\"itemNo\":\"1095\",\"itemName\":\"静脉输液(第二组起)\",\"specs\":null,\"price\":1,\"specialPrice\":null,\"unit\":\"次\",\"spellCode\":\"JMSYDEZQ\",\"fiveStrokeCode\":\"GELITFXF\",\"nationCode\":\"001204000060000-120400006-3\",\"customName\":\"1095\",\"englishName\":null,\"itemSysType\":\"UZ\",\"itemSysParentType\":\"1\"},{\"itemId\":\"10000442\",\"itemNo\":\"1109\",\"itemName\":\"静脉输液(使用微量泵或输液泵每小时加收)\",\"specs\":null,\"pric"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/inpatient/booking/Dept",
+   "tag": "费用业务/住院预约管理",
+   "summary": "查询入院科室",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 16.2,
+   "probe_query": {},
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[{\"deptId\":910091,\"parentId\":910045,\"ancestors\":\"0,910045\",\"deptCode\":\"201\",\"deptName\":\"骨二科\",\"spellCode\":null,\"fiveStrokeCode\":null,\"engDeptName\":null,\"shortDeptName\":null,\"deptType\":\"I\",\"deptAddr\":null,\"businessFlag\":\"1\",\"stockFlag\":\"0\",\"maternityFlag\":\"0\",\"interfaceCode\":null,\"insuranceTypeCode\":\"A04.03\",\"insuranceTypeName\":\"骨科专业\",\"insuranceDeptName\":null,\"validFl"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/inpatient/booking/queryByPatientId",
+   "tag": "费用业务/住院预约管理",
+   "summary": "按患者查询预约入院记录",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 48.4,
+   "probe_query": {
+    "patientId": "1581049"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[]}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/inpatient/prepay/validList",
+   "tag": "费用业务/住院预交金管理",
+   "summary": "查询有效的住院预交金信息",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "查询成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 23.6,
+   "probe_query": {
+    "registerId": "521"
+   },
+   "response_head": "{\"total\":1,\"data\":[{\"prepayId\":321,\"registerId\":521,\"receiptId\":401,\"receiptNo\":\"1401\",\"prepayCost\":1000,\"paymentMethod\":\"现金:1000\",\"remark\":null,\"platformPrepayId\":null,\"balanceReceiptFlag\":\"0\",\"balanceReceiptId\":null,\"receiptOperId\":\"1\",\"receiptOperName\":\"系统管理员\",\"receiptTime\":\"2026-09-14 11:51:08\",\"dataSource\":\"1\",\"transFlag\":\"1\",\"validFlag\":\"1\",\"chargeOperId\":1,\"chargeOperName\":\"系统管理员\",\"chargeTi"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/inpatient/receipt/last",
+   "tag": "费用业务/住院发票管理",
+   "summary": "查询最近一次发票",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 34.3,
+   "probe_query": {
+    "balanceType": "",
+    "registerId": "521"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[{\"receiptId\":401,\"receiptNo\":\"1401\",\"platformReceiptId\":null,\"serialNo\":null,\"receiptType\":\"P\",\"transFlag\":\"1\",\"balanceId\":null,\"balanceType\":\"I\",\"registerId\":521,\"patientId\":1580997,\"patientName\":\"王景俊\",\"payType\":\"O\",\"medicalTypeId\":101,\"medicalKindId\":10101,\"prepayCost\":0,\"totCost\":1000,\"ownCost\":1000,\"payCost\":null,\"pubCost\":0,\"ecoCost\":0,\"derCost\":0,\"pubPayCost\""
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/inpatient/receipt/prepay/list",
+   "tag": "费用业务/住院发票管理",
+   "summary": "根据住院收据ID查询已冲抵的预交金记录",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 14.0,
+   "probe_query": {
+    "receiptId": "1"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[]}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/inpatient/shiftDept/queryCurrentApply",
+   "tag": "费用业务/住院患者转科管理",
+   "summary": "查询当前申请",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 20.4,
+   "probe_query": {
+    "oldDeptId": "910091",
+    "registerId": "521"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[]}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/invoice/nextNumber",
+   "tag": "费用业务/发票管理",
+   "summary": "获取下一个可用发票号",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 14.0,
+   "probe_query": {
+    "emplId": "14",
+    "invoiceType": ""
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":\"1691\"}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/Part/list",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "根据检查部位等级查询所有检查部位",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 6.9,
+   "probe_query": {},
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[]}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/applyBill/getBySystemType",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "根据系统类型查询所有申请单类型",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "查询成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 18.6,
+   "probe_query": {
+    "systemType": ""
+   },
+   "response_head": "{\"total\":0,\"data\":[],\"code\":200,\"msg\":\"查询成功\"}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/applyBill/list",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "查询所有申请单类型",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "查询成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 57.3,
+   "probe_query": {},
+   "response_head": "{\"total\":10,\"data\":[{\"applyBillId\":1,\"applyBillType\":\"UC\",\"applyBillNo\":\"1\",\"applyBillName\":\"DR\",\"sortId\":null,\"validFlag\":\"1\",\"applyBillPrintTemplate\":null,\"remark\":null,\"updateOperId\":1,\"updateOperName\":\"管理员\",\"updateTime\":\"2026-01-16 09:53:55\",\"createOperId\":1,\"createOperName\":\"管理员\",\"createTime\":\"2026-01-16 09:53:55\",\"hospitalId\":1,\"hospitalName\":\"测试医院\"},{\"applyBillId\":0,\"applyBillType\":\"UC\",\"ap"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/common/queryByDeptId",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "查询科室常用项目列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "查询成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 29.3,
+   "probe_query": {
+    "deptId": "910091"
+   },
+   "response_head": "{\"total\":0,\"data\":[],\"code\":200,\"msg\":\"查询成功\"}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/group/item/getById",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "查询科室套餐明细",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 23.7,
+   "probe_query": {
+    "groupId": "1581049"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[]}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/group/queryByDeptId",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "查询科室套餐列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "查询成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 39.4,
+   "probe_query": {
+    "deptId": "910091"
+   },
+   "response_head": "{\"total\":0,\"data\":[],\"code\":200,\"msg\":\"查询成功\"}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/nonPackItem/list",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "查询非复合项目列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "查询成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 56.1,
+   "probe_query": {
+    "condition": ""
+   },
+   "response_head": "{\"total\":913,\"data\":[{\"itemId\":\"10000004\",\"itemNo\":\"772\",\"itemName\":\"内外踝骨折切开复位内固定术\",\"customName\":\"772\",\"englishName\":null,\"spellCode\":\"NWHGZQKFWNGDS\",\"fiveStrokeCode\":\"MQKMRAGTWMLPS\",\"itemSysType\":\"UO\",\"itemSysParentType\":\"1\",\"itemFeeType\":\"8\",\"itemCaseType\":\"030202\",\"itemFunctionType\":null,\"itemFinancialType\":null,\"lisItemType\":null,\"compareCode\":null,\"medNo\":null,\"nationCode\":\"003315050220000-33"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/item/queryById",
+   "tag": "费用业务/非药品服务项目维护",
+   "summary": "根据项目 ID 查询项目详情",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 16.2,
+   "probe_query": {
+    "itemId": "00349252"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":{\"itemId\":null,\"itemNo\":null,\"itemName\":null,\"customName\":null,\"englishName\":null,\"spellCode\":null,\"fiveStrokeCode\":null,\"itemSysType\":null,\"itemSysParentType\":null,\"itemFeeType\":null,\"itemCaseType\":null,\"itemFunctionType\":null,\"itemFinancialType\":null,\"lisItemType\":null,\"compareCode\":null,\"medNo\":null,\"nationCode\":null,\"internationalCode\":null,\"hrpCode\":null,\"inter"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/outpatient/booking/queryById",
+   "tag": "费用业务/门诊预约管理",
+   "summary": "根据预约ID查询预约详情",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 60.3,
+   "probe_query": {
+    "bookingId": "1"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":null}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/outpatient/receipt/stat/list",
+   "tag": "费用业务/门诊发票管理",
+   "summary": "根据发票ID查询发票统计记录",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 32.2,
+   "probe_query": {
+    "receiptId": "1"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[]}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/pricing/outpatient/queryPricingFeeList",
+   "tag": "费用业务/划价",
+   "summary": "查询划价费用列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "查询成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 31.6,
+   "probe_query": {
+    "orderId": "4363",
+    "registerId": "521"
+   },
+   "response_head": "{\"total\":0,\"data\":[],\"code\":200,\"msg\":\"查询成功\"}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/schedule/console/list",
+   "tag": "费用业务/门诊排班管理",
+   "summary": "获取排班诊台列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 25.3,
+   "probe_query": {
+    "roomId": "1"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[]}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/schedule/dept/list",
+   "tag": "费用业务/门诊排班管理",
+   "summary": "获取排班科室列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 37.8,
+   "probe_query": {},
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[{\"deptId\":910155,\"parentId\":910047,\"ancestors\":null,\"deptCode\":\"910136\",\"deptName\":\"急诊科\",\"spellCode\":\"JZK\",\"fiveStrokeCode\":\"QYT\",\"engDeptName\":null,\"shortDeptName\":null,\"deptType\":\"C\",\"deptAddr\":null,\"businessFlag\":\"1\",\"stockFlag\":\"1\",\"maternityFlag\":\"0\",\"interfaceCode\":null,\"insuranceTypeCode\":null,\"insuranceTypeName\":null,\"insuranceDeptName\":null,\"validFlag\":\"1\""
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/schedule/detail/list",
+   "tag": "费用业务/门诊排班管理",
+   "summary": "获取排班详情",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 27.0,
+   "probe_query": {
+    "scheduleId": "1"
+   },
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[]}"
+  },
+  {
+   "method": "GET",
+   "path": "/faith/finance/schedule/employee/list",
+   "tag": "费用业务/门诊排班管理",
+   "summary": "获取排班医生列表",
+   "kind": "READ_ONLY",
+   "http": 200,
+   "code": 200,
+   "msg": "操作成功",
+   "bucket": "OK",
+   "detail": "",
+   "duration_ms": 19.2,
+   "probe_query": {},
+   "response_head": "{\"code\":200,\"msg\":\"操作成功\",\"data\":[{\"emplId\":1502,\"emplCode\":\"csgr01\",\"emplName\":\"测试骨二01\",\"spellCode\":\"CSGE\",\"fiveStrokeCode\":\"IYMF\",\"emplType\":\"D\",\"deptId\":910091,\"sexCode\":\"1\",\"birthday\":null,\"identifierNo\":null,\"phone\":null,\"levelId\":\"02\",\"levelName\":\"副主任医师\",\"postId\":\"1\",\"postName\":\"主任医师\",\"remark\":null,\"interfaceCode\":null,\"nationCode\":null,\"licenseCode\":null,\"sortId\":1,\"validFlag\":\"1\"},{\"emplId\""
+  }
+ ]
+}

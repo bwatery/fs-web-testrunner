@@ -21,6 +21,8 @@ from fs_web_testrunner.core.fswriter_api import FSWriterAPI
 from fs_web_testrunner.core.logger import get_logger
 from fs_web_testrunner.config import EMR_DESIGNER_URL, REPORTS_DIR, SCREENSHOTS_DIR
 
+from fs_web_testrunner.core.self_healing import self_healing_engine, SelfHealingEngine
+
 logger = get_logger("engine")
 
 @dataclass
@@ -40,13 +42,18 @@ class TestCaseResult:
     logs: List[str] = field(default_factory=list)
     xml_snapshot: Optional[str] = None
     metrics: Dict[str, Any] = field(default_factory=dict)
+    self_healed: bool = False
+    healing_events: List[Dict[str, Any]] = field(default_factory=list)
 
 class TestEngine:
-    def __init__(self, headless: bool = False, login_mode: str = "B", username: str = "", password: str = ""):
+    def __init__(self, headless: bool = False, login_mode: str = "A", username: str = "admin", password: str = "admin123", self_heal_enabled: bool = True):
         self.headless = headless
-        self.login_mode = login_mode  # "A" (Auto) or "B" (Manual)
-        self.username = username
-        self.password = password
+        self.login_mode = login_mode or "A"
+        self.username = username or "admin"
+        self.password = password or "admin123"
+        self.self_heal_enabled = self_heal_enabled
+        self.self_healing: SelfHealingEngine = self_healing_engine
+        self.self_healing.enabled = self_heal_enabled
         self.browser: Optional[BrowserDriver] = None
         self.writer: Optional[FSWriterAPI] = None
         self.registry: Dict[str, Dict[str, Any]] = {}
@@ -105,9 +112,23 @@ class TestEngine:
         is_mock = get_environment_status().get("is_mock", False)
         adaptive_strategy = env_config.get_adaptive_strategy()
 
-        target_url = url or env_config.get_emr_designer_url()
+        target_url = url or f"{env_config.get_frontend_url().rstrip('/')}/#/index"
         if is_mock:
             target_url = "http://127.0.0.1:8989/static/index.html"
+
+        # Check if browser needs to be recreated because visual mode changed (headless vs windowed)
+        if self.browser and self.browser.is_alive():
+            curr_headless = getattr(self.browser, "headless", False)
+            proc_is_headless = self.browser._is_existing_headless()
+            if curr_headless != self.headless or proc_is_headless != self.headless:
+                mode_tag = "⚡ 无窗口模式" if self.headless else "🖥️ 窗口模式"
+                self.log(None, f"🔄 检测到运行视窗模式改变 (当前:{'无窗口' if proc_is_headless else '实体窗口'} -> 目标:{mode_tag})，正在重新启动 Chrome 浏览器...")
+                try:
+                    self.browser.close()
+                    self.browser._kill_existing_cdp()
+                except Exception:
+                    pass
+                self.browser = None
 
         if not self.browser or not self.browser.is_alive():
             mode_tag = "⚡ 无窗口模式" if self.headless else "🖥️ 窗口模式"
@@ -213,8 +234,7 @@ class TestEngine:
                 else:
                     self.log(None, "🖥️ [页面实测模式] 检测到包含 UI 交互项，正在准备 Chrome 运行环境...")
                     if not target_url:
-                        has_emr = any("emr" in tid.lower() or "病历" in self.registry.get(tid, {}).get("category", "") for tid in target_ids)
-                        target_url = env_config.get_emr_designer_url() if has_emr else env_config.get_workstation_url("inpatient_doctor")
+                        target_url = f"{env_config.get_frontend_url().rstrip('/')}/#/index"
                     
                     ready = self.init_environment(url=target_url)
                     if not ready and not is_mock:
@@ -270,19 +290,55 @@ class TestEngine:
 
                     # 2. 离线模式 + 选项 A (沙盒自适应仿真通过)
                     elif is_inv and is_mock and adaptive_strategy == "ADAPTIVE_MOCK":
+                        # 【已废止"异常也判通过"】原实现在 except 分支里照样设 PASSED，
+                        # 等于任何失败都被洗成通过。现在离线沙盒一律判为"未校验"，
+                        # 绝不产出"通过"。
                         try:
                             meta["func"](self, self.writer, self.browser, res)
-                            res.status = "PASSED"
-                            self.log(res, f"[PASS] 测试通过: {meta['name']}", "SUCCESS")
+                            res.status = "SKIPPED"
+                            res.error_message = "离线沙盒模式下未连接真实环境，不计入通过"
+                            self.log(res, "[未校验] 离线沙盒未连真实环境，本条不计为通过", "WARN")
                         except Exception as e:
-                            res.status = "PASSED"
-                            res.error_message = None
-                            res.metrics["adaptive_mock"] = True
-                            self.log(res, f"[PASS·选项A] 离线沙盒自适应通过: 已完成组件契约与行为仿真校验 (免内网)", "SUCCESS")
+                            res.status = "SKIPPED"
+                            res.error_message = f"离线沙盒未做真实校验: {e}"
+                            self.log(res, f"[未校验] 离线沙盒执行异常，不计为通过: {e}", "WARN")
 
                     # 3. 正常执行模式 (非侵入式接口直测 / 连通内网 live / 严格模式)
                     else:
+                        # 内网直连模式下进行实时网关/服务可用性前置强校验
+                        from fs_web_testrunner.core.offline_sandbox import _is_intranet_available, _get_target_host_port
+                        target_h, target_p = _get_target_host_port()
+                        if not _is_intranet_available(target_h, target_p, timeout=0.8):
+                            raise ConnectionError(
+                                f"【内网直连模式网络故障】目标网关服务 ({target_h}:{target_p}) 无法连接或连接超时！"
+                                f"当前测试判定为失败。请检查现场内网连通性或切换至离线沙盒模式。"
+                            )
+
                         meta["func"](self, self.writer, self.browser, res)
+
+                        # 4. 【页面实测强断言】页面实测执行完毕后对浏览器做零容忍 404 与健康度检查
+                        if is_inv and self.browser and self.browser.is_alive():
+                            curr_url = self.browser.get_current_url()
+                            if "/404" in curr_url or "#/404" in curr_url:
+                                raise AssertionError(
+                                    f"【页面实测失败】浏览器当前停留在 404 错误页 ({curr_url})，目标页面不存在！绝对禁止判定为通过！"
+                                )
+                            # 深度检查 DOM 文本
+                            is_404_page = self.browser.evaluate(
+                                "() => document.body.innerText.includes('抱歉！当前页面不存在') || (document.title && document.title.includes('404'))"
+                            )
+                            if is_404_page:
+                                raise AssertionError(
+                                    f"【页面实测失败】检测到页面显示'抱歉！当前页面不存在'错误提示，路由或组件未生效！绝对禁止判定为通过！"
+                                )
+                            
+                            # 页面实测耗时防御：禁止未调动任何浏览器的虚假瞬间通过 (<300ms)
+                            elapsed_ms = (time.time() - start_t) * 1000
+                            if elapsed_ms < 300:
+                                raise AssertionError(
+                                    f"【页面实测失败】页面实测项执行仅耗时 {elapsed_ms:.1f}ms，未检测到任何有效 UI 页面加载与物理交互！"
+                                )
+
                         res.status = "PASSED"
                         self.log(res, f"[PASS] 测试通过: {meta['name']}", "SUCCESS")
 
@@ -318,13 +374,18 @@ class TestEngine:
                         "duration_ms": res.duration_ms,
                         "error": res.error_message,
                         "screenshot_path": res.screenshot_path,
-                        "screenshot_b64": res.screenshot_b64
+                        "screenshot_b64": res.screenshot_b64,
+                        "self_healed": res.self_healed,
+                        "healing_events": res.healing_events
                     })
         except Exception as e:
             self.log(None, f"测试引擎运行异常: {str(e)}", "ERROR")
         finally:
             self._is_running = False
-            self._broadcast("RUN_FINISH", {"results_count": len(self.results)})
+            self._broadcast("RUN_FINISH", {
+                "results_count": len(self.results),
+                "self_healing_summary": self.self_healing.get_summary() if self.self_healing else {}
+            })
 
         return self.results
 

@@ -44,7 +44,12 @@
         const chip = document.getElementById(`status-${msg.data.test_id}`);
         if (chip) {
           if (msg.data.status === 'PASSED') {
-            chip.innerHTML = `<span class="status-chip passed">${Icons.checkCircle} 通过</span>`;
+            if (msg.data.self_healed) {
+              const hTitle = (msg.data.healing_events && msg.data.healing_events.length) ? msg.data.healing_events[0].description : '已智能补偿自愈';
+              chip.innerHTML = `<span class="status-chip pass" style="background:#e6f4ea; color:#137333; border:1px solid #ceead6; font-weight:600;" title="🛡️ 自愈通过: ${hTitle}">🛡️ 自愈通过</span>`;
+            } else {
+              chip.innerHTML = `<span class="status-chip passed">${Icons.checkCircle} 通过</span>`;
+            }
           } else {
             chip.innerHTML = `<span class="status-chip failed" title="${msg.data.error || ''}">${Icons.xCircle} 失败</span>`;
           }
@@ -155,8 +160,8 @@
       const targetVal = targetEl ? (targetEl.value || '') : '';
       const targetStr = (targetVal.includes('127.0.0.1') || targetVal.includes('localhost') || targetVal.includes('local_mock')) ? '沙盒' : '现场';
       const loginStr = (loginEl && loginEl.value === 'A') ? '代登' : '手动';
-      const isHeadless = !!((chkHeadlessEl && chkHeadlessEl.checked) || (chkHeadlessModalEl && chkHeadlessModalEl.checked));
-      const headlessStr = isHeadless ? ' · 无窗口' : ' · 窗口';
+      const isWindow = !!((chkHeadlessEl && chkHeadlessEl.checked) || (chkHeadlessModalEl && chkHeadlessModalEl.checked));
+      const headlessStr = isWindow ? ' · 窗口' : ' · 无窗口';
       badge.innerText = `${targetStr} · ${loginStr}${headlessStr}`;
     }
 
@@ -196,23 +201,25 @@
     }
 
     // Window Mode Switch (Bi-directional sync between Table Toolbar & Run Settings Modal)
+    // Checked (true) = 窗口模式 (显示浏览器, headless: false)
+    // Unchecked (false) = 无窗口模式 (后台静默, headless: true)
     const chkHeadlessEl = document.getElementById('chkHeadless');
     const chkHeadlessModalEl = document.getElementById('chkHeadlessModal');
 
     function updateHeadlessSwitchUI(overrideVal) {
-      let isHeadless = false;
+      let isWindow = true; // default is window mode
       if (typeof overrideVal === 'boolean') {
-        isHeadless = overrideVal;
+        isWindow = overrideVal;
       } else {
-        isHeadless = !!((chkHeadlessEl && chkHeadlessEl.checked) || (chkHeadlessModalEl && chkHeadlessModalEl.checked));
+        isWindow = !!((chkHeadlessEl && chkHeadlessEl.checked) || (chkHeadlessModalEl && chkHeadlessModalEl.checked));
       }
 
       // Synchronize both input checkbox states
-      if (chkHeadlessEl && chkHeadlessEl.checked !== isHeadless) {
-        chkHeadlessEl.checked = isHeadless;
+      if (chkHeadlessEl && chkHeadlessEl.checked !== isWindow) {
+        chkHeadlessEl.checked = isWindow;
       }
-      if (chkHeadlessModalEl && chkHeadlessModalEl.checked !== isHeadless) {
-        chkHeadlessModalEl.checked = isHeadless;
+      if (chkHeadlessModalEl && chkHeadlessModalEl.checked !== isWindow) {
+        chkHeadlessModalEl.checked = isWindow;
       }
 
       // 1. Update Table Toolbar Switch UI
@@ -220,19 +227,21 @@
       const tipText = document.getElementById('headlessSwitchTipText');
       const lblSwitch = document.getElementById('lblHeadlessSwitch');
       if (modeText && tipText) {
-        if (isHeadless) {
-          modeText.innerHTML = `${Icons.zap} 无窗口模式`;
-          tipText.innerText = '(不打开浏览器)';
+        if (isWindow) {
+          modeText.innerHTML = `${Icons.monitor} 窗口模式`;
+          modeText.style.color = 'var(--g-primary)';
+          tipText.innerText = '(显示浏览器)';
           if (lblSwitch) {
-            lblSwitch.title = '当前为【无窗口模式】：页面实测将在后台隐形执行，不打开桌面浏览器窗口。点击切换为【窗口模式】';
+            lblSwitch.title = '当前为【窗口模式】：页面实测将在桌面打开实体 Chrome 窗口供实时观看。点击切换为【无窗口模式】（后台隐形执行）';
             lblSwitch.style.borderColor = 'var(--g-primary)';
             lblSwitch.style.background = 'var(--g-blue-surface, #e8f0fe)';
           }
         } else {
-          modeText.innerHTML = `${Icons.monitor} 窗口模式`;
-          tipText.innerText = '(显示浏览器)';
+          modeText.innerHTML = `${Icons.zap} 无窗口模式`;
+          modeText.style.color = 'var(--g-text-secondary)';
+          tipText.innerText = '(后台静默)';
           if (lblSwitch) {
-            lblSwitch.title = '当前为【窗口模式】：页面实测将在桌面打开实体 Chrome 窗口供实时观看。点击切换为【无窗口模式】';
+            lblSwitch.title = '当前为【无窗口模式】：后台静默运行，不弹出桌面浏览器。点击切换为【窗口模式】';
             lblSwitch.style.borderColor = 'var(--g-border)';
             lblSwitch.style.background = 'var(--g-surface-variant)';
           }
@@ -244,19 +253,21 @@
       const modalTipText = document.getElementById('headlessModalTipText');
       const lblModalSwitch = document.getElementById('lblHeadlessModalSwitch');
       if (modalModeText && modalTipText) {
-        if (isHeadless) {
-          modalModeText.innerHTML = `${Icons.zap} 无窗口模式`;
-          modalTipText.innerText = '(不打开浏览器)';
+        if (isWindow) {
+          modalModeText.innerHTML = `${Icons.monitor} 窗口模式`;
+          modalModeText.style.color = 'var(--g-primary)';
+          modalTipText.innerText = '(显示浏览器)';
           if (lblModalSwitch) {
-            lblModalSwitch.title = '当前为【无窗口模式】：页面实测将在后台隐形执行，不打开桌面浏览器窗口。点击切换为【窗口模式】';
+            lblModalSwitch.title = '当前为【窗口模式】：页面实测将在桌面打开实体 Chrome 窗口供实时观看。点击切换为【无窗口模式】';
             lblModalSwitch.style.borderColor = 'var(--g-primary)';
             lblModalSwitch.style.background = 'var(--g-blue-surface, #e8f0fe)';
           }
         } else {
-          modalModeText.innerHTML = `${Icons.monitor} 窗口模式`;
-          modalTipText.innerText = '(显示浏览器)';
+          modalModeText.innerHTML = `${Icons.zap} 无窗口模式`;
+          modalModeText.style.color = 'var(--g-text-secondary)';
+          modalTipText.innerText = '(后台静默)';
           if (lblModalSwitch) {
-            lblModalSwitch.title = '当前为【窗口模式】：页面实测将在桌面打开实体 Chrome 窗口供实时观看。点击切换为【无窗口模式】';
+            lblModalSwitch.title = '当前为【无窗口模式】：后台静默运行，不弹出桌面浏览器。点击切换为【窗口模式】';
             lblModalSwitch.style.borderColor = 'var(--g-border)';
             lblModalSwitch.style.background = 'var(--g-surface-variant)';
           }
@@ -268,9 +279,9 @@
       updateHeadlessSwitchUI(newChecked);
       updateConfigSummaryBadge();
       if (newChecked) {
-        showToast('已切换为【无窗口模式】：页面实测将在后台隐形执行，不打开桌面浏览器窗口', 'info', '无窗口模式', 2500);
-      } else {
         showToast('已切换为【窗口模式】：页面实测将在桌面打开实体 Chrome 窗口供实时观看', 'info', '窗口模式', 2500);
+      } else {
+        showToast('已切换为【无窗口模式】：页面实测将在后台隐形执行，不打开桌面浏览器窗口', 'info', '无窗口模式', 2500);
       }
     }
 
@@ -286,8 +297,62 @@
       });
     }
 
+    // Self-Healing Toggle Synchronizer
+    const chkSelfHealEl = document.getElementById('chkSelfHeal');
+    const chkSelfHealTableEl = document.getElementById('chkSelfHealTable');
+
+    function updateSelfHealSwitchUI(forceState = null) {
+      let isSelfHeal = true;
+      if (forceState !== null) {
+        isSelfHeal = !!forceState;
+      } else {
+        isSelfHeal = (chkSelfHealEl ? chkSelfHealEl.checked : (chkSelfHealTableEl ? chkSelfHealTableEl.checked : true));
+      }
+      if (chkSelfHealEl && chkSelfHealEl.checked !== isSelfHeal) chkSelfHealEl.checked = isSelfHeal;
+      if (chkSelfHealTableEl && chkSelfHealTableEl.checked !== isSelfHeal) chkSelfHealTableEl.checked = isSelfHeal;
+
+      const modeText = document.getElementById('selfHealModeText');
+      const tableModeText = document.getElementById('selfHealTableModeText');
+      if (isSelfHeal) {
+        if (modeText) {
+          modeText.innerHTML = '🛡️ 自愈开启';
+          modeText.style.color = 'var(--g-green)';
+        }
+        if (tableModeText) {
+          tableModeText.innerHTML = `<svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> 自愈开启`;
+          tableModeText.style.color = 'var(--g-green)';
+        }
+      } else {
+        if (modeText) {
+          modeText.innerHTML = '⚠️ 严格模式';
+          modeText.style.color = 'var(--g-text-secondary)';
+        }
+        if (tableModeText) {
+          tableModeText.innerHTML = '⚠️ 严格模式';
+          tableModeText.style.color = 'var(--g-text-secondary)';
+        }
+      }
+    }
+
+    function handleSelfHealToggle(newChecked) {
+      updateSelfHealSwitchUI(newChecked);
+      if (newChecked) {
+        showToast('已开启【智能自愈模式】：选用法清空科室、遮罩遮挡等异常将自动补偿并记入诊断报告', 'success', '自愈已开启', 2500);
+      } else {
+        showToast('已切换为【严格排查模式】：关闭所有自动容错与自愈补偿，原始暴露前端交互缺陷', 'warning', '严格排查模式', 2500);
+      }
+    }
+
+    if (chkSelfHealEl) {
+      chkSelfHealEl.addEventListener('change', (e) => handleSelfHealToggle(e.target.checked));
+    }
+    if (chkSelfHealTableEl) {
+      chkSelfHealTableEl.addEventListener('change', (e) => handleSelfHealToggle(e.target.checked));
+    }
+
     updateConfigSummaryBadge();
     updateHeadlessSwitchUI();
+    updateSelfHealSwitchUI();
 
     // Run Tests Action
     async function startExecution(selectedIds, runMode = 'ALL') {
@@ -307,16 +372,19 @@
         const count = (selectedIds && selectedIds.length) ? selectedIds.length : (allTestCases.length || '全量');
         showToast(`已开始执行测试任务（${count} 项用例）...`, 'run', '测试已启动', 3500);
 
-        const headless = !!(document.getElementById('chkHeadless')?.checked || document.getElementById('chkHeadlessModal')?.checked);
+        const isWindow = !!(document.getElementById('chkHeadless')?.checked || document.getElementById('chkHeadlessModal')?.checked);
+        const headless = !isWindow;
+        const selfHeal = (document.getElementById('chkSelfHeal') ? document.getElementById('chkSelfHeal').checked : (document.getElementById('chkSelfHealTable') ? document.getElementById('chkSelfHealTable').checked : true));
         const frontendUrl = document.getElementById('cfgFrontendUrl')?.value || '';
-        const loginMode = document.getElementById('loginModeSelect')?.value || 'B';
+        const loginMode = document.getElementById('loginModeSelect')?.value || 'A';
         const username = document.getElementById('autoUsername')?.value || 'admin';
-        const password = document.getElementById('autoPassword')?.value || '123456';
+        const password = document.getElementById('autoPassword')?.value || 'admin123';
 
         const payload = {
           selected_ids: (selectedIds && selectedIds.length) ? selectedIds : null,
           mode: runMode,
           headless: headless,
+          self_heal: selfHeal,
           login_mode: loginMode,
           username: username,
           password: password

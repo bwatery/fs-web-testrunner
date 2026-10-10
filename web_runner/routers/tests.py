@@ -19,11 +19,12 @@ class RunRequest(BaseModel):
     selected_ids: Optional[List[str]] = None
     headless: bool = False
     url: Optional[str] = None
-    login_mode: str = "B"  # "A" (Auto) or "B" (Manual)
-    username: Optional[str] = None
-    password: Optional[str] = None
+    login_mode: str = "A"  # "A" (Auto) or "B" (Manual)
+    username: Optional[str] = "admin"
+    password: Optional[str] = "admin123"
     mode: Optional[str] = "ALL"  # "ALL", "INVASIVE", or "NON_INVASIVE"
     workstation: Optional[str] = None  # Workstation code or name
+    self_heal: bool = True  # 智能自愈模式，默认开启
 
 @router.get("/api/tests")
 async def get_tests():
@@ -54,14 +55,19 @@ async def get_tests():
         "tests": res,
         "total": len(res),
         "invasive_count": inv_count,
-        "non_invasive_count": non_inv_count
+        "non_invasive_count": non_inv_count,
+        "self_heal_default": True
     }
 
 @router.get("/api/status")
 async def get_status():
     """Get current test runner status and latest execution results."""
+    healed_count = sum(1 for r in engine.results if getattr(r, "self_healed", False))
     return {
         "is_running": engine._is_running,
+        "self_heal_enabled": getattr(engine, "self_heal_enabled", True),
+        "healed_count": healed_count,
+        "self_healing_summary": engine.self_healing.get_summary() if hasattr(engine, "self_healing") and engine.self_healing else {},
         "results": [
             {
                 "test_id": r.test_id,
@@ -76,7 +82,9 @@ async def get_status():
                 "error": r.error_message,
                 "screenshot_path": r.screenshot_path,
                 "screenshot_b64": r.screenshot_b64,
-                "logs": r.logs
+                "logs": r.logs,
+                "self_healed": getattr(r, "self_healed", False),
+                "healing_events": getattr(r, "healing_events", [])
             }
             for r in engine.results
         ]
@@ -90,9 +98,14 @@ async def run_tests_endpoint(req: RunRequest):
         return JSONResponse(status_code=400, content={"error": "测试任务已在运行中"})
     
     engine.headless = req.headless
-    engine.login_mode = req.login_mode
-    engine.username = req.username or ""
-    engine.password = req.password or ""
+    engine.login_mode = req.login_mode or "A"
+    engine.username = req.username or "admin"
+    engine.password = req.password or "admin123"
+    engine.self_heal_enabled = req.self_heal
+    if hasattr(engine, "self_healing") and engine.self_healing:
+        engine.self_healing.enabled = req.self_heal
+        if req.self_heal:
+            engine.self_healing.reset_stats()
     raw_ids = req.selected_ids or list(engine.registry.keys())
     target_url = req.url
     mode_filter = req.mode or "ALL"
@@ -180,10 +193,22 @@ async def open_browser_endpoint():
     """Launch or bring to front a visible Chrome window directly without disrupting current page."""
     def _open():
         try:
-            if not engine.browser or not engine.browser.is_alive():
-                from fs_web_testrunner.core.browser_driver import BrowserDriver
+            from fs_web_testrunner.core.browser_driver import BrowserDriver
+            is_headless = False
+            if engine.browser and engine.browser.is_alive():
+                is_headless = getattr(engine.browser, 'headless', False) or engine.browser._is_existing_headless()
+            
+            if not engine.browser or not engine.browser.is_alive() or is_headless:
+                try:
+                    if engine.browser:
+                        engine.browser.close()
+                        engine.browser._kill_existing_cdp()
+                except Exception:
+                    pass
+                engine.headless = False
                 engine.browser = BrowserDriver(headless=False)
                 engine.browser.start("http://192.168.1.198:8088/#/login")
+                engine.browser.bring_to_front()
             else:
                 engine.browser.bring_to_front()
         except Exception as e:

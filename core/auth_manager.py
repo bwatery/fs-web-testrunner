@@ -86,6 +86,19 @@ class AuthManager:
             if r.status_code == 200:
                 tok = r.json().get("data")
                 if tok:
+                    # Exchange for role 1 (系统管理员) and dept 10072 (信息科) so token has valid permissions
+                    try:
+                        r_ex = requests.post(
+                            f"{EMR_API_URL}/exchangeLogin",
+                            headers={"Authorization": f"Bearer {tok}"},
+                            json={"roleId": 1, "deptId": 10072},
+                            timeout=2
+                        )
+                        ex_res = r_ex.json()
+                        if ex_res.get("code") == 200 and ex_res.get("data"):
+                            tok = ex_res["data"]
+                    except Exception:
+                        pass
                     self.browser.evaluate(f"sessionStorage.setItem('shop-vite-token', '{tok}'); window.location.reload();")
                     time.sleep(2.0)
                     if self.is_logged_in():

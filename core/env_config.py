@@ -63,9 +63,9 @@ DEFAULT_CONFIG: Dict[str, Any] = {
         "outpatient_billing": {
             "name": "门诊收费工作站",
             "code": "OUTPATIENT_BILLING",
-            "url": "http://192.168.1.198:8088/#/outpatient/charge",
-            "route": "/#/outpatient/charge",
-            "desc": "门诊建档挂号、处方划价预结算、医保统筹自费拆分、门诊退费与日结"
+            "url": "http://192.168.1.198:8088/#/outpatient/charge/chargeMain",
+            "route": "/#/outpatient/charge/chargeMain",
+            "desc": "门诊收费处：建档挂号、处方划价预结算、医保统筹自费拆分、门诊退费与日结"
         },
         "inpatient_billing": {
             "name": "住院收费工作站",

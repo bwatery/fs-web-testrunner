@@ -253,11 +253,11 @@
             🔑 认证登录方式 (Authentication Mode)
           </label>
           <select class="target-select" id="loginModeSelect" style="width:100%; height:34px; padding:0 10px; font-size:12px;">
-            <option value="B" selected>手动登录 (打开浏览器由人工完成扫码或账号登入)</option>
-            <option value="A">自动代登 (由自动化脚本自动填人工号密码登入)</option>
+            <option value="A" selected>自动代登 (由自动化脚本自动填人工号密码登入)</option>
+            <option value="B">手动登录 (打开浏览器由人工完成扫码或账号登入)</option>
           </select>
 
-          <div id="autoLoginFields" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed var(--g-border);">
+          <div id="autoLoginFields" style="display:block; margin-top:10px; padding-top:10px; border-top:1px dashed var(--g-border);">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
               <div>
                 <label style="font-size:11px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">工号账号</label>
@@ -265,7 +265,7 @@
               </div>
               <div>
                 <label style="font-size:11px; font-weight:600; color:var(--g-text-secondary); display:block; margin-bottom:4px;">登录密码</label>
-                <input type="password" id="autoPassword" class="target-select" style="width:100%; height:30px; padding:0 8px; font-size:12px;" value="123456">
+                <input type="password" id="autoPassword" class="target-select" style="width:100%; height:30px; padding:0 8px; font-size:12px;" value="admin123">
               </div>
             </div>
           </div>
@@ -281,7 +281,7 @@
             
             <!-- Quick Switch in Modal -->
             <label class="m-switch" id="lblHeadlessModalSwitch" title="当前为【窗口模式】：页面实测将在桌面打开实体 Chrome 窗口供实时观看。点击切换为【无窗口模式】（后台隐形执行）">
-              <input type="checkbox" id="chkHeadlessModal">
+              <input type="checkbox" id="chkHeadlessModal" checked>
               <span class="m-switch-track">
                 <span class="m-switch-thumb"></span>
               </span>
@@ -294,6 +294,31 @@
           <div style="font-size:11px; color:var(--g-text-secondary); line-height:1.6;">
             • <strong>窗口模式</strong>（默认）：页面实测时在桌面打开真实 Chrome 浏览器，支持实时观看自动化点击、病历录入与多角色穿梭。<br>
             • <strong>无窗口模式</strong>（Headless）：后台静默隐形运行，不弹出任何桌面窗口，速度更快、开销更低。
+          </div>
+        </div>
+
+        <!-- SECTION 4.2: 智能自愈模式 (Self-Healing Mode) -->
+        <div style="background:var(--g-surface-variant); border-radius:10px; padding:14px 16px; border:1px solid var(--g-border); display:flex; flex-direction:column; gap:10px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:12px; font-weight:600; color:var(--g-text-primary); display:flex; align-items:center; gap:6px;">
+              <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>🛡️ 智能自愈模式 (Self-Healing Architecture)</span>
+            </div>
+            
+            <label class="m-switch" id="lblSelfHealSwitch" title="当前为【智能自愈开启】：遇到用法清空执行科室、未关闭浮层Popper、缺少患者上下文时自动补偿自愈，并在报表中高亮打标。点击切换为严格排查模式。">
+              <input type="checkbox" id="chkSelfHeal" checked>
+              <span class="m-switch-track">
+                <span class="m-switch-thumb"></span>
+              </span>
+              <span class="m-switch-text">
+                <span id="selfHealModeText" style="display:inline-flex; align-items:center; gap:4px; color:var(--g-green); font-weight:600;">🛡️ 自愈开启</span>
+                <span class="m-switch-tip" id="selfHealTipText">(默认推荐)</span>
+              </span>
+            </label>
+          </div>
+          <div style="font-size:11px; color:var(--g-text-secondary); line-height:1.6;">
+            • <strong>智能自愈（默认开启）</strong>：针对开西药选用法清空执行科室、浮层Popper遮挡、患者上下文缺失等常见陷阱自动补救，防止长链路中断，并将补偿事件记入测试报告。<br>
+            • <strong>严格排查（关闭自愈）</strong>：关闭任何容错与补偿措施，原始暴露前端缺陷用于排查。
           </div>
         </div>
 
@@ -1162,13 +1187,24 @@
               
               <!-- Quick Switch for Headless / Silent Execution on Test List -->
               <label class="m-switch" id="lblHeadlessSwitch" title="当前为【窗口模式】：页面实测将在桌面打开实体 Chrome 窗口供实时观看。点击切换为【无窗口模式】（后台隐形执行）">
-                <input type="checkbox" id="chkHeadless">
+                <input type="checkbox" id="chkHeadless" checked>
                 <span class="m-switch-track">
                   <span class="m-switch-thumb"></span>
                 </span>
                 <span class="m-switch-text">
                   <span id="headlessSwitchModeText" style="display:inline-flex; align-items:center; gap:4px;"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> 窗口模式</span>
                   <span class="m-switch-tip" id="headlessSwitchTipText">(显示浏览器)</span>
+                </span>
+              </label>
+
+              <!-- Quick Switch for Self-Healing on Test List -->
+              <label class="m-switch" id="lblSelfHealTableSwitch" title="当前为【智能自愈开启】：遇到用法清空执行科室、浮动Popper遮挡时自动补偿，并在测试报表中高亮打标">
+                <input type="checkbox" id="chkSelfHealTable" checked>
+                <span class="m-switch-track">
+                  <span class="m-switch-thumb"></span>
+                </span>
+                <span class="m-switch-text">
+                  <span id="selfHealTableModeText" style="display:inline-flex; align-items:center; gap:4px; color:var(--g-green); font-weight:600;"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> 自愈开启</span>
                 </span>
               </label>
             </div>
@@ -1178,7 +1214,9 @@
               <button class="g-btn g-btn-outlined filter-btn" style="color:#1a73e8; border-color:#1a73e8; font-weight:600;" id="btnFilterNonInvasive" onclick="filterCases('non_invasive')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> 接口直测</button>
               <button class="g-btn g-btn-outlined filter-btn" id="btnFilterOrder" onclick="filterCases('order')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg> 医嘱开立</button>
               <button class="g-btn g-btn-outlined filter-btn" id="btnFilterHis" onclick="filterCases('his')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="12" y1="9" x2="12" y2="15"></line><line x1="9" y1="12" x2="15" y2="12"></line></svg> HIS业务</button>
+              <button class="g-btn g-btn-outlined filter-btn" style="color:#d97706; border-color:#d97706; font-weight:600;" id="btnFilterBilling" onclick="filterCases('billing')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg> 门诊收费</button>
               <button class="g-btn g-btn-outlined filter-btn" id="btnFilterEmr" onclick="filterCases('emr')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg> EMR病历</button>
+              <button class="g-btn g-btn-outlined filter-btn" style="color:#0f9d58; border-color:#0f9d58; font-weight:600;" id="btnFilterHealed" onclick="filterCases('healed')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> 自愈项</button>
               <button class="g-btn g-btn-outlined filter-btn" id="btnFilterHealth" onclick="filterCases('health')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> 系统巡检</button>
               <button class="g-btn g-btn-outlined filter-btn" style="color:var(--g-red); border-color:var(--g-red);" id="btnFilterFailed" onclick="filterCases('failed')"><svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg> 仅看失败</button>
             </div>
@@ -1283,6 +1321,7 @@
 
           <div>
             <div style="font-size:13px; font-weight:600; color:var(--g-text-secondary); margin-bottom:8px;">模块测试执行项与实时状态:</div>
+            <div id="wsCoreShowcaseContainer" style="margin-bottom:12px;"></div>
             <div style="overflow-x:auto; border:1px solid var(--g-border); border-radius:8px;">
               <table class="g-table" style="width:100%; border-collapse:collapse;">
                 <thead>
@@ -1868,17 +1907,17 @@
   </div>
 
   <!-- Modular Enterprise JavaScript Architecture -->
-  <script src="/static/js/icons.js?v=2.2.1"></script>
-  <script src="/static/js/toast.js?v=2.2.1"></script>
-  <script src="/static/js/state.js?v=2.2.1"></script>
-  <script src="/static/js/system.js?v=2.2.1"></script>
-  <script src="/static/js/terminal.js?v=2.2.1"></script>
-  <script src="/static/js/cases.js?v=2.2.1"></script>
-  <script src="/static/js/workstations.js?v=2.2.1"></script>
-  <script src="/static/js/execution.js?v=2.2.1"></script>
-  <script src="/static/js/validator.js?v=2.2.1"></script>
-  <script src="/static/js/rules.js?v=2.2.1"></script>
-  <script src="/static/js/ai.js?v=2.2.1"></script>
-  <script src="/static/js/app.js?v=2.2.1"></script>
+  <script src="/static/js/icons.js?v=2.2.2"></script>
+  <script src="/static/js/toast.js?v=2.2.2"></script>
+  <script src="/static/js/state.js?v=2.2.2"></script>
+  <script src="/static/js/system.js?v=2.2.2"></script>
+  <script src="/static/js/terminal.js?v=2.2.2"></script>
+  <script src="/static/js/cases.js?v=2.2.2"></script>
+  <script src="/static/js/workstations.js?v=2.2.2"></script>
+  <script src="/static/js/execution.js?v=2.2.2"></script>
+  <script src="/static/js/validator.js?v=2.2.2"></script>
+  <script src="/static/js/rules.js?v=2.2.2"></script>
+  <script src="/static/js/ai.js?v=2.2.2"></script>
+  <script src="/static/js/app.js?v=2.2.2"></script>
 </body>
 </html>

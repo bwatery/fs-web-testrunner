@@ -1,0 +1,168 @@
+{
+ "meta": {
+  "started": "2026-10-09 10:27:47",
+  "frontend": "http://192.168.1.198:8088",
+  "gateway": "http://192.168.1.198:8081"
+ },
+ "summary": {
+  "passed": 5,
+  "failed": 1,
+  "warning": 0
+ },
+ "roles": [
+  {
+   "role": "住院护士",
+   "role_id": 36,
+   "dept_id": 910131,
+   "switch_ok": true,
+   "workstations": [
+    {
+     "name": "首页",
+     "status": "FAILED",
+     "reasons": [
+      "页面打开期间未捕获到任何网络请求，无法判定其数据是否正常加载"
+     ],
+     "health": {
+      "hash": "#/index",
+      "tabTitle": "首页",
+      "contentSel": ".vab-app-main",
+      "is404": false,
+      "isLogin": false,
+      "contentTextLen": 299,
+      "tables": 0,
+      "rows": 0,
+      "forms": 0,
+      "buttons": 0,
+      "inputs": 0,
+      "iframes": 0,
+      "errorToasts": []
+     },
+     "requests_seen": 0,
+     "failed_requests": [],
+     "exceptions": [],
+     "screenshot": "D:\\CSsoft\\AI\\googleAntiGravity\\cliProject\\fs_web_testrunner\\reports\\screenshots\\workstation\\ws_fail_1791512826.png"
+    },
+    {
+     "name": "科室套餐维护",
+     "status": "PASSED",
+     "reasons": [],
+     "health": {
+      "hash": "#/other/deptPackageMaintain",
+      "tabTitle": "科室套餐维护",
+      "contentSel": ".vab-app-main",
+      "is404": false,
+      "isLogin": false,
+      "contentTextLen": 163,
+      "tables": 0,
+      "rows": 0,
+      "forms": 1,
+      "buttons": 7,
+      "inputs": 8,
+      "iframes": 0,
+      "errorToasts": []
+     },
+     "requests_seen": 16,
+     "failed_requests": [],
+     "exceptions": [],
+     "screenshot": null
+    },
+    {
+     "name": "科室常用项目",
+     "status": "PASSED",
+     "reasons": [],
+     "health": {
+      "hash": "#/other/deptCommonItem",
+      "tabTitle": "科室常用项目",
+      "contentSel": ".vab-app-main",
+      "is404": false,
+      "isLogin": false,
+      "contentTextLen": 56,
+      "tables": 0,
+      "rows": 0,
+      "forms": 0,
+      "buttons": 3,
+      "inputs": 0,
+      "iframes": 0,
+      "errorToasts": []
+     },
+     "requests_seen": 5,
+     "failed_requests": [],
+     "exceptions": [],
+     "screenshot": null
+    },
+    {
+     "name": "警戒线设置",
+     "status": "PASSED",
+     "reasons": [],
+     "health": {
+      "hash": "#/other/warningLine",
+      "tabTitle": "警戒线设置",
+      "contentSel": ".vab-app-main",
+      "is404": false,
+      "isLogin": false,
+      "contentTextLen": 142,
+      "tables": 0,
+      "rows": 0,
+      "forms": 0,
+      "buttons": 1,
+      "inputs": 0,
+      "iframes": 0,
+      "errorToasts": []
+     },
+     "requests_seen": 4,
+     "failed_requests": [],
+     "exceptions": [],
+     "screenshot": null
+    },
+    {
+     "name": "执行单维护",
+     "status": "PASSED",
+     "reasons": [],
+     "health": {
+      "hash": "#/other/execBillMaintenance",
+      "tabTitle": "执行单维护",
+      "contentSel": ".vab-app-main",
+      "is404": false,
+      "isLogin": false,
+      "contentTextLen": 244,
+      "tables": 0,
+      "rows": 0,
+      "forms": 0,
+      "buttons": 9,
+      "inputs": 2,
+      "iframes": 0,
+      "errorToasts": []
+     },
+     "requests_seen": 27,
+     "failed_requests": [],
+     "exceptions": [],
+     "screenshot": null
+    },
+    {
+     "name": "费用综合查询",
+     "status": "PASSED",
+     "reasons": [],
+     "health": {
+      "hash": "#/inpatient/finance/syntheticfquery",
+      "tabTitle": "费用综合查询",
+      "contentSel": ".vab-app-main",
+      "is404": false,
+      "isLogin": false,
+      "contentTextLen": 462,
+      "tables": 3,
+      "rows": 0,
+      "forms": 0,
+      "buttons": 3,
+      "inputs": 8,
+      "iframes": 0,
+      "errorToasts": []
+     },
+     "requests_seen": 16,
+     "failed_requests": [],
+     "exceptions": [],
+     "screenshot": null
+    }
+   ]
+  }
+ ]
+}

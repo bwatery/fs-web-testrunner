@@ -1,0 +1,64 @@
+{
+ "meta": {
+  "started": "2026-10-09 19:12:21",
+  "gateway": "http://192.168.1.198:8081"
+ },
+ "summary": {
+  "通过": 0,
+  "失败": 1,
+  "未执行": 0
+ },
+ "results": [
+  {
+   "case_id": "L5-027",
+   "title": "病历封存与解封",
+   "status": "失败",
+   "note": "[系统缺陷] 封存接口报错 ORA-12899: 列 EMR_RECORD_MASTER_LOG.PATIENT_TYPE 长度为 CHAR(1)，但主表 PATIENT_TYPE 为 CHAR(2)（'I '），后端未 trim 导致写入日志超长；全院病历封存功能阻断",
+   "evidence": {
+    "测试目标": {
+     "registerId": "549",
+     "masterId": "2099829419513024513",
+     "patientType": "I",
+     "masterType": "D",
+     "initialSequestrationFlag": null
+    },
+    "封存请求": {
+     "url": "POST /emr/recordMaster/seal",
+     "payload": {
+      "masterList": [
+       {
+        "masterId": "2099829419513024513",
+        "patientType": "I",
+        "registerId": "549"
+       }
+      ]
+     }
+    },
+    "封存响应": {
+     "code": 400,
+     "msg": "\r\n### Error updating database.  Cause: java.sql.SQLException: ORA-12899: 列 \"XCHIS\".\"EMR_RECORD_MASTER_LOG\".\"PATIENT_TYPE\" 的值太大 (实际值: 2, 最大值: 1)\n\r\n### The error may exist in com/faithsoft/medhub/mapper/EmrRecordMasterLogMapper.java (best guess)\r\n### The error may involve com.faithsoft.medhub.mapper.EmrRecordMasterLogMapper.insert-Inline\r\n### The error occurred while setting parameters\r\n### SQL: INSERT INTO EMR_RECORD_MASTER_LOG  ( MASTER_LOG, patient_type, register_id, dept_id, master_type, record_status, pre_record_status,  create_oper_id, create_oper_name, create_time, hospital_id, hospital_name )  VALUES  ( ?, ?, ?, ?, ?, ?, ?,  ?, ?, ?, ?, ? )\r\n### Cause: java.sql.SQLException: ORA-12899: 列 \"XCHIS\".\"EMR_RECORD_MASTER_LOG\".\"PATIENT_TYPE\" 的值太大 (实际值: 2, 最大值: 1)\n\n; uncategorized SQLException; SQL state [72000]; error code [12899]; ORA-12899: 列 \"XCHIS\".\"EMR_RECORD_MASTER_LOG\".\"PATIENT_TYPE\" 的值太大 (实际值: 2, 最大值: 1)\n; nested exception is java.sql.SQLException: ORA-12899: 列 \"XCHIS\".\"EMR_RECORD_MASTER_LOG\".\"PATIENT_TYPE\" 的值太大 (实际值: 2, 最大值: 1)\n"
+    },
+    "底层数据库字段定义证据": {
+     "EMR_RECORD_MASTER": {
+      "column": "PATIENT_TYPE",
+      "dataType": "CHAR",
+      "dataLength": 2,
+      "charLength": 2
+     },
+     "EMR_RECORD_MASTER_LOG": {
+      "column": "PATIENT_TYPE",
+      "dataType": "CHAR",
+      "dataLength": 1,
+      "charLength": 1
+     }
+    },
+    "缺陷定性": {
+     "缺陷级别": "P0/P1",
+     "影响范围": "全院任何病历（门诊/住院）封存均无法完成，直接阻断医疗纠纷病案封存法律合规流程",
+     "根因分析": "EMR_RECORD_MASTER.PATIENT_TYPE 定义为 CHAR(2)（定长存入 'I ' 带尾随空格），而日志审计表 EMR_RECORD_MASTER_LOG.PATIENT_TYPE 仅定义为 CHAR(1)。后端服务在 EmrRecordMasterLogMapper 执行 INSERT 时直接搬运主表字段且未做 trim()，触发 Oracle ORA-12899 字段值超长异常。"
+    }
+   },
+   "duration_ms": 278.6
+  }
+ ]
+}

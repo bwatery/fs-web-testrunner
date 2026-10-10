@@ -59,3 +59,23 @@ def register_all_suites(engine: "TestEngine"):
     from .test_suite_workstations_modular import register_workstation_modular_tests
     register_workstation_modular_tests(engine)
 
+    # 10. 医院上线测试用例追踪表全量业务套件 (覆盖Excel追踪表359项临床与财务全生命周期用例)
+    from .test_suite_excel_cases import register_excel_tests
+    register_excel_tests(engine)
+
+    # 11. 【新】根据Excel用例追踪表深度生成的六大业务域专属真实页面UI实测套件 (覆盖门诊、住院、EMR、收费医保、药房药库、医技底座)
+    from .test_suite_ui_outpatient_excel import register_outpatient_excel_tests
+    from .test_suite_ui_inpatient_excel import register_inpatient_excel_tests
+    from .test_suite_ui_emr_excel import register_emr_excel_tests
+    from .test_suite_ui_billing_excel import register_billing_excel_tests
+    from .test_suite_ui_pharmacy_excel import register_pharmacy_excel_tests
+    from .test_suite_ui_medtech_excel import register_medtech_excel_tests
+
+    register_outpatient_excel_tests(engine)
+    register_inpatient_excel_tests(engine)
+    register_emr_excel_tests(engine)
+    register_billing_excel_tests(engine)
+    register_pharmacy_excel_tests(engine)
+    register_medtech_excel_tests(engine)
+
+
