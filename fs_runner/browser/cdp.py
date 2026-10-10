@@ -61,8 +61,10 @@ class BrowserSession:
         port: int = 9222,
         host: str = "127.0.0.1",
         timeout: float = 20.0,
+        standalone: bool = False,
     ):
         self.headless = headless
+        self.standalone = standalone
         self.port = port
         self.host = host
         self.default_timeout = timeout
@@ -80,8 +82,8 @@ class BrowserSession:
         if self._connected:
             return self
 
-        if self.headless:
-            # 1. 无头模式：独立拉起新实例
+        if self.headless or self.standalone:
+            # 1. 独立新实例：无头模式 或 独立可见窗口模式（不占用用户自己的 9222 端口）
             chrome_bin = find_chrome_executable()
             if not chrome_bin:
                 raise RuntimeError(
@@ -90,13 +92,13 @@ class BrowserSession:
                 )
 
             self.port = get_free_tcp_port()
-            self.temp_user_data_dir = tempfile.mkdtemp(prefix="fs_chrome_headless_")
+            pfx = "fs_chrome_headless_" if self.headless else "fs_chrome_visible_"
+            self.temp_user_data_dir = tempfile.mkdtemp(prefix=pfx)
 
             args = [
                 chrome_bin,
                 f"--remote-debugging-port={self.port}",
                 "--remote-allow-origins=*",
-                "--headless=new",
                 "--disable-gpu",
                 "--no-first-run",
                 "--no-default-browser-check",
@@ -105,6 +107,10 @@ class BrowserSession:
                 "--disable-background-networking",
                 "about:blank",
             ]
+            if self.headless:
+                args.append("--headless=new")
+            else:
+                args.append("--window-position=60,60")
 
             try:
                 self.proc = subprocess.Popen(
@@ -114,7 +120,8 @@ class BrowserSession:
                 )
             except Exception as e:
                 self.close()
-                raise RuntimeError(f"【浏览器启动失败】拉起 Headless Chrome 进程失败: {e}")
+                mode_str = "Headless Chrome" if self.headless else "独立可见 Chrome"
+                raise RuntimeError(f"【浏览器启动失败】拉起 {mode_str} 进程失败: {e}")
 
             # 等待调试端口就绪（最多等待 8 秒）
             ready = False
@@ -134,8 +141,9 @@ class BrowserSession:
 
             if not ready:
                 self.close()
+                mode_str = "Headless Chrome" if self.headless else "独立可见 Chrome"
                 raise RuntimeError(
-                    f"【浏览器启动失败】Headless Chrome 未能在 8 秒内开启 CDP 端口 {self.port}。"
+                    f"【浏览器启动失败】{mode_str} 未能在 8 秒内开启 CDP 端口 {self.port}。"
                 )
 
         else:
@@ -350,7 +358,8 @@ def launch_browser(
     headless: bool = True,
     port: int = 9222,
     host: str = "127.0.0.1",
+    standalone: bool = False,
 ) -> BrowserSession:
     """便捷工厂函数：创建并启动 BrowserSession。"""
-    session = BrowserSession(headless=headless, port=port, host=host)
+    session = BrowserSession(headless=headless, port=port, host=host, standalone=standalone)
     return session.start()

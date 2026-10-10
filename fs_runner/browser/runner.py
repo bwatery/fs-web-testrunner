@@ -98,16 +98,32 @@ def run_ui_verify(args: Any) -> int:
     password = getattr(args, "password", "admin123")
     cases_arg = getattr(args, "case", None) or getattr(args, "cases", None)
 
-    mode_label = "[界面·窗口]" if is_windowed else "[界面·无头]"
+    is_standalone_visible = os.environ.get("FS_STANDALONE_BROWSER") == "1" or getattr(args, "standalone", False)
+    slowmo = int(os.environ.get("FS_SLOWMO", 0) or getattr(args, "slowmo", 0) or 0)
+    if is_standalone_visible:
+        headless = False
+        standalone = True
+        mode_label = "[界面·独立可见窗口]"
+    else:
+        standalone = False
+
+    def _step(desc: str):
+        print(f"[步骤] {desc}")
+        if slowmo > 0:
+            time.sleep(slowmo / 1000.0)
+
+    mode_label = mode_label if is_standalone_visible else ("[界面·窗口]" if is_windowed else "[界面·无头]")
     env_label = "不判通过模式 (仍连真实环境做通道校验，但结论一律降级为未执行)" if env_name == "sandbox" else "真实环境 (Real)"
 
     print("=" * 68)
     print(f"  FS.TestRunner · 界面认证与真实业务等式对账 ({mode_label})")
     print("=" * 68)
-    print(f"  模式      : {mode_label} ({'接管端口 9222 现有窗口' if is_windowed else '独立拉起 Headless Chrome 实例'})")
+    print(f"  模式      : {mode_label} ({'独立可见 Chrome 实例' if is_standalone_visible else ('接管端口 9222 现有窗口' if is_windowed else '独立拉起 Headless Chrome 实例')})")
     print(f"  运行环境  : {env_label}")
     print(f"  前端地址  : {frontend}")
     print(f"  网关地址  : {gateway}")
+    if slowmo > 0:
+        print(f"  慢放延时  : {slowmo}ms (便于人工肉眼观察页面流转)")
     print(f"  变异扰动  : {'开启 (--mutation: 内存扰动真值，断言必须变红)' if is_mutation else '关闭 (正常对账)'}")
     print(f"  截图存盘  : {'开启 (--screenshot)' if take_screenshot else '关闭'}")
     if cases_arg:
@@ -116,7 +132,7 @@ def run_ui_verify(args: Any) -> int:
 
     # 1. 启动或连接浏览器会话
     try:
-        session = launch_browser(headless=headless, port=9222)
+        session = launch_browser(headless=headless, port=9222, standalone=standalone)
     except Exception as e:
         print(f"\n❌ [浏览器启动失败] {e}")
         print("   硬约束：浏览器无法就绪时立即报错退出，严禁静默降级。")
@@ -124,6 +140,7 @@ def run_ui_verify(args: Any) -> int:
 
     try:
         # 3. 真实表单登录认证
+        _step(f"正在通过登录表单执行界面认证 (用户: {username})...")
         print(f"\n[1/3] 正在通过登录表单执行界面认证 (用户: {username})...")
         login_res = login_ui(session, frontend, username=username, password=password, wait_sec=8.0)
 
@@ -211,6 +228,7 @@ def run_ui_verify(args: Any) -> int:
             time.sleep(3.0)
 
         # 点击「费用综合查询」并分发冒泡事件
+        _step("正在通过侧边栏导航进入「费用综合查询」模块...")
         session.eval("""(() => {
             const item = Array.from(document.querySelectorAll('.el-menu-item'))
                               .find(e => (e.innerText || '').includes('费用综合查询'));
@@ -225,6 +243,7 @@ def run_ui_verify(args: Any) -> int:
 
         current_hash = session.eval("location.hash") or ""
         if "syntheticfquery" not in current_hash:
+            _step("直接加载费用综合查询路由 (#/inpatient/finance/syntheticfquery)...")
             session.cmd("Page.navigate", {"url": f"{frontend}/#/inpatient/finance/syntheticfquery"})
             time.sleep(2.5)
             session.cmd("Page.reload", {"ignoreCache": True})
@@ -266,6 +285,7 @@ def run_ui_verify(args: Any) -> int:
         t0 = time.time()
         p1_label = patient_nodes[0] if len(patient_nodes) > 0 else "301-1 骨二科测试患者01"
         p1_name = p1_label.split()[-1]
+        _step(f"正在读取患者 [{p1_name}] 费用汇总与明细并与数据库对账...")
         print(f"\n  ▶ 正在执行 [UI-L6-039-P1] 费用综合查询 · {p1_name} 费用汇总与明细对账...")
         session.eval(f"""(() => {{
             const el = Array.from(document.querySelectorAll('.el-tree-node__content'))
@@ -359,6 +379,7 @@ def run_ui_verify(args: Any) -> int:
         t0 = time.time()
         p2_label = patient_nodes[1] if len(patient_nodes) > 1 else "301-11 骨二科测试患者03"
         p2_name = p2_label.split()[-1]
+        _step(f"正在读取第二患者 [{p2_name}] 费用汇总并与数据库对账...")
         print(f"\n  ▶ 正在执行 [UI-L6-039-P2] 费用综合查询 · {p2_name} 费用汇总对账...")
         session.eval(f"""(() => {{
             const el = Array.from(document.querySelectorAll('.el-tree-node__content'))
@@ -441,6 +462,7 @@ def run_ui_verify(args: Any) -> int:
         # 断言 3: UI-L6-039-LIST (全院在院患者床位分配全集)
         # ===================================================================
         t0 = time.time()
+        _step("正在获取在院患者床位分配全集并与数据库对账...")
         print(f"\n  ▶ 正在执行 [UI-L6-039-LIST] 费用综合查询 · 在院患者床位列表全集对账...")
         ui_beds_set = {p.split()[0] for p in patient_nodes}
 
@@ -493,6 +515,7 @@ def run_ui_verify(args: Any) -> int:
         # 断言 4: UI-INDEX (首页运营指标看板等式校验)
         # ===================================================================
         t0 = time.time()
+        _step("正在加载首页运营指标看板 (#/index) 并聚合收费总量等式对账...")
         print("\n  ▶ 正在执行 [UI-INDEX] 首页运营看板 · 收费总量聚合等式对账...")
         session.cmd("Page.navigate", {"url": f"{frontend}/#/index"})
         time.sleep(2.0)

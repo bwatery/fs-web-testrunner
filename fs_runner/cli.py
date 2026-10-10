@@ -535,6 +535,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_serve = subparsers.add_parser("serve", help="启动只读 Web 报告服务")
     p_serve.add_argument("--port", type=int, default=8990)
 
+    # serve-ui 子命令（交互式测试控制台）
+    p_serve_ui = subparsers.add_parser("serve-ui", help="启动交互式测试控制台 UI")
+    p_serve_ui.add_argument("--host", default="0.0.0.0", help="监听地址")
+    p_serve_ui.add_argument("--port", type=int, default=8989, help="服务端口（默认 8989）")
+
     # selfcheck 子命令
     p_check = subparsers.add_parser("selfcheck", help="自检与变异承重分析")
     p_check.add_argument("--mutation", action="store_true", help="执行变异自检（回答通过率是否虚高）")
@@ -576,6 +581,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_ui.add_argument("--env", choices=["real", "sandbox"], default="real", help="运行环境：real（默认）或 sandbox（沙盒永不判通过）")
     p_ui.add_argument("--gateway", default=None, help="网关服务地址")
     p_ui.add_argument("--frontend", default=None, help="前端服务地址")
+    p_ui.add_argument("--standalone", action="store_true", default=False, help="独立拉起可见 Chrome 窗口（不占用 9222）")
+    p_ui.add_argument("--slowmo", type=int, default=0, help="步骤间慢放等待毫秒数")
     p_ui.add_argument("--username", default="admin", help="登录账号")
     p_ui.add_argument("--password", default="admin123", help="登录密码")
 
@@ -622,6 +629,10 @@ def main(argv: Optional[List[str]] = None) -> int:
     if parsed.command == "serve":
         from .web.app import run_server
         return run_server(port=parsed.port)
+
+    if parsed.command == "serve-ui":
+        from .ui.server import run_ui_server
+        return run_ui_server(host=parsed.host, port=parsed.port)
 
     parser.print_help()
     return 0
