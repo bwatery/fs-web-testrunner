@@ -319,7 +319,15 @@ class BrowserSession:
             return False
 
     def close(self):
-        """安全释放 CDP 客户端与浏览器进程。"""
+        """安全释放 CDP 客户端与浏览器进程（成功、失败、异常所有出口均回收）。"""
+        # 1. 对独立实例，向 CDP 发送 Browser.close 指令请求浏览器自主优雅关停所有渲染与 GPU 子进程
+        if (self.headless or self.standalone) and self.port != 9222 and self._connected and self.ws:
+            try:
+                self.cmd("Browser.close", timeout=1.5)
+                time.sleep(0.3)
+            except Exception:
+                pass
+
         if self.ws:
             try:
                 self.ws.close()
@@ -329,16 +337,32 @@ class BrowserSession:
 
         self._connected = False
 
-        if self.proc:
-            try:
-                self.proc.terminate()
-                self.proc.wait(timeout=2.0)
-            except Exception:
+        # 2. 只有独立启动的实例才强制杀进程；绝不碰已有 9222 端口
+        if (self.headless or self.standalone) and self.port and self.port != 9222:
+            if self.proc:
                 try:
-                    self.proc.kill()
+                    if os.name == "nt":
+                        subprocess.run(
+                            ["taskkill", "/F", "/T", "/PID", str(self.proc.pid)],
+                            stdout=subprocess.DEVNULL,
+                            stderr=subprocess.DEVNULL,
+                        )
+                    else:
+                        self.proc.kill()
                 except Exception:
                     pass
-            self.proc = None
+                self.proc = None
+
+            # 3. 按当前端口强力收尾残留进程
+            kill_chrome_by_port(self.port)
+
+            # 4. 收尾后校验：该端口上不应再有残留进程
+            residual = count_chrome_by_port(self.port)
+            if residual > 0:
+                time.sleep(0.5)
+                kill_chrome_by_port(self.port)
+                residual = count_chrome_by_port(self.port)
+            print(f"  [浏览器收尾] 独立 Chrome (端口 {self.port}) 已回收，残留进程数: {residual}")
 
         if self.temp_user_data_dir and Path(self.temp_user_data_dir).exists():
             try:
@@ -352,6 +376,33 @@ class BrowserSession:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+
+
+def count_chrome_by_port(port: int) -> int:
+    """统计指定 remote-debugging-port 的 chrome.exe 进程数。"""
+    if not port or port == 9222:
+        return 0
+    try:
+        cmd = ["wmic", "process", "where", f"name='chrome.exe' and commandline like '%--remote-debugging-port={port}%'", "get", "ProcessId"]
+        out = subprocess.check_output(cmd, text=True, errors="replace")
+        return len([line.strip() for line in out.splitlines() if line.strip().isdigit()])
+    except Exception:
+        return 0
+
+
+def kill_chrome_by_port(port: int):
+    """根据 remote-debugging-port 清理独立 Chrome 进程树（硬约束：绝不碰 9222）。"""
+    if not port or port == 9222:
+        return  # 硬约束：绝对严禁触碰用户自己的 9222 端口！
+    try:
+        cmd = ["wmic", "process", "where", f"name='chrome.exe' and commandline like '%--remote-debugging-port={port}%'", "get", "ProcessId"]
+        out = subprocess.check_output(cmd, text=True, errors="replace")
+        for line in out.splitlines():
+            line = line.strip()
+            if line.isdigit():
+                subprocess.run(["taskkill", "/F", "/T", "/PID", line], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
 
 
 def launch_browser(

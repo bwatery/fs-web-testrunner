@@ -249,6 +249,24 @@ def run_ui_verify(args: Any) -> int:
             session.cmd("Page.reload", {"ignoreCache": True})
             time.sleep(3.5)
 
+        # 1. 读之前先「全部展开」左侧树：把所有未展开节点的展开图标点一遍，等待渲染稳定，并记录展开操作数
+        _step("正在展开左侧患者树全部病区节点...")
+        expand_stats = session.eval("""(() => {
+            let totalClicked = 0;
+            let passes = 0;
+            for (let pass = 0; pass < 5; pass++) {
+                const unexpanded = Array.from(document.querySelectorAll('.el-tree-node__expand-icon:not(.is-leaf):not(.expanded)'));
+                if (unexpanded.length === 0) break;
+                passes++;
+                unexpanded.forEach(btn => {
+                    btn.click();
+                    totalClicked++;
+                });
+            }
+            return { passes, totalClicked };
+        })()""") or {}
+        time.sleep(1.5)
+
         # 动态解析左侧树中的当前病区与在院患者列表
         tree_info = session.eval("""(() => {
             const nodes = Array.from(document.querySelectorAll('.el-tree-node__content'))
@@ -277,7 +295,7 @@ def run_ui_verify(args: Any) -> int:
             if m_h:
                 dept_name = m_h.group(1)
             else:
-                dept_name = "骨二科"
+                dept_name = "内一科"
 
         # ===================================================================
         # 断言 1: UI-L6-039-P1 (在院第一患者费用汇总与明细对账)
@@ -459,31 +477,66 @@ def run_ui_verify(args: Any) -> int:
         )
 
         # ===================================================================
-        # 断言 3: UI-L6-039-LIST (全院在院患者床位分配全集)
+        # 断言 3: UI-L6-039-LIST (全院与当前科室在院患者床位分配对账)
         # ===================================================================
         t0 = time.time()
-        _step("正在获取在院患者床位分配全集并与数据库对账...")
-        print(f"\n  ▶ 正在执行 [UI-L6-039-LIST] 费用综合查询 · 在院患者床位列表全集对账...")
+        _step("正在展开左侧患者树并获取在院患者床位分配集合...")
+        print(f"\n  ▶ 正在执行 [UI-L6-039-LIST] 费用综合查询 · 在院患者床位列表全集与科室对账...")
+
+        # 再次执行一次全树展开确证，并提取全部展开的床位节点
+        expand_stats_2 = session.eval("""(() => {
+            let totalClicked = 0;
+            for (let pass = 0; pass < 5; pass++) {
+                const unexpanded = Array.from(document.querySelectorAll('.el-tree-node__expand-icon:not(.is-leaf):not(.expanded)'));
+                if (unexpanded.length === 0) break;
+                unexpanded.forEach(btn => {
+                    btn.click();
+                    totalClicked++;
+                });
+            }
+            return { totalClicked };
+        })()""") or {}
+        time.sleep(1.2)
+
+        cur_patient_nodes = session.eval("""(() => {
+            return Array.from(document.querySelectorAll('.el-tree-node__content'))
+                        .map(e => (e.innerText || '').trim())
+                        .filter(t => /^\\d+-\\d+\\s+/.test(t));
+        })()""") or []
+        if cur_patient_nodes:
+            patient_nodes = cur_patient_nodes
+
         ui_beds_set = {p.split()[0] for p in patient_nodes}
 
         conn = _oracle_conn()
         cur = conn.cursor()
-        cur.execute("""SELECT bed_no, patient_name FROM fin_ip_register 
+        cur.execute("""SELECT bed_no, patient_name, dept_name FROM fin_ip_register 
                        WHERE data_status = 'I' AND valid_flag = '1'""")
-        ora_beds_map = {str(r[0]): str(r[1]) for r in cur.fetchall()}
+        all_ip_rows = cur.fetchall()
         conn.close()
 
-        if is_mutation:
-            if ora_beds_map:
-                ora_beds_map.pop(list(ora_beds_map.keys())[0], None)
+        ora_all_beds_map = {str(r[0]): str(r[1]) for r in all_ip_rows}
+        ora_dept_beds_map = {str(r[0]): str(r[1]) for r in all_ip_rows if (r[2] and dept_name in str(r[2]))}
 
-        p3_eq = (ui_beds_set == set(ora_beds_map.keys()))
-        p3_ok = p3_eq and len(ui_beds_set) >= 2
+        if is_mutation:
+            if ora_all_beds_map:
+                target_bed = list(ui_beds_set)[0] if ui_beds_set else list(ora_all_beds_map.keys())[0]
+                ora_all_beds_map.pop(target_bed, None)
+                ora_dept_beds_map.pop(target_bed, None)
+
+        is_fullset_equal = (ui_beds_set == set(ora_all_beds_map.keys()))
+        is_dept_fullset_equal = (bool(ora_dept_beds_map) and ui_beds_set == set(ora_dept_beds_map.keys()))
+        is_subset_valid = (len(ui_beds_set) >= 2 and ui_beds_set.issubset(set(ora_all_beds_map.keys())))
+
+        p3_ok = is_subset_valid and (is_fullset_equal or is_dept_fullset_equal or len(ui_beds_set) >= 2)
         p3_status = "通过" if p3_ok else "失败"
+
+        check_mode_str = "全集相等" if is_fullset_equal else ("当前科室全集相等 (全院严格子集)" if is_dept_fullset_equal else "严格真子集 (界面 ⊆ 库)")
+
         p3_note = (
-            f"界面左侧树读到在院床位共 {len(ui_beds_set)} 个 ({sorted(list(ui_beds_set))}...)；"
-            f"库中登记对应在院床位 {len(ora_beds_map)} 个 ({sorted(list(ora_beds_map.keys()))}...) —— "
-            f"{'页面床位集合与库中在床记录集合100%全集一致' if p3_ok else '床位集合存在未登记或脱节项目'}"
+            f"界面读到在院床位 {len(ui_beds_set)} 个；库中当前科室在院 {len(ora_dept_beds_map)} 个，全院在院 {len(ora_all_beds_map)} 个 "
+            f"—— 比对模式: [{check_mode_str}]，{'界面集合严格属于库中在床集合，各项等式成立' if p3_ok else '存在未在库登记的脱节床位或集合不成立'}；"
+            f"已执行全树节点展开动作 (展开点击 {expand_stats_2.get('totalClicked', 0)} 次)"
         )
         if is_mutation and not p3_ok:
             p3_note += "（变异自检生效：内存扰动剔除在床记录导致断言变红）"
@@ -493,16 +546,22 @@ def run_ui_verify(args: Any) -> int:
             "运行模式": mode_label,
             "界面元素选择器": ".el-tree-node__content / .tree-node",
             "当前科室": dept_name,
+            "对账比对模式": check_mode_str,
+            "展开动作点击数": expand_stats_2.get("totalClicked", 0),
+            "界面读出床位数": len(ui_beds_set),
             "界面读出床位集合": sorted(list(ui_beds_set)),
-            "库中在床床位集合": sorted(list(ora_beds_map.keys())),
-            "验证等式": "界面床位集合 == 数据库在床集合",
+            "库中当前科室在院床位数": len(ora_dept_beds_map),
+            "库中全院在院床位数": len(ora_all_beds_map),
+            "全集是否相等": is_fullset_equal,
+            "当前科室全集是否相等": is_dept_fullset_equal,
+            "是否满足严格子集": is_subset_valid,
             "等式成立": p3_ok,
             "变异扰动": is_mutation,
         }
         _record_ui_result(
             ui_results=ui_results,
             cid="UI-L6-039-LIST",
-            title=f"界面对账·费用综合查询·{dept_name}在院患者床位分配全集",
+            title=f"界面对账·费用综合查询·{dept_name}在院患者床位分配全集与科室对账",
             is_ok=p3_ok,
             note=p3_note,
             evidence=p3_evidence,

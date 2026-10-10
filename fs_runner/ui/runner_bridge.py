@@ -48,11 +48,17 @@ class RunnerBridge:
             percent = 0
             if self.total_cases > 0:
                 percent = int((self.current_index / self.total_cases) * 100)
+            percent = max(0, min(100, percent))
+            # 当已执行完成（running 为 False 且已跑过）时，固定归位为 100%
+            if not self.running and self.current_index > 0:
+                percent = 100
+
+            cur_idx = min(self.current_index, self.total_cases) if self.total_cases else self.current_index
             return {
                 "running": self.running,
                 "pid": self.pid,
                 "current_case": self.current_case,
-                "current_index": self.current_index,
+                "current_index": cur_idx,
                 "total_cases": self.total_cases,
                 "percent": percent,
                 "current_step": self.current_step,
@@ -102,6 +108,10 @@ class RunnerBridge:
         """
         启动测试子进程。
         """
+        # 判断是否路由到 ui-verify
+        if (show_browser and (cases and any("039" in c for c in cases))) or is_ui_verify:
+            is_ui_verify = True
+
         with self.lock:
             if self.running:
                 return False, f"已有测试任务正在运行中 (PID: {self.pid})"
@@ -109,7 +119,10 @@ class RunnerBridge:
             self.running = True
             self.current_case = None
             self.current_index = 0
-            self.total_cases = len(cases) if cases else (66 if not is_ui_verify else 4)
+            if is_ui_verify:
+                self.total_cases = 4
+            else:
+                self.total_cases = len(cases) if cases else 66
             self.current_step = "正在启动测试进程..."
             self.logs.clear()
             self.results_cache.clear()
@@ -120,9 +133,7 @@ class RunnerBridge:
 
         # 构造执行命令
         cmd = [sys.executable, "-I", "fsrun.py"]
-        # 若勾选了「显示浏览器」且针对 L6-039 或 UI 巡检，自动路由到 ui-verify 启动可见 Chrome
-        if (show_browser and (cases and any("039" in c for c in cases))) or is_ui_verify:
-            is_ui_verify = True
+        if is_ui_verify:
             cmd.extend(["ui-verify"])
             if show_browser:
                 cmd.append("--standalone")
@@ -163,7 +174,7 @@ class RunnerBridge:
                 self.process = p
                 self.pid = p.pid
 
-            threading.Thread(target=self._reader_thread, args=(p,), daemon=True).start()
+            threading.Thread(target=self._reader_thread, args=(p, is_ui_verify), daemon=True).start()
             return True, f"测试进程已启动 (PID: {p.pid})"
         except Exception as e:
             with self.lock:
@@ -172,7 +183,7 @@ class RunnerBridge:
                 self.pid = None
             return False, f"拉起测试进程失败: {e}"
 
-    def _reader_thread(self, proc: subprocess.Popen):
+    def _reader_thread(self, proc: subprocess.Popen, is_ui_verify: bool = False):
         """后台线程：逐行读取子进程 stdout。"""
         re_progress = re.compile(r"\[(\d+)/(\d+)\]\s+(L\d+-\d+|UI-[\w-]+)\s+(.*?)\s+——\s+(通过|失败|阻塞|跳过|未执行)")
         re_ui_prog = re.compile(r"\[(UI-[\w-]+)\]\s+——\s+(通过|失败|阻塞|跳过|未执行)")
@@ -200,7 +211,7 @@ class RunnerBridge:
 
                     with self.lock:
                         self.current_index = idx
-                        self.total_cases = tot
+                        self.total_cases = max(self.total_cases, tot)
                         self.current_case = cid
                         self.current_step = f"已完成 {cid} {title}（{status}）"
                         self.results_cache[cid] = {
@@ -209,18 +220,23 @@ class RunnerBridge:
                             "status": status,
                         }
 
+                    cur_idx = min(idx, self.total_cases)
+                    pct = max(0, min(100, int((cur_idx / max(1, self.total_cases)) * 100)))
                     self._broadcast("case_result", {
                         "case_id": cid,
                         "title": title,
                         "status": status,
-                        "current_index": idx,
-                        "total_cases": tot,
+                        "current_index": cur_idx,
+                        "total_cases": self.total_cases,
+                        "percent": pct,
                     })
                 elif m_ui:
                     cid = m_ui.group(1)
                     status = m_ui.group(2)
                     with self.lock:
                         self.current_index += 1
+                        if self.total_cases < 4:
+                            self.total_cases = 4
                         self.current_case = cid
                         self.current_step = f"已完成 {cid}（{status}）"
                         self.results_cache[cid] = {
@@ -228,12 +244,16 @@ class RunnerBridge:
                             "title": cid,
                             "status": status,
                         }
+
+                    cur_idx = min(self.current_index, self.total_cases)
+                    pct = max(0, min(100, int((cur_idx / max(1, self.total_cases)) * 100)))
                     self._broadcast("case_result", {
                         "case_id": cid,
                         "title": cid,
                         "status": status,
-                        "current_index": self.current_index,
+                        "current_index": cur_idx,
                         "total_cases": self.total_cases,
+                        "percent": pct,
                     })
                 elif m_sub:
                     desc = m_sub.group(1).strip()
@@ -257,8 +277,15 @@ class RunnerBridge:
             with self.lock:
                 self.logs.append(end_msg)
                 self.current_step = "已执行完成"
+                if self.total_cases > 0:
+                    self.current_index = self.total_cases
+
+            # 正常完成出口：父进程兜底回收属于本次 standalone 启动的 Chrome（硬约束：绝不碰 9222）
+            if self.show_browser or is_ui_verify:
+                _cleanup_standalone_chromes()
+
             self._broadcast("log", end_msg)
-            self._broadcast("finished", {"returncode": ret})
+            self._broadcast("finished", {"returncode": ret, "percent": 100})
         finally:
             with self.lock:
                 self.running = False
@@ -289,6 +316,10 @@ class RunnerBridge:
         except Exception as e:
             print(f"[runner_bridge] 终止进程异常: {e}")
 
+        # 人工中断出口：父进程兜底回收属于本次 standalone 启动的 Chrome（硬约束：绝不碰 9222）
+        if self.show_browser:
+            _cleanup_standalone_chromes()
+
         stop_msg = f"⏹️ [用户中断] 测试执行已被人工终止 (PID: {pid})"
         with self.lock:
             self.running = False
@@ -300,6 +331,24 @@ class RunnerBridge:
         self._broadcast("log", stop_msg)
         self._broadcast("finished", {"returncode": -1, "stopped": True})
         return True, f"测试进程已成功终止 (PID: {pid})"
+
+
+def _cleanup_standalone_chromes():
+    """父进程兜底回收独立 standalone 模式拉起的 chrome.exe 进程（硬约束：绝不碰 9222 端口）。"""
+    try:
+        cmd = ["wmic", "process", "where", "name='chrome.exe'", "get", "ProcessId,CommandLine"]
+        out = subprocess.check_output(cmd, text=True, errors="replace")
+        for line in out.splitlines():
+            if "remote-debugging-port" in line:
+                m_port = re.search(r"--remote-debugging-port=(\d+)", line)
+                m_pid = re.search(r"(\d+)\s*$", line)
+                if m_port and m_pid:
+                    port = int(m_port.group(1))
+                    pid = int(m_pid.group(1))
+                    if port != 9222:  # 硬约束：绝对严禁触碰用户自己的 9222 端口！
+                        subprocess.run(["taskkill", "/F", "/T", "/PID", str(pid)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except Exception:
+        pass
 
 
 runner_bridge = RunnerBridge()
