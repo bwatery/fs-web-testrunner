@@ -1,0 +1,406 @@
+{
+  "batch_id": "20261010_165328",
+  "summary": {
+    "患者": 0,
+    "挂号": 6,
+    "收费": 1,
+    "作废": 6,
+    "总新增": 7
+  },
+  "summary_text": "本次造数：患者 0 条 · 挂号 6 条 · 收费 1 条 · 作废 6 条",
+  "created_patient_ids": [],
+  "created_register_ids": [
+    1581176,
+    300013511,
+    300013513,
+    300013515,
+    300013517,
+    300013519
+  ],
+  "created_balance_ids": [
+    300011139
+  ],
+  "records_count": 38,
+  "records": [
+    {
+      "time": "2026-10-10 16:53:54",
+      "case_id": "L6-004",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 1581176,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:54",
+      "case_id": "L6-004",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:54",
+      "case_id": "L6-004",
+      "endpoint": "/faith/patient/activate",
+      "type": "PATIENT_ACTIVATE",
+      "code": 200,
+      "success": true,
+      "extracted_id": null,
+      "body_snippet": "{'patientId': 1581176}"
+    },
+    {
+      "time": "2026-10-10 16:53:54",
+      "case_id": "L6-004",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 1581176,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:55",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 1581176,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:55",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/balance",
+      "type": "REG_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 300013511,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:55",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 1581176,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/balance",
+      "type": "REG_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 300013513,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 1581176,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/balance",
+      "type": "REG_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 300013515,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 1581176,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/balance",
+      "type": "REG_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 300013517,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 1581176,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/balance",
+      "type": "REG_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 300013519,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 1581176,
+      "body_snippet": "{'patientId': 1581176, 'patientName': '测试住院护士01', 'sexCode': '1', 'birthday': '2000-10-06 00:00:00', 'identifierType': '99', 'identifierNo': '876778678678678', 'phone': '17365701492', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 4, 'medicalTypeId': 101, 'medicalKindId': 10101, 'regis"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 200,
+      "success": true,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013511, 'balanceId': 600016144, 'receiptId': 700014167, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 200,
+      "success": true,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013513, 'balanceId': 600016145, 'receiptId': 700014168, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 200,
+      "success": true,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013515, 'balanceId': 600016146, 'receiptId': 700014169, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 200,
+      "success": true,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013517, 'balanceId': 600016147, 'receiptId': 700014170, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 200,
+      "success": true,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013519, 'balanceId': 600016148, 'receiptId': 700014171, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013511, 'balanceId': 600016144, 'receiptId': 700014167, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013513, 'balanceId': 600016145, 'receiptId': 700014168, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013515, 'balanceId': 600016146, 'receiptId': 700014169, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:56",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013517, 'balanceId': 600016147, 'receiptId': 700014170, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:57",
+      "case_id": "L6-012",
+      "endpoint": "/faith/finance/outpatient/register/cancel",
+      "type": "REG_CANCEL",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300013519, 'balanceId': 600016148, 'receiptId': 700014171, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9.0, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:57",
+      "case_id": "L6-014",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'patientId': 999999999, 'patientName': '自动验证1009103905', 'sexCode': '1', 'birthday': '1990-01-01 00:00:00', 'identifierType': '01', 'identifierNo': '110101199001019052', 'phone': '13009103905', 'registerDeptId': 910054, 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10"
+    },
+    {
+      "time": "2026-10-10 16:53:57",
+      "case_id": "L6-014",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'patientId': 1581196, 'patientName': '自动验证1009103905', 'sexCode': '1', 'birthday': '1990-01-01 00:00:00', 'identifierType': '01', 'identifierNo': '110101199001019052', 'phone': '13009103905', 'registerDoctId': 1, 'regLevelId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'registerClass': '1', '"
+    },
+    {
+      "time": "2026-10-10 16:53:57",
+      "case_id": "L6-014",
+      "endpoint": "/faith/finance/outpatient/register/save/preBalance",
+      "type": "REG_PRE_BALANCE",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'patientId': 1581196, 'patientName': '自动验证1009103905', 'sexCode': '1', 'birthday': '1990-01-01 00:00:00', 'identifierType': '01', 'identifierNo': '110101199001019052', 'phone': '13009103905', 'registerDeptId': 910054, 'registerDoctId': 1, 'medicalTypeId': 101, 'medicalKindId': 10101, 'registerClass"
+    },
+    {
+      "time": "2026-10-10 16:53:57",
+      "case_id": "L6-014",
+      "endpoint": "/faith/patient/save",
+      "type": "PATIENT_SAVE",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'patientName': '非法测试', 'identifierNo': '110101199001019999', 'identifierType': '01', 'birthday': '1990-01-01 00:00:00', 'sexCode': '1', 'phone': '13000000000', 'payType': 'O'}"
+    },
+    {
+      "time": "2026-10-10 16:53:57",
+      "case_id": "L6-014",
+      "endpoint": "/faith/patient/save",
+      "type": "PATIENT_SAVE",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'patientName': '', 'identifierNo': '110101199001011234', 'identifierType': '01', 'birthday': '1990-01-01 00:00:00', 'sexCode': '1', 'phone': '13000000001', 'payType': 'O'}"
+    },
+    {
+      "time": "2026-10-10 16:53:57",
+      "case_id": "L6-014",
+      "endpoint": "/faith/patient/save",
+      "type": "PATIENT_SAVE",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'patientName': '防错对照165357', 'identifierNo': '110101199001019052', 'identifierType': '01', 'birthday': '1990-01-01 00:00:00', 'sexCode': '1', 'phone': '13000000009', 'payType': 'O'}"
+    },
+    {
+      "time": "2026-10-10 16:53:58",
+      "case_id": "L6-025",
+      "endpoint": "/faith/finance/outpatient/balance/save/preBalance",
+      "type": "CHARGE_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 300011139,
+      "body_snippet": "{'registerId': 300011139, 'patientId': 1581113, 'billIdList': [], 'ownPayFlag': True, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'applyPricing': {'registerId': 300011139, 'mainApplyId': 0, 'mainOrderId': 0, 'applyList': [{'itemId': '10001535', 'itemName': '普通门诊诊查费', 'itemSysType': 'U', 'itemSy"
+    },
+    {
+      "time": "2026-10-10 16:53:58",
+      "case_id": "L6-025",
+      "endpoint": "/faith/finance/outpatient/balance/save/balance",
+      "type": "CHARGE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 300011139,
+      "body_snippet": "{'balanceId': 600016155, 'registerId': 300011139, 'totalAmount': 9, 'ownPayAmount': 9, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 9, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:58",
+      "case_id": "L6-025",
+      "endpoint": "/faith/finance/outpatient/apply/refund/apply",
+      "type": "REFUND_APPLY",
+      "code": 200,
+      "success": true,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300011139, 'balanceId': 600016155, 'refundApplyDtoList': [{'applyId': 400020896, 'registerId': 300011139, 'dcQty': 1.0, 'dcReason': '闭环校验还原', 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:59",
+      "case_id": "L6-028",
+      "endpoint": "/faith/finance/outpatient/balance/save/preBalance",
+      "type": "CHARGE_PRE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 300011139,
+      "body_snippet": "{'registerId': 300011139, 'patientId': 1581113, 'billIdList': [], 'ownPayFlag': True, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'applyPricing': {'registerId': 300011139, 'mainApplyId': 0, 'mainOrderId': 0, 'applyList': [{'itemId': '10001535', 'itemName': '普通门诊诊查费', 'itemSysType': 'U', 'itemSy"
+    },
+    {
+      "time": "2026-10-10 16:53:59",
+      "case_id": "L6-028",
+      "endpoint": "/faith/finance/outpatient/balance/save/balance",
+      "type": "CHARGE_BALANCE",
+      "code": 200,
+      "success": true,
+      "extracted_id": 300011139,
+      "body_snippet": "{'balanceId': 600016157, 'registerId': 300011139, 'totalAmount': 18, 'ownPayAmount': 18, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1, 'paymentDetails': [{'paymentId': 'CA', 'paymentName': '现金', 'paymentCost': 18, 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:59",
+      "case_id": "L6-028",
+      "endpoint": "/faith/finance/outpatient/apply/refund/apply",
+      "type": "REFUND_APPLY",
+      "code": 400,
+      "success": false,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300011139, 'balanceId': 600016157, 'refundApplyDtoList': [{'applyId': 400020898, 'registerId': 300011139, 'dcQty': 3.0, 'dcReason': '闭环校验-超退', 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    },
+    {
+      "time": "2026-10-10 16:53:59",
+      "case_id": "L6-028",
+      "endpoint": "/faith/finance/outpatient/apply/refund/apply",
+      "type": "REFUND_APPLY",
+      "code": 200,
+      "success": true,
+      "extracted_id": null,
+      "body_snippet": "{'registerId': 300011139, 'balanceId': 600016157, 'refundApplyDtoList': [{'applyId': 400020898, 'registerId': 300011139, 'dcQty': 1.0, 'dcReason': '闭环校验-部分退', 'deptId': 2, 'deptName': '收费处', 'hospitalId': 1}]}"
+    }
+  ]
+}

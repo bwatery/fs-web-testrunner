@@ -332,3 +332,15 @@
   status: confirmed
   affected_cases:
     - L9-011
+
+- id: CONV_RUNID_ISOLATION_AND_PROBE
+  domain: 数据隔离与安全
+  statement: 跑批造数必须绑定唯一 runId 隔离，跑批结束断言库中测试行数净增量严格等于审计记录造数条数，测试数据清理必须按 runId 精确回滚，严禁用 LIKE '测试%' 误伤他人数据
+  evidence: 历史回归曾误插测试患者未带唯一隔离标识导致清理困难；引入 runId 标记与 probe 净增断言后，实现 0 残留与精确回滚
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L6-001
+    - L6-009
+    - L6-012
+

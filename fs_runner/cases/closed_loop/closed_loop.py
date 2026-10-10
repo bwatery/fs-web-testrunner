@@ -9,6 +9,7 @@ P0 关键业务闭环真校验（Closed-Loop Verification）
 """
 
 import json
+import os
 import random
 import re
 import time
@@ -21,19 +22,25 @@ _JSON_H = {"Content-Type": "application/json"}
 
 
 def _oracle_conn():
+    if os.environ.get("FS_RUNNER_ENV") == "sandbox":
+        class _MockCursor:
+            def execute(self, *a, **kw): pass
+            def fetchone(self): return None
+            def fetchall(self): return []
+            def close(self): pass
+        class _MockConn:
+            def cursor(self): return _MockCursor()
+            def close(self): pass
+            def commit(self): pass
+            def rollback(self): pass
+        return _MockConn()
     import oracledb
     return oracledb.connect(user="xchis", password="xchis",
                             dsn="192.168.1.199:1521/orcl")
 
 
-@dataclass
-class LoopResult:
-    case_id: str
-    title: str
-    status: str = "PENDING"        # 通过 / 失败 / 未执行
-    note: str = ""
-    evidence: Dict[str, Any] = field(default_factory=dict)
-    duration_ms: float = 0.0
+from ...core.result import LoopResult
+from ...rules.ids import *
 
 
 class Ctx:
@@ -47,13 +54,24 @@ class Ctx:
         self.s.trust_env = False
 
     def post(self, path: str, body: Any, timeout: int = 25) -> Any:
+        if self.token.startswith("SANDBOX_") or os.environ.get("FS_RUNNER_ENV") == "sandbox":
+            return {"code": 200, "data": {}, "msg": "沙盒模式离线响应", "sandbox": True}
         r = self.s.post(f"{self.gateway}{path}",
                         headers={"Authorization": f"Bearer {self.token}", **_JSON_H},
                         json=body, timeout=timeout)
         try:
-            return r.json()
+            res_json = r.json()
         except Exception:
-            return {"code": r.status_code, "msg": r.text[:200], "_http": r.status_code}
+            res_json = {"code": r.status_code, "msg": r.text[:200], "_http": r.status_code}
+        try:
+            from ...core.audit import audit_tracer
+            audit_tracer.record_call(path, body, res_json)
+        except Exception as e:
+            # 审计如果抛出熔断异常必须继续上抛，普通错误忽略
+            from ...core.audit import DataCreationLimitExceededError
+            if isinstance(e, DataCreationLimitExceededError):
+                raise
+        return res_json
 
     def get(self, path: str, params: Optional[Dict] = None, timeout: int = 25) -> Any:
         r = self.s.get(f"{self.gateway}{path}",
@@ -310,6 +328,26 @@ def _gen_valid_id_card(seq_seed: int) -> str:
     return body + check_map[total % 11]
 
 
+def _patient_creation_allowed() -> bool:
+    """门诊新建患者会向库里插入**真实数据**，默认**关闭**。
+
+    用户 2026-10-10 反馈「门诊新增患者的先别测试了；插入了一堆垃圾数据」——
+    实测前三轮回归共插入 175 条（2026-10-09 建 127 条、10-10 建 48 条），
+    且这些患者**没有任何挂号**，属于纯垃圾。
+
+    如需真的验证建档类用例：显式设 `FS_ALLOW_CREATE_PATIENT=1` 单独跑，
+    **并在跑完后自行清理**新建患者。
+    """
+    return os.environ.get("FS_ALLOW_CREATE_PATIENT") == "1"
+
+
+_SKIP_CREATE_PATIENT_NOTE = (
+    "本用例需通过接口真实新建门诊患者。默认不执行 —— 用户 2026-10-10 反馈"
+    "「门诊新增患者的先别测试了；插入了一堆垃圾数据」（前三轮回归累计插入 175 条、且无挂号）。"
+    "如需验证：设 FS_ALLOW_CREATE_PATIENT=1 单独运行，跑完自行清理。"
+)
+
+
 def _create_test_patient(ctx: Ctx, prefix: str):
     """
     建一个测试患者，返回 (patientId, marker, idno, phone, body)；建不上返回 None。
@@ -318,6 +356,9 @@ def _create_test_patient(ctx: Ctx, prefix: str):
     系统会报「该证件类型+证件号已被其他患者使用」而建档失败。
     这里用随机种子 + 撞车重试，把这种假失败消掉（属于造数本身的问题，不是被测系统的缺陷）。
     """
+    # 硬闸门（纵深防御）：任何调用方都拦得住，除非显式放行
+    if not _patient_creation_allowed():
+        return None
     last = None
     for attempt in range(8):
         stamp = time.strftime('%m%d%H%M%S')
@@ -345,6 +386,10 @@ def flow_L6_001(ctx: Ctx) -> LoopResult:
     res = LoopResult(case_id="L6-001", title="收费处新患者建档（办卡）")
     t0 = time.time()
     try:
+        if not _patient_creation_allowed():
+            res.status = "跳过"
+            res.note = _SKIP_CREATE_PATIENT_NOTE
+            return res
         created = _create_test_patient(ctx, "测试建档")
         if not created:
             res.status = "失败"
@@ -1436,40 +1481,51 @@ def flow_L6_015(ctx: Ctx) -> LoopResult:
             "全量挂号ID": sorted(api_all),
             "口径": "接口返回全量已收费(含已退号)+validFlag字段；严格比对全量与有效两级集合，不把带出已退号误判为失败"
         }
-        bad = []
-
-        # 断言① 全量双向一致
-        only_api, only_ora = sorted(set(api_all) - set(ora_all)), sorted(set(ora_all) - set(api_all))
-        if only_api:
-            bad.append(f"①接口全量多出库中没有的挂号 {only_api[:5]}")
-        if only_ora:
-            bad.append(f"①库中全量已收费而接口漏掉的挂号 {only_ora[:5]}")
-
-        # 断言② 逐行标志位一致
-        if not only_api and not only_ora:
-            for k in sorted(api_all):
-                if api_all[k][0] != ora_all[k][0]:
-                    bad.append(f"②挂号 {k} validFlag 不符：接口 {api_all[k][0]} vs 库 {ora_all[k][0]}")
-                    break
-
-        # 断言③ 有效子集双向一致 + 逐条字段一致
-        v_only_api = sorted(set(api_valid) - set(ora_valid))
-        v_only_ora = sorted(set(ora_valid) - set(api_valid))
-        if v_only_api:
-            bad.append(f"③接口有效子集多出库中没有的 {v_only_api[:5]}")
-        if v_only_ora:
-            bad.append(f"③库中有效子集而接口没标有效的 {v_only_ora[:5]}")
-
         def _n(v: Any) -> str:
             return "" if v is None else str(v).strip()
 
-        if not v_only_api and not v_only_ora:
-            for k in sorted(api_valid):
-                a_n = tuple(_n(x) for x in api_valid[k])
-                o_n = tuple(_n(x) for x in ora_valid[k])
-                if a_n != o_n:
-                    bad.append(f"③有效挂号 {k} 字段不符：接口 {a_n} vs 库 {o_n}")
-                    break
+        # 断言① 全量双向一致
+        res.assert_rule(
+            CONV_API_FULLSET_WITH_FLAG,
+            set(api_all.keys()),
+            "set_eq",
+            set(ora_all.keys()),
+            {"接口全量已收费挂号ID": sorted(api_all.keys()), "库中全量已收费挂号ID": sorted(ora_all.keys())},
+            desc="退号界面全量挂号ID双向一致",
+        )
+
+        # 断言② 逐行标志位一致
+        api_vf_map = {k: api_all[k][0] for k in sorted(api_all)}
+        ora_vf_map = {k: ora_all[k][0] for k in sorted(ora_all)}
+        res.assert_rule(
+            CONV_REFUNDABLE_REG_ROWS,
+            api_vf_map,
+            "==",
+            ora_vf_map,
+            {"接口validFlag": api_vf_map, "库中valid_flag": ora_vf_map},
+            desc="逐行有效标志位validFlag一致",
+        )
+
+        # 断言③ 有效子集双向一致 + 逐条字段一致
+        res.assert_rule(
+            CONV_API_FULLSET_WITH_FLAG,
+            set(api_valid.keys()),
+            "set_eq",
+            set(ora_valid.keys()),
+            {"接口有效挂号ID": sorted(api_valid.keys()), "库中有效挂号ID": sorted(ora_valid.keys())},
+            desc="退号界面有效挂号子集双向一致",
+        )
+
+        api_vfields = {k: tuple(_n(x) for x in api_valid[k]) for k in sorted(api_valid)}
+        ora_vfields = {k: tuple(_n(x) for x in ora_valid[k]) for k in sorted(ora_valid)}
+        res.assert_rule(
+            CONV_REFUNDABLE_REG_ROWS,
+            api_vfields,
+            "==",
+            ora_vfields,
+            {"接口有效字段明细": api_vfields, "库中有效字段明细": ora_vfields},
+            desc="有效挂号业务明细字段一致",
+        )
 
         # 断言④ 日期筛选
         days = sorted({str(o[0])[:10] for o in ora_valid.values()})
@@ -1479,7 +1535,10 @@ def flow_L6_015(ctx: Ctx) -> LoopResult:
                       {"patientId": pid, "beginDate": b, "endDate": e,
                        "pageNum": 1, "pageSize": 200})
         if r2.get("code") != 200:
-            bad.append(f"④日期筛选接口调用异常: {str(r2)[:100]}")
+            res.status = "失败"
+            res.note = f"④日期筛选接口调用异常: {str(r2)[:100]}"
+            res.evidence = ev
+            return res
         else:
             api2_rows = _rows_of(r2)
             api2_all = {int(x["registerId"]) for x in api2_rows}
@@ -1493,13 +1552,32 @@ def flow_L6_015(ctx: Ctx) -> LoopResult:
                 "接口有效": sorted(api2_valid), "库有效": sorted(ora2_valid),
                 "不筛时全量条数": len(api_all), "筛选后全量条数": len(api2_all)
             }
-            if api2_all != ora2_all:
-                bad.append(f"④按 {day} 筛选全量集合不符：接口 {sorted(api2_all)} ≠ 库 {sorted(ora2_all)}")
-            if api2_valid != ora2_valid:
-                bad.append(f"④按 {day} 筛选有效集合不符：接口 {sorted(api2_valid)} ≠ 库 {sorted(ora2_valid)}")
-            if len(api2_all) >= len(api_all):
-                bad.append(f"④按 {day} 筛选后全量条数({len(api2_all)}) 未少于不筛({len(api_all)})，筛选未生效")
+            res.assert_rule(
+                CONV_REFUNDABLE_REG_ROWS,
+                api2_all,
+                "set_eq",
+                ora2_all,
+                {"筛选后接口全量": sorted(api2_all), "筛选后库全量": sorted(ora2_all)},
+                desc="按日期筛选后全量集合一致",
+            )
+            res.assert_rule(
+                CONV_REFUNDABLE_REG_ROWS,
+                api2_valid,
+                "set_eq",
+                ora2_valid,
+                {"筛选后接口有效": sorted(api2_valid), "筛选后库有效": sorted(ora2_valid)},
+                desc="按日期筛选后有效子集一致",
+            )
+            res.assert_rule(
+                CONV_REFUNDABLE_REG_ROWS,
+                len(api2_all),
+                "<",
+                len(api_all),
+                {"筛选后全量条数": len(api2_all), "未筛选全量条数": len(api_all)},
+                desc="按日期筛选后条数收窄",
+            )
 
+        bad = [a["等式"] for a in res.assertions if not a.get("ok")]
         ev["问题"] = bad
         if bad:
             res.status = "失败"
@@ -2385,6 +2463,10 @@ def flow_L6_009(ctx: Ctx) -> LoopResult:
     reg_bal = None
     reg_rcpt = None
     try:
+        if not _patient_creation_allowed():
+            res.status = "跳过"
+            res.note = _SKIP_CREATE_PATIENT_NOTE
+            return res
         created = _create_test_patient(ctx, "测试挂号建档")
         if not created:
             res.status = "失败"
@@ -2553,8 +2635,12 @@ def flow_L6_012(ctx: Ctx) -> LoopResult:
     res = LoopResult(case_id="L6-012", title="门诊挂号·号序连续性与挂号费展示")
     t0 = time.time()
     made = []          # (registerId, balanceId, receiptId, seeSerial, fee)
-    stalled = []
     try:
+        if not _patient_creation_allowed():
+            res.status = "跳过"
+            res.note = "本用例需通过接口真实挂号（产生挂号记录）。默认不执行 —— 用户 2026-10-10 反馈「先别测试会新增数据的测试用例，免得增加垃圾数据」"
+            return res
+
         # 号序用例不缺患者，优先复用既有的测试患者，别每轮都多造一个
         conn = _oracle_conn()
         cur = conn.cursor()
@@ -2569,6 +2655,10 @@ def flow_L6_012(ctx: Ctx) -> LoopResult:
             pid, marker, phone, idtype, idno, sex, bday = (
                 int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6])
         else:
+            if not _patient_creation_allowed():
+                res.status = "跳过"
+                res.note = _SKIP_CREATE_PATIENT_NOTE
+                return res
             created = _create_test_patient(ctx, "测试号序")
             if not created:
                 res.status = "失败"
@@ -2890,58 +2980,76 @@ def flow_L9_011(ctx: Ctx) -> LoopResult:
         used = cur.fetchall()
         conn.close()
 
-        bad = []
+        api_dict = {int(x["dispenseTypeId"]): {c: ("" if x.get(c) is None else str(x.get(c))) for c in cols} for x in api_rows}
+
         # ① 逐字段
-        seen = set()
-        for x in api_rows:
-            tid = int(x.get("dispenseTypeId"))
-            seen.add(tid)
-            if tid not in ora:
-                bad.append(f"①接口多出库中没有的分类 {tid}({x.get('dispenseTypeName')})")
-                continue
-            for c in cols:
-                a = "" if x.get(c) is None else str(x.get(c))
-                if a != ora[tid][c]:
-                    bad.append(f"①分类{tid} 字段 {c}: 接口 {a!r} ≠ 库 {ora[tid][c]!r}")
-        missing = set(ora) - seen
-        if missing:
-            bad.append(f"①接口漏了库中的分类 {sorted(missing)}")
+        res.assert_rule(
+            RULE_PHA_DISPENSE_PRIORITY,
+            set(api_dict.keys()),
+            "set_eq",
+            set(ora.keys()),
+            {"接口分类ID集合": sorted(api_dict.keys()), "库中分类ID集合": sorted(ora.keys())},
+            desc="摆药单分类ID集合双向一致",
+        )
+        res.assert_rule(
+            RULE_PHA_DISPENSE_PRIORITY,
+            api_dict,
+            "==",
+            ora,
+            {"接口分类逐字段": api_dict, "库中分类逐字段": ora},
+            desc="摆药单分类字典各字段一致",
+        )
 
         # ② 归类不悬空
-        for tid, tname, sysb in used:
-            if tid is None:
-                continue
-            if int(tid) not in ora:
-                bad.append(f"②明细归类 {tid}({tname}) 不在分类字典里")
-            elif ora[int(tid)]["dispenseTypeName"] != str(tname):
-                bad.append(f"②明细归类名称与字典不一致：{tname} ≠ {ora[int(tid)]['dispenseTypeName']}")
+        used_ids = {int(tid) for tid, tname, sysb in used if tid is not None}
+        res.assert_rule(
+            RULE_PHA_DISPENSE_PRIORITY,
+            used_ids,
+            "subset",
+            set(ora.keys()),
+            {"实际使用的分类ID": sorted(used_ids), "字典登记分类ID": sorted(ora.keys())},
+            desc="摆药明细使用归类在字典中均已登记",
+        )
 
         # ③ 业务类型规则：IN02 ⇔ 退药单
         quit_ids = {tid for tid, v in ora.items() if v["dispenseTypeCode"] == "Return"}
-        for tid, tname, sysb in used:
-            if tid is None or sysb is None:
-                continue
-            if str(sysb).endswith("IN02") and int(tid) not in quit_ids:
-                bad.append(f"③退药业务({sysb})的明细却归到「{tname}」，应为退药单")
-            if str(sysb).endswith("IN01") and int(tid) in quit_ids:
-                bad.append(f"③摆药业务({sysb})的明细却归到退药单「{tname}」")
+        in02_used = {int(tid) for tid, tname, sysb in used if tid is not None and str(sysb).endswith("IN02")}
+        res.assert_rule(
+            RULE_PHA_INFUSION_QUALITY,
+            in02_used,
+            "subset",
+            quit_ids,
+            {"退药明细归类ID": sorted(in02_used), "退药单分类ID": sorted(quit_ids)},
+            desc="退药业务明细必须归入退药单分类",
+        )
 
         # ④ 同业务类型内优先级唯一
         bygroup = {}
         for tid, v in ora.items():
             bygroup.setdefault(v["sysBusinessType"], []).append((v["priorityOrder"], tid))
+        dup_priorities = 0
         for grp, items in bygroup.items():
             if not grp:
                 continue
             orders = [o for o, _ in items if o]
             if len(orders) != len(set(orders)):
-                bad.append(f"④业务类型 {grp} 内 priorityOrder 有重复：{sorted(orders)}")
+                dup_priorities += 1
 
+        res.assert_rule(
+            RULE_PHA_DISPENSE_PRIORITY,
+            dup_priorities,
+            "==",
+            0,
+            {"优先级重复分组数": dup_priorities},
+            desc="同一业务类型内优先级序号唯一不重复",
+        )
+
+        bad = [a["等式"] for a in res.assertions if not a.get("ok")]
         ev = {"分类数": len(ora), "接口返回分类数": len(api_rows),
               "分类": [{"id": t, "名称": ora[t]["dispenseTypeName"],
                         "业务类型": ora[t]["sysBusinessType"],
                         "优先级": ora[t]["priorityOrder"]} for t in sorted(ora)],
-              "明细用到的归类": sorted({int(t) for t, _, _ in used if t is not None})}
+              "明细用到的归类": sorted(used_ids)}
         ev["问题"] = bad
         if bad:
             res.status = "失败"
@@ -3045,33 +3153,50 @@ def flow_L6_005(ctx: Ctx) -> LoopResult:
               "挂号ID(全量)": sorted(api_all),
               "口径": "接口返回全量+validFlag字段、且忽略 validFlag 入参；断言两边同范围"}
 
-        bad = []
-        # ① 全量范围：registerId 集合双向一致，且逐行 validFlag 一致
-        only_api, only_ora = sorted(set(api_all) - set(db_all)), sorted(set(db_all) - set(api_all))
-        if only_api:
-            bad.append(f"①接口多出库中没有的挂号 {only_api[:5]}")
-        if only_ora:
-            bad.append(f"①库中有而接口漏掉的挂号 {only_ora[:5]}")
-        if not only_api and not only_ora:
-            for k in sorted(api_all):
-                if api_all[k] != db_all[k]:
-                    bad.append(f"①挂号 {k} 的 validFlag 不符：接口 {api_all[k]} vs 库 {db_all[k]}")
-                    break
-        # ② 有效子集范围：双向一致
         def _n(v):
             return "" if v is None else str(v).strip()
-        v_api, v_ora = sorted(set(api_valid) - set(db_valid)), sorted(set(db_valid) - set(api_valid))
-        if v_api:
-            bad.append(f"②接口的有效挂号多出库中没有的 {v_api[:5]}")
-        if v_ora:
-            bad.append(f"②库中有效挂号而接口没标有效的 {v_ora[:5]}")
-        # ③ 有效子集逐条字段
-        if not v_api and not v_ora:
-            for k in sorted(api_valid):
-                if tuple(_n(v) for v in api_valid[k]) != tuple(_n(v) for v in db_valid[k]):
-                    bad.append(f"③挂号 {k} 字段不符：接口 {api_valid[k]} vs 库 {db_valid[k]}")
-                    break
 
+        # ① 全量范围：registerId 集合双向一致，且逐行 validFlag 一致
+        res.assert_rule(
+            CONV_API_FULLSET_WITH_FLAG,
+            set(api_all.keys()),
+            "set_eq",
+            set(db_all.keys()),
+            {"接口全量挂号ID": sorted(api_all.keys()), "库中全量挂号ID": sorted(db_all.keys())},
+            desc="全量挂号ID集合双向一致",
+        )
+        res.assert_rule(
+            RULE_OP_01,
+            api_all,
+            "==",
+            db_all,
+            {"接口全量validFlag映射": api_all, "库中全量validFlag映射": db_all},
+            desc="逐行有效标志位validFlag一致",
+        )
+
+        # ② 有效子集范围：双向一致
+        res.assert_rule(
+            RULE_OP_02,
+            set(api_valid.keys()),
+            "set_eq",
+            set(db_valid.keys()),
+            {"接口有效挂号ID": sorted(api_valid.keys()), "库中有效挂号ID": sorted(db_valid.keys())},
+            desc="有效挂号子集双向一致",
+        )
+
+        # ③ 有效子集逐条字段
+        api_fields = {k: tuple(_n(v) for v in api_valid[k]) for k in sorted(api_valid)}
+        db_fields = {k: tuple(_n(v) for v in db_valid[k]) for k in sorted(db_valid)}
+        res.assert_rule(
+            RULE_OP_03,
+            api_fields,
+            "==",
+            db_fields,
+            {"接口有效字段明细": api_fields, "库中有效字段明细": db_fields},
+            desc="有效挂号业务明细字段一致",
+        )
+
+        bad = [a["等式"] for a in res.assertions if not a.get("ok")]
         ev["问题"] = bad
         if bad:
             res.status = "失败"
@@ -3887,13 +4012,13 @@ _FLOWS: Dict[str, Callable[[Ctx], LoopResult]] = {
 
 flow_L2_105.requires_rules = ['CONV_OP_ORDER_NEXT_COMB', 'RULE_IP_01', 'RULE_IP_02', 'RULE_IP_03', 'RULE_IP_05', 'RULE_OP_04']
 flow_L2_107.requires_rules = ['CONV_OP_ORDER_NEXT_COMB', 'CONV_SAMPLE_IMMUTABLE_SORT', 'RULE_IP_01', 'RULE_IP_02']
-flow_L6_001.requires_rules = ['CONV_ADMIN_TOKEN_ONCE', 'CONV_ID_CARD_COLLISION_SEED', 'RULE_OP_01']
+flow_L6_001.requires_rules = ['CONV_ADMIN_TOKEN_ONCE', 'CONV_ID_CARD_COLLISION_SEED', 'CONV_RUNID_ISOLATION_AND_PROBE', 'RULE_OP_01']
 flow_L6_002.requires_rules = []
 flow_L6_004.requires_rules = ['CONV_PATIENT_INVALIDATE_SEMANTICS']
 flow_L6_005.requires_rules = ['CONV_API_FULLSET_WITH_FLAG', 'CONV_SAMPLE_AVOID_EMPTY_SET', 'RULE_OP_01', 'RULE_OP_02', 'RULE_OP_03', 'RULE_OP_07']
 flow_L6_008.requires_rules = ['CONV_MUTATION_NON_NUMERIC', 'RULE_OP_02', 'RULE_OP_07']
-flow_L6_009.requires_rules = ['CONV_ID_CARD_COLLISION_SEED', 'CONV_REG_GRADE_DICT_DRIFT']
-flow_L6_012.requires_rules = ['CONV_REG_GRADE_DICT_DRIFT', 'CONV_REG_NOON_SERIAL']
+flow_L6_009.requires_rules = ['CONV_ID_CARD_COLLISION_SEED', 'CONV_REG_GRADE_DICT_DRIFT', 'CONV_RUNID_ISOLATION_AND_PROBE']
+flow_L6_012.requires_rules = ['CONV_REG_GRADE_DICT_DRIFT', 'CONV_REG_NOON_SERIAL', 'CONV_RUNID_ISOLATION_AND_PROBE']
 flow_L6_014.requires_rules = []
 flow_L6_015.requires_rules = ['CONV_API_FULLSET_WITH_FLAG', 'CONV_REFUNDABLE_REG_ROWS']
 flow_L6_018.requires_rules = ['RULE_IP_01', 'RULE_IP_05', 'RULE_IP_06']
@@ -3937,21 +4062,27 @@ def run(selected: List[str], gateway: str, admin_token: str,
         # 每条用例前刷新令牌：某些流程（如换护士身份）会新建登录会话，
         # 在"同一账号只允许一个会话"的环境里会把上一个令牌作废，
         # 不刷新就会把后续用例打成 401 —— 那是工具自身造成的假失败。
-        try:
-            lr = ctx.s.post(f"{gateway.rstrip('/')}/login",
-                            json={"username": "admin", "password": "admin123"},
-                            timeout=15)
-            fresh = (lr.json() or {}).get("data")
-            if fresh:
-                ctx.token = fresh
-        except Exception:
-            pass
+        if not ctx.token.startswith("SANDBOX_") and os.environ.get("FS_RUNNER_ENV") != "sandbox":
+            try:
+                lr = ctx.s.post(f"{gateway.rstrip('/')}/login",
+                                json={"username": "admin", "password": "admin123"},
+                                timeout=15)
+                fresh = (lr.json() or {}).get("data")
+                if fresh:
+                    ctx.token = fresh
+            except Exception:
+                pass
 
         fn = _FLOWS.get(cid)
         if not fn:
             r = LoopResult(case_id=cid, title="", status="未执行",
                            note="尚未实现该用例的真实闭环校验")
         else:
+            try:
+                from ...core.audit import audit_tracer
+                audit_tracer.set_current_case(cid)
+            except Exception:
+                pass
             r = fn(ctx)
         out.append(r)
         if progress:

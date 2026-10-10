@@ -1,0 +1,149 @@
+{
+  "meta": {
+    "timestamp": "2026-10-10 17:22:18",
+    "env": "sandbox",
+    "gateway": "http://192.168.1.198:8081",
+    "limit": 10,
+    "engine": "FS.ContractVerifier (Schemathesis Equivalent)"
+  },
+  "summary": {
+    "total_endpoints": 10,
+    "passed": 0,
+    "failed": 0,
+    "unverified": 10
+  },
+  "results": [
+    {
+      "path": "/faith/finance/inpatient/apply/refund/list",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 1 参数，1 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 1,
+        "required_params": [
+          "registerId"
+        ],
+        "contract_valid": true
+      }
+    },
+    {
+      "path": "/faith/finance/schedule/dept/list",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 0 参数，0 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 0,
+        "required_params": [],
+        "contract_valid": true
+      }
+    },
+    {
+      "path": "/faith/finance/outpatient/apply/order/needCharge/list",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 1 参数，1 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 1,
+        "required_params": [
+          "registerId"
+        ],
+        "contract_valid": true
+      }
+    },
+    {
+      "path": "/faith/finance/outpatient/receipt/queryByBalanceId",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 2 参数，2 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 2,
+        "required_params": [
+          "balanceId",
+          "registerId"
+        ],
+        "contract_valid": true
+      }
+    },
+    {
+      "path": "/faith/finance/outpatient/receipt/payment/list",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 1 参数，1 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 1,
+        "required_params": [
+          "receiptId"
+        ],
+        "contract_valid": true
+      }
+    },
+    {
+      "path": "/faith/finance/outpatient/apply/settled/list",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 2 参数，2 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 2,
+        "required_params": [
+          "balanceId",
+          "registerId"
+        ],
+        "contract_valid": true
+      }
+    },
+    {
+      "path": "/faith/pharmacy/inDispense/queryTerminalList",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 1 参数，0 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 1,
+        "required_params": [],
+        "contract_valid": true
+      }
+    },
+    {
+      "path": "/faith/pharmacy/base/dispenseType/list",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 0 参数，0 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 0,
+        "required_params": [],
+        "contract_valid": true
+      }
+    },
+    {
+      "path": "/faith/medical/outpatient/order/nextSeeNo",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 0 参数，0 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 0,
+        "required_params": [],
+        "contract_valid": true
+      }
+    },
+    {
+      "path": "/faith/medical/outpatient/order/nextCombId",
+      "method": "GET",
+      "status": "未执行",
+      "note": "沙盒模式：仅校验接口契约参数形状（含 0 参数，0 必填），未验证业务",
+      "evidence": {
+        "env": "sandbox",
+        "parameters_count": 0,
+        "required_params": [],
+        "contract_valid": true
+      }
+    }
+  ]
+}

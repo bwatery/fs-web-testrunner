@@ -1,0 +1,16 @@
+{
+  "batch_id": "20261010_170648",
+  "summary": {
+    "患者": 0,
+    "挂号": 0,
+    "收费": 0,
+    "作废": 0,
+    "总新增": 0
+  },
+  "summary_text": "本次造数：患者 0 条 · 挂号 0 条 · 收费 0 条 · 作废 0 条",
+  "created_patient_ids": [],
+  "created_register_ids": [],
+  "created_balance_ids": [],
+  "records_count": 0,
+  "records": []
+}

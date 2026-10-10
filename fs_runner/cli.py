@@ -60,6 +60,10 @@ def run_closed_loop(
     env: str = "real",
 ) -> int:
     """执行 P0 关键业务闭环真校验。"""
+    from .core.audit import audit_tracer
+    if env == "real":
+        audit_tracer.capture_db_baseline()
+
     env_obj = RealEnv() if env == "real" else SandboxEnv()
     gw = (gateway or GATEWAY_URL).rstrip("/")
     all_supported = get_supported_cases()
@@ -75,21 +79,26 @@ def run_closed_loop(
     print(f"  本次校验 {len(selected)} 条：{', '.join(selected)}")
     print(f"  已实现闭环的用例：{', '.join(all_supported)}\n")
 
-    # 登录获取 JWT
-    try:
-        import requests
-        r_login = requests.post(f"{gw}/login", json={"username": "admin", "password": "admin123"}, timeout=15)
-        token = (r_login.json() or {}).get("data")
-        if not token:
-            print("  [致命] 登录网关未获取到有效令牌")
+    # 登录获取 JWT（沙盒模式离线纯参数校验，绝不触碰真实网络）
+    if env == "sandbox":
+        token = "SANDBOX_MOCK_JWT_TOKEN_OFFLINE"
+        os.environ["FS_RUNNER_ENV"] = "sandbox"
+        print("  鉴权      : 隔离沙盒模式（纯离线参数校验，已阻断外网与真实网关登录）")
+    else:
+        try:
+            import requests
+            r_login = requests.post(f"{gw}/login", json={"username": "admin", "password": "admin123"}, timeout=15)
+            token = (r_login.json() or {}).get("data")
+            if not token:
+                print("  [致命] 登录网关未获取到有效令牌")
+                return 2
+        except Exception as e:
+            print(f"  [致命] 无法登录网关：{e}")
             return 2
-    except Exception as e:
-        print(f"  [致命] 无法登录网关：{e}")
-        return 2
 
     def _progress(i, n, r):
         status, note = env_obj.filter_result_status(r.status, r.note)
-        mark = {"通过": "✅", "失败": "❌", "未执行": "⚪"}.get(status, "?")
+        mark = {"通过": "✅", "失败": "❌", "阻塞": "🚫", "跳过": "⏭️", "未执行": "⚪"}.get(status, "?")
         print(f"  {mark} [{i}/{n}] {r.case_id} {r.title}  —— {status}")
         if note:
             print(f"        {note[:230]}")
@@ -103,14 +112,14 @@ def run_closed_loop(
     for r in raw_results:
         status, note = env_obj.filter_result_status(r.status, r.note)
         evidence = env_obj.wrap_evidence(r.evidence)
-        results.append(LoopResult(
-            case_id=r.case_id,
-            title=r.title,
-            status=status,
-            note=note,
-            evidence=evidence,
-            duration_ms=r.duration_ms,
-        ))
+        r.status = status
+        r.note = note
+        r.evidence = evidence
+        results.append(r)
+
+    created_text = audit_tracer.summary_text()
+    created_summary = audit_tracer.get_summary()
+    audit_file = audit_tracer.save_audit_file()
 
     out_dir = Path(VERIFY_DIR)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -118,22 +127,22 @@ def run_closed_loop(
     summary = {
         "通过": sum(1 for r in results if r.status == "通过"),
         "失败": sum(1 for r in results if r.status == "失败"),
+        "阻塞": sum(1 for r in results if r.status == "阻塞"),
+        "跳过": sum(1 for r in results if r.status == "跳过"),
         "未执行": sum(1 for r in results if r.status == "未执行"),
+        "总计": len(results),
+        "created_data": created_summary,
+        "created_text": created_text,
     }
     payload = {
-        "meta": {"started": time.strftime("%Y-%m-%d %H:%M:%S"), "gateway": gw, "env": env},
+        "meta": {
+            "started": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "gateway": gw,
+            "env": env,
+            "created_text": created_text,
+        },
         "summary": summary,
-        "results": [
-            {
-                "case_id": r.case_id,
-                "title": r.title,
-                "status": r.status,
-                "note": r.note,
-                "evidence": r.evidence,
-                "duration_ms": r.duration_ms,
-            }
-            for r in results
-        ],
+        "results": [r.to_dict() for r in results],
     }
     with open(out_dir / f"closed_loop_{ts}.json", "w", encoding="utf-8") as f:
         json.dump(payload, f, ensure_ascii=False, indent=1)
@@ -149,8 +158,17 @@ def run_closed_loop(
               f"**不覆盖 closed_loop_latest.json**（避免把没跑的用例当成没结果）")
 
     print("\n  ── 闭环校验结果 ──")
-    print(f"  ✅ 通过 {summary['通过']}   ❌ 失败 {summary['失败']}   ⚪ 未执行 {summary['未执行']}")
+    print(f"  ✅ 通过 {summary['通过']}   ❌ 失败 {summary['失败']}   🚫 阻塞 {summary['阻塞']}   ⏭️ 跳过 {summary['跳过']}   ⚪ 未执行 {summary['未执行']}  (总计 {summary['总计']})")
     print(f"  详细报告 : {out_dir / f'closed_loop_{ts}.json'}")
+    print(f"\n  [造数审计] {created_text}（记录落盘: {audit_file.name}）")
+
+    if env == "real":
+        ok_res, msg_res = audit_tracer.verify_db_no_residual()
+        if not ok_res:
+            print(f"  🚨 [造数护栏警告] {msg_res}")
+        else:
+            print(f"  🛡️ [造数护栏] {msg_res}")
+
     return 1 if summary["失败"] > 0 else 0
 
 
@@ -175,6 +193,9 @@ def _failed_ids(stdout: str) -> set:
 
 def run_regression() -> int:
     """执行三轮闭环回归验证，大声报告已知缺陷，阻断新失败。"""
+    from .core.audit import audit_tracer
+    audit_tracer.capture_db_baseline()
+
     known = _load_known_defects()
     out_dir = Path(VERIFY_DIR) / "协作产出"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -218,6 +239,13 @@ def run_regression() -> int:
             print(f"          {v.get('reason', '')}")
             print(f"          （{v.get('since', '')}）")
 
+    ok_res, msg_res = audit_tracer.verify_db_no_residual()
+    if not ok_res:
+        print(f"\n  🚨 [造数护栏拦截] 回归后库中存在未清理的测试数据净增残留: {msg_res}")
+        return 1
+    else:
+        print(f"  🛡️ [造数护栏] 回归前后比对通过: {msg_res}")
+
     if ok == 3:
         tail = f"（另有 {len(seen_known)} 条已知缺陷，见上）" if seen_known else ""
         print(f"  三轮全绿 ✓ —— 直接回报'三轮全绿'即可{tail}")
@@ -253,13 +281,14 @@ def run_api_smoke(args) -> int:
     print(f"  数据库    : {oracle_note}")
 
     token = ""
-    try:
-        token = api_surface.login(gw)
-        print("  鉴权      : 登录成功，已获取 JWT")
-    except Exception as e:
-        if env_name == "sandbox":
-            print(f"  鉴权      : 网关未连接 ({e})，沙盒降级为本地规格静态参数形状校验")
-        else:
+    if env_name == "sandbox":
+        os.environ["FS_RUNNER_ENV"] = "sandbox"
+        print("  鉴权      : 隔离沙盒模式跳过真实网关登录，纯离线执行本地规格静态参数形状校验")
+    else:
+        try:
+            token = api_surface.login(gw)
+            print("  鉴权      : 登录成功，已获取 JWT")
+        except Exception as e:
             print(f"\n[致命] 无法登录网关：{e}")
             return 2
 
@@ -521,11 +550,28 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_rules.add_argument("--source", choices=["db", "snapshot"], default=None, help="指定死配置扫描数据源：db（当前库）或 snapshot（快照）")
     p_rules.add_argument("--snapshot", default=None, help="指定历史快照 JSON 路径执行死配置扫描")
     p_rules.add_argument("--lint", action="store_true", help="执行死配置扫描与采样规范抽查")
+    p_rules.add_argument("--gen-ids", action="store_true", help="根据 YAML 规则库重新生成 fs_runner/rules/ids.py 常量文件")
+
+    # cleanup-testdata 子命令（第 0 条：测试数据安全回滚与清理）
+    p_clean = subparsers.add_parser("cleanup-testdata", help="测试数据安全回滚与清理（默认 dry-run 预览）")
+    p_clean.add_argument("--yes", action="store_true", help="显式确认执行真删（默认只读 dry-run 预览）")
+    p_clean.add_argument("--patients", help="指定待清理的 patient_id 清单，逗号分隔")
+    p_clean.add_argument("--run-id", dest="run_id", help="指定待精确回滚的批次 run_id")
+    p_clean.add_argument("--all-test-patients", action="store_true", help="清理所有测试患者数据")
+
+    # api-contract 子命令（调研落地：接口契约校验）
+    p_contract = subparsers.add_parser("api-contract", help="接口契约校验与边界自检（Schemathesis 等价自研实现）")
+    p_contract.add_argument("--limit", type=int, default=10, help="限制测试只读接口数量（默认 10 条）")
+    p_contract.add_argument("--endpoint", "--path", dest="endpoint", help="指定待测接口路径（支持子串匹配）")
+    p_contract.add_argument("--env", choices=["real", "sandbox"], default="real", help="运行环境：real（默认）或 sandbox（离线沙盒）")
+    p_contract.add_argument("--gateway", default=None, help="网关服务地址")
+
     # ui-verify 子命令（第 8 步：界面认证与无头模式）
     p_ui = subparsers.add_parser("ui-verify", help="界面认证与真实验证（支持 --headless 与 --windowed）")
     p_ui.add_argument("--case", "--cases", dest="case", help="指定待测用例编号，如 L6-005,L9-012,L6-050")
     p_ui.add_argument("--headless", action="store_true", default=False, help="以无头模式运行（默认模式，给 AI 快速测试）")
     p_ui.add_argument("--windowed", action="store_true", default=False, help="以窗口模式运行（接管 9222 端口，给人看）")
+    p_ui.add_argument("--mutation", action="store_true", default=False, help="内存扰动库值执行变异自检（断言必须变红）")
     p_ui.add_argument("--screenshot", action="store_true", default=False, help="抓取界面执行截图并落盘留证")
     p_ui.add_argument("--env", choices=["real", "sandbox"], default="real", help="运行环境：real（默认）或 sandbox（沙盒永不判通过）")
     p_ui.add_argument("--gateway", default=None, help="网关服务地址")
@@ -538,6 +584,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 0
 
     parsed = parser.parse_args(args_list)
+
+    if parsed.command == "api-contract":
+        from .contract.runner import run_api_contract
+        return run_api_contract(parsed)
+
+    if parsed.command == "cleanup-testdata":
+        from .core.audit import run_cleanup_testdata
+        pids = [int(x.strip()) for x in parsed.patients.split(",") if x.strip().isdigit()] if getattr(parsed, "patients", None) else None
+        return run_cleanup_testdata(run_id=getattr(parsed, "run_id", None), yes=parsed.yes, all_test_patients=getattr(parsed, "all_test_patients", False), patient_id_list=pids)
 
     if parsed.command == "ui-verify":
         from .browser.runner import run_ui_verify

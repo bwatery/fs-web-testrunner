@@ -72,6 +72,7 @@ class BrowserSession:
         self.ws: Optional[websocket.WebSocket] = None
         self._id = 0
         self.events: List[Dict[str, Any]] = []
+        self.history_events: List[Dict[str, Any]] = []
         self._connected = False
 
     def start(self) -> "BrowserSession":
@@ -181,6 +182,10 @@ class BrowserSession:
             self.cmd("Page.enable")
             self.cmd("Network.enable")
             self.cmd("DOM.enable")
+            try:
+                self.cmd("Log.enable")
+            except Exception:
+                pass
 
         except Exception as e:
             self.close()
@@ -226,6 +231,7 @@ class BrowserSession:
             # 异步事件入缓冲池
             if "method" in msg:
                 self.events.append(msg)
+                self.history_events.append(msg)
 
         raise TimeoutError(f"CDP 命令 [{method}] 在 {wait_limit} 秒内超时未响应")
 
@@ -243,6 +249,7 @@ class BrowserSession:
                         msg = json.loads(raw)
                         if "method" in msg:
                             self.events.append(msg)
+                            self.history_events.append(msg)
                 except Exception:
                     continue
         finally:

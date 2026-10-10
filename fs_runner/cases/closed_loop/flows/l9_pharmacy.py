@@ -36,6 +36,7 @@ import time
 from typing import Any, Dict, List
 
 from ..closed_loop import Ctx, LoopResult, _oracle_conn, _rows_of
+from ....rules.ids import *
 
 # 摆药单状态码 → 接口枚举名（服务端拼写：已发药是 OUTPUTTED，三个 T）
 _STATE_NAME = {"1": "SENT", "2": "PRINTED", "3": "DISPENSED", "4": "OUTPUTTED"}
@@ -237,8 +238,14 @@ def flow_L9_012(ctx: Ctx) -> LoopResult:
                             "超发样例": over[:3],
                             "部分发放或已全退(正常业务，不判缺陷)": len(partial),
                             "部分发放样例": partial[:3]}
-        if over:
-            bad.append(f"④有 {len(over)} 条医嘱的摆药净量超过医嘱量，例：{over[0]}")
+        res.assert_rule(
+            RULE_PHA_DISPENSE_NOT_OVER_SUPPLY,
+            len(over),
+            "==",
+            0,
+            {"比对医嘱数": len(conv_rows), "超发条数": len(over), "超发样例": over[:3]},
+            desc="按医嘱汇总净发放量不得超过医嘱量",
+        )
 
         # ---- ⑤ 长期医嘱确实参与摆药 ---------------------------------------
         ev["⑤摆药明细的源医嘱类型分布"] = {
@@ -248,8 +255,14 @@ def flow_L9_012(ctx: Ctx) -> LoopResult:
         ev["防空跑观测"] = {"摆药单数": len(bills),
                        "有效发药明细条数": sum(len(v) for v in db.values()),
                        "长期医嘱派生条数": n_long}
-        if n_long == 0:
-            bad.append("⑤没有任何摆药明细来自长期医嘱(CZ/ZC)，无法印证「长期医嘱自动摆药」")
+        res.assert_rule(
+            CONV_DISPENSE_ORDER_SPLIT,
+            n_long,
+            ">",
+            0,
+            {"长期医嘱派生条数": n_long, "摆药单数": len(bills)},
+            desc="长期医嘱确实参与摆药派生明细",
+        )
 
         # ---- ⑥ 退药行成对 --------------------------------------------------
         by_order: Dict[Any, List[float]] = {}
@@ -263,9 +276,16 @@ def flow_L9_012(ctx: Ctx) -> LoopResult:
                     unpaired.append({"orderId": oid, "负数量": q, "同医嘱全部数量": qtys})
         ev["⑥退药成对"] = {"含退药行的医嘱数": sum(1 for v in by_order.values() if any(q < 0 for q in v)),
                             "找不到正数量镜像的条数": len(unpaired), "样例": unpaired[:3]}
-        if unpaired:
-            bad.append(f"⑥有 {len(unpaired)} 条退药行在同医嘱下找不到等量正数量镜像，例：{unpaired[0]}")
+        res.assert_rule(
+            RULE_IP_04,
+            len(unpaired),
+            "==",
+            0,
+            {"未配对退药行数": len(unpaired), "样例": unpaired[:3]},
+            desc="退药行同医嘱下必有等量正数量镜像",
+        )
 
+        bad = [a["等式"] for a in res.assertions if not a.get("ok")]
         ev["问题"] = bad
         if bad:
             res.status = "失败"
@@ -367,6 +387,14 @@ def flow_L9_013(ctx: Ctx) -> LoopResult:
             return res
 
         # 核心门禁：没有任何一条发药成立
+        res.assert_rule(
+            CONV_DISPENSED_STATE_IS_APPLY_STATE_4,
+            n_has_done,
+            ">=",
+            1,
+            {"已发药条数": n_has_done, "APPLY_STATE分布": state_dist, "CD医嘱数": n_cd_orders},
+            desc="出院带药医嘱必须存在真实已发药记录(apply_state=4或出库记录)",
+        )
         if n_has_done == 0:
             res.status = "阻塞"
             dist_desc = "/".join(f"{k}:{v}" for k, v in sorted(state_dist.items())) or "无"
@@ -393,6 +421,14 @@ def flow_L9_013(ctx: Ctx) -> LoopResult:
                 over.append({"orderId": r[0], "医嘱": f"{r[3]}{r[4]}",
                              "已发药净量": f"{net}{aunit}"})
         ev["超发"] = over
+        res.assert_rule(
+            RULE_PHA_DISPENSE_NOT_OVER_SUPPLY,
+            len(over),
+            "==",
+            0,
+            {"超发记录": over},
+            desc="出院带药发药量不得超过医嘱量",
+        )
         if over:
             res.status = "失败"
             res.note = f"出院带药发药量超过医嘱量：{over[:3]}"

@@ -49,6 +49,15 @@ def run_rules_command(args: Any) -> int:
             print(f"  - {err}")
         return 1
 
+    # 生成规则 ID 常量文件
+    if getattr(args, "gen_ids", False):
+        from .scanner import generate_ids_file
+        from ..config import ROOT_DIR
+        out_p = generate_ids_file()
+        rel_p = str(out_p.relative_to(ROOT_DIR)).replace("\\", "/")
+        print(f"✅ 规则 ID 常量文件生成成功: {rel_p}（共包含 {len(registry.rules)} 个规则常量）")
+        return 0
+
     # 反查指定用例：用例 -> 规则
     if getattr(args, "case", None):
         cid = str(args.case).strip()
@@ -68,12 +77,12 @@ def run_rules_command(args: Any) -> int:
                 print(f"     受影响用例: {', '.join(r.affected_cases)}")
         return 0
 
-    # 反查指定规则：规则 -> 用例
+    # 反查指定规则：规则 -> 用例 + 规则 -> 具体断言 (反向点名)
     if getattr(args, "rule", None):
         rid = str(args.rule).strip()
         rule = registry.get_rule(rid)
         print("─" * 66)
-        print(f"  【规则 ➔ 用例反查】规则 ID: {rid}")
+        print(f"  【规则 ➔ 用例与代码断言反查】规则 ID: {rid}")
         print("─" * 66)
         if not rule:
             print(f"  未找到规则 ID: {rid}")
@@ -87,6 +96,15 @@ def run_rules_command(args: Any) -> int:
         print(f"\n  受影响用例清单 ({len(rule.affected_cases)} 条)：")
         for cid in sorted(rule.affected_cases):
             print(f"    - {cid}")
+
+        from .scanner import find_assertions_for_rule
+        bound_asserts = find_assertions_for_rule(rid)
+        print(f"\n  代码层绑定的具体断言 ({len(bound_asserts)} 处)：")
+        if not bound_asserts:
+            print("    （暂无 Flow 代码通过 assert_rule 显式引用该规则）")
+        else:
+            for ba in bound_asserts:
+                print(f"    • [{ba['case_id']}] {ba['desc']} ({ba['location']})")
         return 0
 
     # 死配置扫描与采样抽查
@@ -132,20 +150,36 @@ def run_rules_command(args: Any) -> int:
             print(f"  {r.id:<30} {r.domain:<8} {st:<11} {len(r.affected_cases):<6} {r.statement[:35]}")
         return 0
 
-    # 默认执行 Schema 校验
+    # 默认执行 Schema 校验与断言绑定硬自检
+    from .scanner import check_assertions_and_rules
+    assert_report = check_assertions_and_rules()
+
+    if assert_report["invalid_citations"]:
+        print(f"\n❌ [硬约束拦截] 发现 {len(assert_report['invalid_citations'])} 处断言引用了未在 YAML 规则库中登记的规则 ID：")
+        for ic in assert_report["invalid_citations"]:
+            print(f"   • [{ic['case_id']}] 规则 ID '{ic['rule_id']}' 不存在！位置: {ic['location']} (描述: {ic['desc']})")
+        print("   硬约束：不许声明未登记的规则，请在 business_rules.yaml 或 conventions.yaml 中补充声明。")
+        return 1
+
     summary = registry.cross_reference_summary()
     print("─" * 66)
-    print("  FS.TestRunner 业务规则库与测试口径 Schema 校验")
+    print("  FS.TestRunner 业务规则库与代码断言绑定硬校验 (--check)")
     print("─" * 66)
     print(f"  ✅ Schema 校验全部通过！")
-    print(f"  - 规则总数     : {summary['total_rules']} 条")
-    print(f"  - 已证实规则   : {summary['confirmed_rules']} 条 (confirmed)")
-    print(f"  - 存疑/推测规则: {summary['suspected_rules']} 条 (suspected)")
-    print(f"  - 关联用例数   : {summary['total_associated_cases']} 条")
-    print(f"  - Flow 文档串自检: 0 条缺失 ({total_flows}/{total_flows} 均具备有效 docstring)")
+    print(f"  - 规则总数           : {assert_report['total_rules']} 条")
+    print(f"  - 已证实规则         : {summary['confirmed_rules']} 条 (confirmed)")
+    print(f"  - 存疑/推测规则       : {summary['suspected_rules']} 条 (suspected)")
+    print(f"  - 已被断言引用规则数 : {assert_report['cited_rules_count']} 条")
+    print(f"  - 尚未被断言引用规则数: {assert_report['uncited_rules_count']} 条（写了没人用/尚未接入断言的规则清单）")
+    if assert_report["uncited_rules"]:
+        print(f"    未引用规则样例     : {', '.join(assert_report['uncited_rules'][:8])} ...")
+    print(f"  - 裸断言用例数       : {len(assert_report['unmapped_cases'])} 条用例（未归规则断言，阶段2已转换5条核心用例）")
+    print(f"    裸断言用例清单     : {', '.join(sorted(assert_report['unmapped_cases'].keys())[:15])} ...")
+    print(f"  - Flow 文档串自检    : 0 条缺失 ({total_flows}/{total_flows} 均具备有效 docstring)")
     print("\n  用法提示：")
     print("    python -I fsrun.py rules --case L9-011       # 反查用例依赖的规则")
-    print("    python -I fsrun.py rules --rule RULE_PHA_DISPENSE_PRIORITY  # 反查规则约束的用例")
+    print("    python -I fsrun.py rules --rule RULE_PHA_DISPENSE_PRIORITY  # 反查规则约束的用例与具体断言")
+    print("    python -I fsrun.py rules --gen-ids          # 重新生成 ids.py 规则常量")
     print("    python -I fsrun.py rules --dead-config      # 运行死配置扫描")
     print("    python -I fsrun.py rules --list             # 列出全部规则")
     return 0

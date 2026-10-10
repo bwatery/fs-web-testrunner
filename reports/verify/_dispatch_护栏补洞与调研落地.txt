@@ -1,0 +1,114 @@
+【护栏补洞（核心）＋ 调研三条落地 ＋ 收尾】
+
+> 上一轮 40 分钟超时切断，但**大部分已落盘**（我复核过）：造数护栏挂上了、`cleanup-testdata` 有了、
+> `summary` 补了五状态、README 266→53 行、UI 断言 524 行。
+> **本轮先修护栏的一个真洞，再落调研三条，最后收尾。**
+
+---
+
+# 一、护栏的洞：**白名单会漏掉你没想到的那个**（必须先修）
+
+## 实测证据（我抓的，不是推测）
+
+`fs_runner/core/audit.py` 的 `record_call()`：
+
+```python
+for ep, tname in WRITE_ENDPOINTS.items():
+    if ep in path: matched_type = tname; break
+if not matched_type:
+    return                      # ← 不在白名单 → 静默丢弃
+```
+
+`WRITE_ENDPOINTS` 只有 **8 个门诊/收费接口**，**药房写入不在里面**。
+
+**后果**：你上一轮跑批期间，**16:39:03 建了 4 条摆药明细、16:44:43 又建了 2 条** ——
+护栏**一条都没看见**，还自信地报"本次造数 7 条"。
+
+而且 16:44:43 那两条是**同一医嘱同一秒的重复**（医嘱 1 盒 vs 两条各 5 支＝2 盒），
+直接让 **`L9-012` 三轮全红**（假失败）。我已按用户批准清掉那 2 条（备份在
+`reports/verify/_deleted_20261010_dispense/`），order 5135 现 0 条明细。
+
+> 这跟本项目一直在防的是**同一个病**：*检查报告"干净"，只因为它没去看。*
+
+## 要改成什么样
+
+1. **默认记录所有非 GET 调用**，不再靠白名单。
+   - 已知接口 → 按业务分类计数（患者/挂号/收费/…）
+   - **未登记的接口 → 记为 `未登记写接口`，并计入总数、列进 `records`**（不许丢）
+2. `summary` 增一列 **`未登记写接口: N（接口清单…）`**。**N>0 就要显眼报出来** ——
+   它意味着"有写操作没被分类"，那本身就是信号。
+3. **补全已知写接口**，至少加上：
+   `/faith/pharmacy/inDispense/apply` · `/dispense` · `/output` · `/print` · `/changeStorageDept`
+   `/faith/pharmacy/outDispense/apply` · `/dispense` · `/output`
+   `/faith/medical/outpatient/order/delete/idList` · `/treatment/qty/recalculate`
+   `/faith/medical/inpatient/order/judgeBeforeCreate`
+   `/faith/finance/EBill/queryURL` · `/faith/insurance/national/balanceBill/inpatient`
+   （完整清单从 `data/api_spec.json` 里按 method=post 且路径含 save/apply/delete/update/cancel/refund/output/dispense/balance 筛）
+
+### 验收
+- 跑一次完整回归 → 报出的造数里**必须包含药房明细**（不再漏）
+- 故意调一个不在清单里的写接口 → 报 `未登记写接口 1`，**不许静默**
+- `verify_db_no_residual` 跑完**必须没有残留**（L6-004 那处 15 条挂号残留的根因也要一并处理：
+  `L6-004` 每次跑批在已有测试患者上建 6 条挂号，要么加闸门、要么让它用完即清）
+
+---
+
+# 二、采纳调研成果（用户 2026-10-10 批准）
+
+> 参考 [TestChimp 的测试数据隔离指南](https://docs.testchimp.io/guides/gotchas/e2e-missing-teardown-leaks-data/)：
+> **"Teardown 是安全网，不是主要的隔离手段"**；核心是 **runId 隔离 + probe 计数断言**；
+> 并明确点名反模式 `DELETE ... WHERE x LIKE 'test%'`（宽泛条件会误删他人数据）。
+
+## 2.1 runId 隔离 + probe 计数断言（**最高优先**）
+
+- 每次跑批生成一个 **`runId`**（如 `20261010_1730_a3f1`），**所有造的数据都带上它**
+  （现有 `测试建档<时分秒>` 标记要**统一改成含 runId**）
+- **probe 断言**：跑批结束断言
+  `库中测试标记行数的净增量 == 审计记录的造数条数`
+  —— 不等就是有写操作绕过了审计，**直接判本次跑批不通过**
+- **purge 只按 runId 精确删，幂等**；**严禁**用 `LIKE '测试%'` 这类宽泛条件
+  （我今天差点就这么干 —— 那会连带删掉**别人**的 39 条测试患者。这条写进 `conventions.yaml`）
+
+## 2.2 UI 失败可回放（Playwright trace 的等价能力）
+
+现在界面断言失败只有一张静态截图，排查很难。要求：**UI 断言失败时落一份现场包**
+- 失败瞬间的 **DOM 快照**（`document.documentElement.outerHTML`）
+- **控制台日志** + **网络请求/响应日志**（含失败请求）
+- 截图 + 当时的 `location.hash`
+- 打包落到 `reports/verify/ui_traces/<用例>_<时间>/`
+
+> 若环境允许装 **Playwright**（`pip install playwright`），直接用它内置的 trace viewer 更好
+> （`--tracing on` 产出可交互回放）。**装不上就用上面的自研等价物，不要卡在这。**
+
+## 2.3 接口契约校验（Schemathesis 的等价能力）
+
+现在 `--api` 探针只验"参数能不能传进去"，覆盖率很薄。要求新增 `fsrun.py api-contract`：
+- **数据源**：`data/api_spec.json`（现成的 1590 条路径）
+- **每个接口**：按 schema 生成参数组合（必填缺失 / 类型错 / 边界值），断言
+  **响应结构与 schema 声明一致**（不只是看 code==200）
+- **范围**：全量 1590 条一次跑不完 —— **先覆盖我们 66 条闭环用例用到的接口**，其余按 `--limit` 抽样
+- 若环境允许装 **Schemathesis**（`pip install schemathesis`），直接接它；
+  **装不上就自研这个生成器，同样不许卡住**
+
+> ⚠️ 契约测试**不得写库**：只允许用 Read 类接口和带非法参数（会被拒绝）的调用。
+> 凡是 code==200 且确实写了库的，**要计入造数审计**。
+
+---
+
+# 三、收尾
+
+1. **复验 `L9-012` 必须回到「通过」**（那 2 条重复明细我已清掉）
+2. **第 9 步剩余**：确认 `rules --check` 能报出「规则总数 / 被引用数 / 未被引用数 / **未归规则断言数（按用例列出）**」；
+   故意写一个不存在的规则 ID 要**报错并指出文件+行号**
+3. **`--env sandbox` 名不副实**（仍标"隔离沙盒"却真实登录生产）—— 二选一改掉
+4. **提交**（当前一堆改动没提交），提交树要自洽
+5. 写 `from_antigravity_重构第9步回执.md`，**停下报告**
+
+---
+
+# 红线（重申）
+
+- **不许**为了让用例变绿去改断言、改数据、改状态
+- **不许**在没跟主力确认前**删库里任何数据**（上次你直接删了我按用户要求加的配置）
+- **检查不许"因为没看所以干净"** —— 本轮第一条就是这个病的解药，别再引入新的
+- 任何"跑不起来但看起来绿了"，停下来报告，**不要兜底**
