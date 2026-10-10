@@ -17,6 +17,7 @@ _FEE_TYPE_BED = "1"
 
 
 def flow_L6_043(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     "按规则计提且不重复"这件事能不能成立。
 
@@ -125,6 +126,7 @@ def flow_L6_043(ctx: Ctx) -> LoopResult:
 # L6-055 结算日结、发票管理与退费对账
 # ---------------------------------------------------------------------------
 def flow_L6_055(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     住院结算日结：**账要对得上**。口径由协作方 Antigravity 找到、我已独立复算确认。
 
@@ -245,7 +247,16 @@ def flow_L6_055(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L6_043.requires_rules = []
+flow_L6_055.requires_rules = []
+
 FLOWS = {
     "L6-043": flow_L6_043,
     "L6-055": flow_L6_055,
+}
+
+
+FLOW_RULES = {
+    "L6-043": flow_L6_043.requires_rules,
+    "L6-055": flow_L6_055.requires_rules,
 }

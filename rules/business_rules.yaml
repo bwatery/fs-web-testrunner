@@ -1,0 +1,224 @@
+# ==============================================================================
+# FS.TestRunner · 系统业务规则库 (Business Rules)
+# ==============================================================================
+# 记录系统核心业务规则（"怎么算才对"）。
+# 严格 Schema：id, domain, statement, evidence, discovered, status, affected_cases
+# status 严格区分 confirmed (已实测证实) 与 suspected (推测/存疑)
+# ==============================================================================
+
+- id: RULE_PHA_DISPENSE_PRIORITY
+  domain: 药房
+  statement: 分类按 priorityOrder 升序求值；无条件的兜底规则必须排在最后
+  evidence: IN02 退药明细落在「退药单」(优先级1)，而非无条件兜底的「通用摆药单」(优先级5)，证明按升序求值
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L9-011
+    - L9-010
+
+- id: RULE_PHA_INFUSION_QUALITY
+  domain: 药房
+  statement: 大输液摆药单规则校验 drugQuality='T' (大输液)
+  evidence: PHA_BD_DISPENSE_TYPE 表大输液规则配置 drugQuality='T'，但历史命中样本（头孢拉定/5、地西泮/P1、氯化钠/O）性质皆非 T，实际判定语义未证实
+  discovered: "2026-10-10"
+  status: suspected
+  affected_cases:
+    - L9-011
+
+- id: RULE_PHA_DISPENSE_NOT_OVER_SUPPLY
+  domain: 药房
+  statement: 摆药发药净发放量换算回医嘱单位后不得超过医嘱开立总量
+  evidence: PHA_DISPENSE_APPLY 73 条明细按 ORDER_ID 汇总换算，无任何超发记录
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L9-012
+    - L9-013
+
+- id: RULE_SI_CATALOG_CHECK
+  domain: 医保
+  statement: 医保三大目录中心目录总数与对照数严格对账平衡
+  evidence: SI_BD_CENTER_ITEM 中心目录 13610 笔，已对照 1267 笔与未对照 698 笔严格轧平
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L0-010
+
+- id: RULE_FIN_CASHIER_SEGMENT
+  domain: 收费
+  statement: 门诊与住院收银结算等式必须满足 totCost == pubCost + ownCost
+  evidence: 门诊自费收银样本 1683 (总额 40.89 = 统筹 0 + 现金 40.89)，医保收银样本 1400 (总额 8.64 = 统筹 7.62 + 现金 1.02)，等式恒成立
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L6-026
+
+- id: RULE_EBILL_RED_BLUE_OFFSET
+  domain: 收费
+  statement: 电子发票冲红时红蓝票金额绝对值严格相等且符号相反对冲，批次码与校验码一致
+  evidence: FIN_EBILL 38 笔电子发票，18 张正常蓝票与 20 张冲红红票，冲红记录金额对冲为 0
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L6-056
+
+- id: RULE_IP_01
+  domain: 住院
+  statement: 新增医嘱行时开始时间严格跟随上一条暂存医嘱开始时间；同组输液子医嘱与主药强联动
+  evidence: MED_IP_ORDER 表暂存医嘱新增时继承上一行开始时间，主药时间调整辅药联动
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L2-105
+    - L2-107
+    - L6-018
+
+- id: RULE_IP_02
+  domain: 住院
+  statement: 同组输液主药与辅药的给药途径与执行频次必须强制一致，严禁混搭
+  evidence: 同组输液 groupNo 相同，辅药频次必须与主药一致，混搭口服/肌肉注射被硬拦截
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L2-105
+    - L2-107
+
+- id: RULE_IP_03
+  domain: 住院
+  statement: 中草药饮片处方必须独立开立，强制录入付数(1-30付)与煎服法，单位必须为g
+  evidence: MED_IP_ORDER 草药开立接口核验付数与煎服法必填，付数<1被阻断
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L2-105
+
+- id: RULE_IP_04
+  domain: 住院
+  statement: 皮试目录药品需皮试时自动衍生皮试医嘱；护士核对与药房摆药严格拦截无阴性结果主药
+  evidence: SKIN_TEST_FLAG=1 药品开立联动皮试医嘱，未出阴性(-)结果药房拦截出库摆药
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L4-048
+    - L9-012
+
+- id: RULE_IP_05
+  domain: 住院
+  statement: 医嘱状态单向推进不可逆；已核对(VF)及后续状态严禁前台直接修改或物理删除
+  evidence: ORDER_STATE 按 SV->SB->VF->ET->ST/CN 单向流转，已核对医嘱逆向操作被阻断
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L2-105
+    - L6-018
+
+- id: RULE_IP_06
+  domain: 住院
+  statement: 实时计算在院费用与预交金差额，低于警戒阈值弹窗催缴并限制贵重自费医嘱
+  evidence: 预交金余额低于警戒线 500 元时触发预警，欠费超额时限制开立高额自费项目
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-018
+    - L6-050
+
+- id: RULE_IP_07
+  domain: 住院
+  statement: 药房未完成实物退药验收入库前，住院收费处强制阻断记账红字退款
+  evidence: PHA_IP_RETURN.RETURN_FLAG='0' 时退款申请拦截，'1' 时成功冲正
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-046
+    - L6-047
+    - L9-014
+
+- id: RULE_IP_08
+  domain: 住院
+  statement: 未停长期医嘱、未执行临时医嘱、未确认退药单时，出院结算执行硬拦截阻断
+  evidence: 存在在开长嘱或未结退药单时，调用出院结算接口返回阻断错误
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-052
+    - L6-068
+
+- id: RULE_OP_01
+  domain: 门诊
+  statement: 身份证类型强制执行18位校验码算法，非法证件阻断；其他类型豁免算法并防重
+  evidence: POST /faith/patient/save 传非法身份证号码返回 400 校验位错误拦截
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-001
+    - L6-005
+
+- id: RULE_OP_02
+  domain: 门诊
+  statement: 挂号依附有效排班，先预结算锁定号额后确认出票，免费特惠号自动0元平账
+  evidence: preBalance 锁定号额生成 regBalanceId，balance 确认付款入库
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-005
+    - L6-008
+
+- id: RULE_OP_03
+  domain: 门诊
+  statement: 挂号自动分发目标科室待诊队列，叫号驱动isSeen跃迁并挂载患者顶部上下文Bar
+  evidence: 挂号流水进入 unSeen/list，医生站叫号将 isSeen 置为 True 并同步 barInfo
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-005
+
+- id: RULE_OP_04
+  domain: 门诊
+  statement: 开立处方医嘱前强制核验就诊主诊断；若无有效主诊断，系统硬性拦截阻断保存
+  evidence: POST /faith/medical/outpatient/order/tipsBeforeSave 无主诊断返回 400 提示阻断
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L4-048
+    - L2-105
+
+- id: RULE_OP_05
+  domain: 门诊
+  statement: 汇聚未结项目两阶段结算，核算医保自付额后正式出票，同步驱动医嘱SV➔FE
+  evidence: needCharge/list 调取未缴项目，preBalance 锁定明细，balance 正式出票
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-026
+    - L6-046
+
+- id: RULE_OP_06
+  domain: 门诊
+  statement: 药房已发药或医技已确认执行的门诊医嘱，收费处严禁直接退款，必须先实物退药/取消执行
+  evidence: dispenseFlag='1' 或 execFlag='1' 时退费申请被拦截，必须药房先退库
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-046
+    - L6-047
+
+- id: RULE_OP_07
+  domain: 门诊
+  statement: 名下存在未退费处方时强制阻断退号；退号成功后资金平账退款且排班号源实时释放回滚
+  evidence: POST /faith/finance/outpatient/register/cancel 名下有未退费处方报错阻断退号
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-005
+    - L6-008
+
+- id: RULE_OP_08
+  domain: 门诊
+  statement: 门诊医嘱状态单向推进：SV(暂存)➔FE(已收费)➔CC(已退费)，红字对冲平衡，严禁物理删除
+  evidence: MED_OP_ORDER.ORDER_STATE 单向流转，退费生成负数凭证平账对冲
+  discovered: "2026-10-01"
+  status: confirmed
+  affected_cases:
+    - L6-026
+    - L6-046
+    - L6-047

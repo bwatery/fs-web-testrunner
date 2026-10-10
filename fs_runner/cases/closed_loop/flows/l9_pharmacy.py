@@ -50,6 +50,7 @@ def _f(x: Any, nd: int = 2):
 
 
 def flow_L9_012(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_DISPENSE_ORDER_SPLIT', 'CONV_DISPENSE_QTY_CONVERSION', 'CONV_PHA_DISPENSE_OUTPUTTED', 'RULE_IP_04', 'RULE_PHA_DISPENSE_NOT_OVER_SUPPLY']
     res = LoopResult(case_id="L9-012", title="住院药房·长期医嘱自动摆药与计划关联")
     t0 = time.time()
     try:
@@ -292,6 +293,7 @@ def flow_L9_012(ctx: Ctx) -> LoopResult:
 
 
 def flow_L9_013(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_DISPENSE_QTY_CONVERSION', 'CONV_GATE_OBSERVATION_EXPLICIT', 'CONV_MUTATION_NON_NUMERIC', 'RULE_PHA_DISPENSE_NOT_OVER_SUPPLY']
     """
     出院带药发药 —— **本环境没有可验的业务数据，如实标注「未执行」并附证据**。
 
@@ -384,7 +386,16 @@ def flow_L9_013(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L9_012.requires_rules = ['CONV_DISPENSE_ORDER_SPLIT', 'CONV_DISPENSE_QTY_CONVERSION', 'CONV_PHA_DISPENSE_OUTPUTTED', 'RULE_IP_04', 'RULE_PHA_DISPENSE_NOT_OVER_SUPPLY']
+flow_L9_013.requires_rules = ['CONV_DISPENSE_QTY_CONVERSION', 'CONV_GATE_OBSERVATION_EXPLICIT', 'CONV_MUTATION_NON_NUMERIC', 'RULE_PHA_DISPENSE_NOT_OVER_SUPPLY']
+
 FLOWS = {
     "L9-012": flow_L9_012,
     "L9-013": flow_L9_013,
+}
+
+
+FLOW_RULES = {
+    "L9-012": flow_L9_012.requires_rules,
+    "L9-013": flow_L9_013.requires_rules,
 }

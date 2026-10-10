@@ -1,0 +1,315 @@
+# ==============================================================================
+# FS.TestRunner · 测试口径与防坑约定库 (Testing Conventions)
+# ==============================================================================
+# 记录测试口径与验证陷阱（"断言两边怎么对齐才可比"）。
+# 严格 Schema：id, domain, statement, evidence, discovered, status, affected_cases
+# status 严格区分 confirmed (已实测证实) 与 suspected (推测/存疑)
+# ==============================================================================
+
+- id: CONV_HASH_NAV
+  domain: 前端架构
+  statement: 前端对 hash 路由变化不重新加载组件，界面点击后必须强制 Page.navigate + Page.reload 整页重载
+  evidence: UI 巡检中 hash 改变但内容区仍停留在前一页组件，补刷新后渲染正确
+  discovered: "2026-10-05"
+  status: confirmed
+  affected_cases:
+    - L2-001
+    - L3-001
+
+- id: CONV_ADMIN_TOKEN_ONCE
+  domain: 认证鉴权
+  statement: 同一 /login 令牌只能执行一次 exchangeLogin 换权且原会话作废，跨用例连续执行每条前必须重新登录
+  evidence: 连续换权引发 401 鉴权失效，闭环套件各用例独立获取 admin 令牌后稳定
+  discovered: "2026-10-06"
+  status: confirmed
+  affected_cases:
+    - L6-001
+    - L6-047
+
+- id: CONV_REFUND_DEPT_ISOLATION
+  domain: 权限科室
+  statement: 退费确认按科室数据隔离，管理员令牌查询为空，必须切换为住院护士身份(role 36/dept 910131)
+  evidence: 管理员查 refund/confirm/patient/list 返回空列表，换角色后查得待确认记录
+  discovered: "2026-10-07"
+  status: confirmed
+  affected_cases:
+    - L6-047
+
+- id: CONV_PREPAY_DAY_BALANCE_SCOPE
+  domain: 财务日结
+  statement: 预交金日结报表口径为当前登录操作员且统计区间为上次日结结束时间至当前时间
+  evidence: prepay/list 若用全量 183500 对账差 18 万元，按当前操作人+区间后轧平
+  discovered: "2026-10-08"
+  status: confirmed
+  affected_cases:
+    - L6-050
+
+- id: CONV_OP_DAY_BALANCE_SCOPE
+  domain: 财务日结
+  statement: 门诊票据与挂号日结报表必须传 dayBalanceId+beginTime+endTime 三参数且仅对当前操作员生效
+  evidence: 仅传时间区间接口返回0且报结束时间不能为空，传入正确日结ID后返回全量分项
+  discovered: "2026-10-08"
+  status: confirmed
+  affected_cases:
+    - L6-020
+    - L6-032
+    - L6-036
+
+- id: CONV_OP_UNPAID_SEE_NO_GROUP
+  domain: 门诊收费
+  statement: 门诊待收费用按处方号(SEE_NO)分组，返回列表长度为处方组数，明细行在 opApplyVOList 中
+  evidence: registerId=300011099 接口返回 6 组，明细展开共 20 条 461.21 元
+  discovered: "2026-10-08"
+  status: confirmed
+  affected_cases:
+    - L6-024
+
+- id: CONV_REFUNDABLE_REG_ROWS
+  domain: 门诊挂号
+  statement: 可退挂号判定必须看 data 明细行数，返回体中的 total 为患者全量挂号数不可作为可退条数
+  evidence: register/view/list 返回 total=5 但可退挂号 data 仅 2 条有效记录
+  discovered: "2026-10-08"
+  status: confirmed
+  affected_cases:
+    - L6-015
+
+- id: CONV_OP_CHARGE_APPLY_CHAIN
+  domain: 门诊收费
+  statement: 手工单在 preBalance 中录入无独立接口；退费必须申请后取消结算两步走；已收费挂号永久禁止退号
+  evidence: 仅调 balance/cancel/refund 报没有退费项目；对挂号收费后 register/cancel 报错该号已看诊
+  discovered: "2026-10-08"
+  status: confirmed
+  affected_cases:
+    - L6-025
+    - L6-028
+    - L6-046
+
+- id: CONV_RECEIPT_PAYMENT_ACTIVE
+  domain: 发票财务
+  statement: 发票支付方式修改仅对未作废且未日结(VALID_FLAG='1' AND DAY_BALANCE_FLAG='0')的发票有效
+  evidence: 对已作废或已日结发票调用 payment/change 接口报错发票已作废
+  discovered: "2026-10-08"
+  status: confirmed
+  affected_cases:
+    - L6-033
+
+- id: CONV_PATIENT_INVALIDATE_SEMANTICS
+  domain: 患者主索引
+  statement: 作废患者仅翻转 BD_PATIENT.VALID_FLAG，patient/list 不过滤作废记录，有效性在业务动作中校验
+  evidence: 作废后 patient/list 仍可见该记录，但挂号预结算接口报错该患者处于无效状态
+  discovered: "2026-10-07"
+  status: confirmed
+  affected_cases:
+    - L6-004
+
+- id: CONV_OP_ORDER_NEXT_COMB
+  domain: 门诊医嘱
+  statement: 门诊医嘱开立必须动态获取 nextSeeNo 与 nextCombId，处方号必填且不自增，总量按频次周期换算
+  evidence: 未传 billId 触发 ORA-01400 无法插入 NULL；复用 seeNo 报看诊号已存在医嘱
+  discovered: "2026-10-07"
+  status: confirmed
+  affected_cases:
+    - L2-105
+    - L2-107
+
+- id: CONV_PHA_DISPENSE_OUTPUTTED
+  domain: 药房发药
+  statement: 药房已发药状态码为 OUTPUTTED(三T)，明细表 OUTPUT_TIME 留空，发药判定必须依据 APPLY_STATE
+  evidence: 执行发药后明细行 OUTPUT_TIME 为空但 APPLY_STATE 跃迁为 OUTPUTTED，单头记录操作时间
+  discovered: "2026-10-07"
+  status: confirmed
+  affected_cases:
+    - L9-012
+    - L9-014
+
+- id: CONV_ID_CARD_COLLISION_SEED
+  domain: 测试造数
+  statement: 身份证校验码生成器顺序码仅3位易碰撞，跨轮次造数必须使用随机种子并在建档撞车时自动重试
+  evidence: 固定种子跨轮次测试报该证件号已被其他患者使用建档失败，改为随机种子后稳定
+  discovered: "2026-10-06"
+  status: confirmed
+  affected_cases:
+    - L6-001
+    - L6-009
+
+- id: CONV_REG_GRADE_DICT_DRIFT
+  domain: 挂号字典
+  statement: 挂号级别对应诊查费项目字典会随时间调整，历史挂号金额不能直接与当期字典对比
+  evidence: 挂号级别 2 在 2026-10-06 变更诊查费，历史挂号金额符合当时费率而非当期费率
+  discovered: "2026-10-08"
+  status: confirmed
+  affected_cases:
+    - L6-009
+    - L6-012
+
+- id: CONV_PROBE_4XX_DOWNGRADE
+  domain: 接口探针
+  statement: 探针入参引发的 4xx 业务拒绝一律降级为 CANNOT_VERIFY，仅 5xx 崩溃或无参被拒算真实缺陷
+  evidence: 接口对不匹配探针参数合法返回 400 业务拦截，降级后消除了盲测假缺陷
+  discovered: "2026-10-05"
+  status: confirmed
+  affected_cases:
+    - L1-001
+
+- id: CONV_REG_NOON_SERIAL
+  domain: 门诊挂号
+  statement: 门诊号序按午次(SEE_NOON_ID)各自从 1 编号，同医生同天号序不跨午次唯一，全天唯一为流水号
+  evidence: 挂号 300011139(午次2号序3) 与 300011880(午次3号序3) 并存属于合法业务
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L6-012
+
+- id: CONV_DISPENSE_ORDER_SPLIT
+  domain: 药房发药
+  statement: 发药明细表 ORDER_ID 按有无床号分别对应 MED_IP_ORDER 与 MED_OP_ORDER，不可单表关联
+  evidence: 73 条摆药明细若只关联 MED_IP_ORDER 导致 57 条悬挂，双表关联后悬挂数为 0
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L9-011
+    - L9-012
+
+- id: CONV_DISPENSE_QTY_CONVERSION
+  domain: 药房发药
+  statement: 发药数量为最小单位而医嘱为包装单位，允许部分发药或全退，断言只能是不超发
+  evidence: APPLY_QTY == QTY 等式整体不成立，按 ORDER_ID 汇总换算后净量不超过医嘱量
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L9-012
+    - L9-013
+
+- id: CONV_CROSS_SYS_DEPT_DISTINCTION
+  domain: 科室字典
+  statement: 跨系统科室不能直接断言相等，临床科室(I)与护理单元(N)为不同职能记录，字典主表为 SYS_DEPT
+  evidence: 骨一科(910098)与骨一科病区(910134)在 SYS_DEPT 中并存，跨系统对比需注意区分
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L5-036
+
+- id: CONV_INPATIENT_SAMPLE_INCOMPLETE
+  domain: 数据集
+  statement: 测试库 FIN_IP_REGISTER 仅 46 行而病历 519 条，不可断言全库零悬挂，只能对四方具备样本核对
+  evidence: 195 条病历为门诊类型不归属住院登记，盲断言全库零悬挂导致假失败
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L5-036
+
+- id: CONV_DRUG_QUALITY_DICT
+  domain: 药品字典
+  statement: 药品管制字典权威在 SYS_DICT_DATA (DICT_TYPE='PHA_DRUG_QUALITY')，药品主表为 COM_BD_DRUG
+  evidence: user_tables 中不存在包含 QUALITY 的独立字典表，真实字典在统一数据字典表中
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L9-011
+
+- id: CONV_CHAR_PAD_SPACE_OVERFLOW
+  domain: 数据库字段
+  statement: CHAR(2) 尾部空格原样写入 CHAR(1) 字段触发 ORA-12899，为确定性代码缺陷
+  evidence: EMR_RECORD_MASTER.PATIENT_TYPE 为 CHAR(2) 存 'I '，封存日志写 CHAR(1) 抛 ORA-12899
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L5-027
+
+- id: CONV_NO_SPECULATIVE_EQUATION
+  domain: 断言纪律
+  statement: 严禁倒推拼凑等式，断言必须基于真实数据库列与绝对业务恒等式，无根据等式必须删除
+  evidence: 曾编造 先行自付==总额-起付线 巧合对账，实际为两独立医保概念导致换样本假失败
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L6-063
+
+- id: CONV_MUTATION_NON_NUMERIC
+  domain: 变异自检
+  statement: 变异自检需覆盖非数值列扰动，仍绿用例需结合行为/结构断言性质进行白盒审计
+  evidence: 补齐日期+1天/0-1翻转/加~MUT后，敏感用例由 52 条提升至 55 条，5 条仍绿均属行为断言
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L5-025
+    - L6-008
+    - L6-046
+    - L6-047
+    - L9-013
+
+- id: CONV_GATE_OBSERVATION_EXPLICIT
+  domain: 防空跑加固
+  statement: 防空跑与前置门禁判断必须显式记录当时的观测计数值至 evidence，杜绝静默假通过
+  evidence: L9-013 原依赖 COUNT(*) 算出的值在变异下被污染误判通过，补齐观测值后透明可审计
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L5-022
+    - L5-037
+    - L6-026
+    - L9-013
+    - L9-014
+
+- id: CONV_EQUAL_SCOPE_ASSERTION
+  domain: 断言纪律
+  statement: 接口返回全量带标志位时，断言两边必须对齐相同范围(全量对全量，有效对有效)
+  evidence: L6-005 接口返回全量挂号忽略入参，与库 valid_flag='1' 对比在发生退号时突发假失败
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L6-005
+
+- id: CONV_SAMPLE_AVOID_EMPTY_SET
+  domain: 采样规范
+  statement: 采样必须选择能压住断言口径的样本，严禁空集对空集的恒真采样
+  evidence: 抽到 41 条挂号但有效 0 条的患者导致有效子集对比变成空集比空集恒真，修正为选含有效患者
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L6-005
+
+- id: CONV_PRIMARY_KEY_CROSS_TABLE
+  domain: 报表合并
+  statement: 跨表与交接数据搬运必须按业务主键(用例ID)定位，绝对禁止使用行号对齐
+  evidence: 交接表为23行子集序号重排，按行号贴图导致截图全部错位至非对应用例
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L0-013
+
+- id: CONV_EXCEL_IMAGE_DIMENSION
+  domain: 报表渲染
+  statement: Excel 贴图必须根据行高列宽动态缩放适配单元格尺寸，严禁固定像素溢出遮挡
+  evidence: 统一 600px 贴图导致图片严重溢出邻格，动态测量行列宽高后等比缩小适配单元格
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L6-064
+
+- id: CONV_DEAD_CONFIG_FALLBACK_ORDER
+  domain: 规则配置
+  statement: 优先级规则中无条件兜底规则必须排在最后，排在有条件规则之前会导致后续规则为死配置
+  evidence: 通用摆药单(优先级5/无条件)排在口服摆药单(优先级6/PO)之前，导致口服单成为永久死配置
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L9-011
+
+- id: CONV_SAMPLE_IMMUTABLE_SORT
+  domain: 采样规范
+  statement: 采样查询严禁使用会被测试自身插入改变的最新一条(ORDER BY DESC 盲取)，需过滤最小充分条件
+  evidence: L2-107 盲取最新医嘱抽到诊疗项目开嘱报错，加入 EXISTS 药品且 valid_flag='1' 约束后稳定
+  discovered: "2026-10-09"
+  status: confirmed
+  affected_cases:
+    - L2-107
+
+- id: CONV_ASSERTION_HONEST_EVIDENCE
+  domain: 断言纪律
+  statement: 用例名与断言必须对齐，未覆盖的属性必须在 evidence 中诚实声明未覆盖项
+  evidence: L9-011 名为归类规则正确性但仅验流转，注释免责读的人看不到，需在 evidence 中显式声明
+  discovered: "2026-10-10"
+  status: confirmed
+  affected_cases:
+    - L9-011

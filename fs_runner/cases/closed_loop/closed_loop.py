@@ -96,6 +96,7 @@ def _oracle_charge_totals(register_id: int) -> Dict[str, Any]:
 # L6-039 在院费用实时汇总与综合查询
 # ---------------------------------------------------------------------------
 def flow_L6_039(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     断言链：
       ① 明细接口 total == 库中明细条数
@@ -217,6 +218,7 @@ def _patient_query(ctx: Ctx, query_type: int, content: str) -> List[Dict[str, An
 
 
 def flow_L6_002(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     从库里取一个真实患者，分别用 姓名 / 身份证 / 手机号 查询，
     断言每种方式都能命中同一个患者，且回填的姓名与证件号与库中一致。
@@ -338,6 +340,7 @@ def _create_test_patient(ctx: Ctx, prefix: str):
 
 
 def flow_L6_001(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_ADMIN_TOKEN_ONCE', 'CONV_ID_CARD_COLLISION_SEED', 'RULE_OP_01']
     """
     真实建档 -> 接口回读 -> Oracle 回读，三方一致才判通过。
     建档数据带明显的测试标识，并在备注中给出生成的 patientId 便于清理。
@@ -428,6 +431,7 @@ def _pick_refundable_apply() -> Optional[tuple]:
 
 
 def flow_L6_045(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     断言链（全部走只读的"退费方案预览"接口，不产生任何退费单据）：
       ① 申请退费数量 == 已收费数量时，必须被接受
@@ -548,6 +552,7 @@ def _refund_apply_list(ctx: Ctx, register_id: int) -> List[Dict[str, Any]]:
 
 
 def flow_L6_046(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_MUTATION_NON_NUMERIC', 'CONV_OP_CHARGE_APPLY_CHAIN', 'RULE_IP_07', 'RULE_OP_05', 'RULE_OP_06', 'RULE_OP_08']
     """
     真实走三件事，并**收尾清理**（创建的退费申请全部取消）：
       ① 部分退：数量 < 已收费 → 应被接受，且申请真的能查到
@@ -696,6 +701,7 @@ def _nurse_ctx(ctx: Ctx, role_id: int = 36, dept_id: int = 910131) -> Optional["
 
 
 def flow_L6_047(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_ADMIN_TOKEN_ONCE', 'CONV_MUTATION_NON_NUMERIC', 'CONV_REFUND_DEPT_ISOLATION', 'RULE_IP_07', 'RULE_OP_06', 'RULE_OP_08']
     """
     退费确认链路（住院护士视角）。
 
@@ -806,6 +812,7 @@ def _rows_of(resp: Any) -> List[Dict[str, Any]]:
 
 
 def flow_L6_018(ctx: Ctx) -> LoopResult:
+    requires_rules = ['RULE_IP_01', 'RULE_IP_05', 'RULE_IP_06']
     """预约列表查询：接口返回的预约条数必须与预约库一致。"""
     res = LoopResult(case_id="L6-018", title="预约列表查询与收费处取号")
     t0 = time.time()
@@ -850,6 +857,7 @@ def flow_L6_018(ctx: Ctx) -> LoopResult:
 
 
 def flow_L6_050(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_PREPAY_DAY_BALANCE_SCOPE', 'RULE_IP_06']
     """
     预交金日结：报表金额 == 「上次日结时间之后」+「当前操作人收取」的预交金合计。
 
@@ -936,6 +944,7 @@ def flow_L6_050(ctx: Ctx) -> LoopResult:
 
 
 def flow_L6_008(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_MUTATION_NON_NUMERIC', 'RULE_OP_02', 'RULE_OP_07']
     """排班科室联动：接口返回的排班科室必须在排班表里真的有排班。"""
     res = LoopResult(case_id="L6-008", title="排班双击联动与左侧筛选")
     t0 = time.time()
@@ -987,6 +996,7 @@ def flow_L6_008(ctx: Ctx) -> LoopResult:
 
 
 def flow_L6_052(ctx: Ctx) -> LoopResult:
+    requires_rules = ['RULE_IP_08']
     """
     中途结算/多次结算：接口查到的结算记录数必须与库中一致，且金额逐条对得上。
     选一条**有多次结算**的住院登记作为样本——这正是"中途结算、多次结算"的体现。
@@ -1059,6 +1069,7 @@ def flow_L6_052(ctx: Ctx) -> LoopResult:
 
 
 def flow_L6_036(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
     """
     门诊票据日结与稽核。报表口径 = **日结记录ID**，不是时间区间。
 
@@ -1222,6 +1233,7 @@ def _pick_register_with_pending() -> Optional[int]:
 
 
 def flow_L6_024(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_OP_UNPAID_SEE_NO_GROUP']
     """
     门诊收费「载入待收费用」：收费界面载入的待缴明细必须与库中真值逐条一致。
 
@@ -1353,6 +1365,7 @@ def _pick_patient_for_refund_reg() -> Optional[int]:
 
 
 def flow_L6_015(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_REFUNDABLE_REG_ROWS']
     """
     门诊退号：进入退号界面查患者，带出的可退挂号列表与筛选必须与库一致。
 
@@ -1468,6 +1481,7 @@ def flow_L6_015(ctx: Ctx) -> LoopResult:
 # L6-020 门诊挂号 · 挂号日结时段选择、确认与取消
 # ---------------------------------------------------------------------------
 def flow_L6_020(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
     """
     挂号日结报表：与门诊票据日结同族，口径同样是 **dayBalanceId**（见 4.8/4.9 与 L6-036）。
 
@@ -1612,6 +1626,7 @@ def flow_L6_020(ctx: Ctx) -> LoopResult:
 # L6-033 发票票据 · 发票清单与支付方式修改
 # ---------------------------------------------------------------------------
 def flow_L6_033(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_RECEIPT_PAYMENT_ACTIVE']
     """
     发票清单查询 + 支付方式变更。
 
@@ -1810,6 +1825,7 @@ def _pick_manual_charge_item() -> Optional[tuple]:
 
 
 def flow_L6_025(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_OP_CHARGE_APPLY_CHAIN']
     """
     门诊收费「手工单划价」：无医嘱场景下新增手工单项目 → 划价 → 纳入收银。
 
@@ -1991,6 +2007,7 @@ def flow_L6_025(ctx: Ctx) -> LoopResult:
 # L6-028 门诊退费 · 收费处退费、全退与部分退
 # ---------------------------------------------------------------------------
 def flow_L6_028(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_OP_CHARGE_APPLY_CHAIN']
     """
     门诊退费：查可退数量 → 部分退 → 超退拦截。
 
@@ -2178,6 +2195,7 @@ def flow_L6_028(ctx: Ctx) -> LoopResult:
 # L6-004 患者管理 · 作废卡号与启动卡号
 # ---------------------------------------------------------------------------
 def flow_L6_004(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_PATIENT_INVALIDATE_SEMANTICS']
     """
     作废/启动患者（= 卡）。可逆，用的是**既有测试患者**，不新建数据。
 
@@ -2311,6 +2329,7 @@ def flow_L6_004(ctx: Ctx) -> LoopResult:
 # L6-009 门诊挂号 · 挂号时新建患者（临时办档）
 # ---------------------------------------------------------------------------
 def flow_L6_009(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_ID_CARD_COLLISION_SEED', 'CONV_REG_GRADE_DICT_DRIFT']
     """
     无卡患者到窗口：在挂号处**一次把档建好并完成挂号**。
 
@@ -2480,6 +2499,7 @@ def flow_L6_009(ctx: Ctx) -> LoopResult:
 # L6-012 门诊挂号 · 号序连续性与挂号费展示
 # ---------------------------------------------------------------------------
 def flow_L6_012(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_REG_GRADE_DICT_DRIFT', 'CONV_REG_NOON_SERIAL']
     """
     同一医生连挂 5 个号，看号序与挂号费。
 
@@ -2687,6 +2707,7 @@ _DISPENSE_STATES = {"SENT": "1", "PRINTED": "2", "DISPENSED": "3", "OUTPUTTED": 
 
 
 def flow_L9_010(ctx: Ctx) -> LoopResult:
+    requires_rules = ['RULE_PHA_DISPENSE_PRIORITY']
     """
     住院摆药明细：药房工作台按【摆药单 × 状态】取到的明细，必须与库里一致。
 
@@ -2790,6 +2811,7 @@ def flow_L9_010(ctx: Ctx) -> LoopResult:
 # L9-011 住院药房 · 摆药单分类与归类规则正确性
 # ---------------------------------------------------------------------------
 def flow_L9_011(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_ASSERTION_HONEST_EVIDENCE', 'CONV_DEAD_CONFIG_FALLBACK_ORDER', 'CONV_DISPENSE_ORDER_SPLIT', 'CONV_DRUG_QUALITY_DICT', 'RULE_PHA_DISPENSE_PRIORITY', 'RULE_PHA_INFUSION_QUALITY']
     """
     摆药单分类字典 + 归类一致性。
 
@@ -2911,6 +2933,7 @@ def flow_L9_011(ctx: Ctx) -> LoopResult:
 # L6-005 患者管理 · 底部挂号列表联动与补打条码
 # ---------------------------------------------------------------------------
 def flow_L6_005(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_EQUAL_SCOPE_ASSERTION', 'CONV_SAMPLE_AVOID_EMPTY_SET', 'RULE_OP_01', 'RULE_OP_02', 'RULE_OP_03', 'RULE_OP_07']
     """
     患者管理页选中患者后，底部"挂号列表"带出的记录必须与库一致。
 
@@ -3041,6 +3064,7 @@ def flow_L6_005(ctx: Ctx) -> LoopResult:
 # L9-014 住院药房 · 住院退药回库与医嘱关联
 # ---------------------------------------------------------------------------
 def flow_L9_014(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT', 'CONV_PHA_DISPENSE_OUTPUTTED', 'RULE_IP_07']
     """
     住院退药：把病区退回的药品执行掉，库存要回补，且退药必须挂回原医嘱。
 
@@ -3234,6 +3258,7 @@ def flow_L9_014(ctx: Ctx) -> LoopResult:
 # L6-014 门诊挂号 · 快捷键与录入防错
 # ---------------------------------------------------------------------------
 def flow_L6_014(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     录入防错：非法录入必须被拦下，而且**拦在正确的点上**（提示要说得出是哪错了）。
 
@@ -3342,6 +3367,7 @@ def _order_camel(col: str) -> str:
 
 
 def flow_L2_107(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_OP_ORDER_NEXT_COMB', 'CONV_SAMPLE_IMMUTABLE_SORT', 'RULE_IP_01', 'RULE_IP_02']
     """
     门诊医嘱：开一条医嘱 → 删除 → 关联（费用申请）必须一起被清掉。
 
@@ -3547,6 +3573,7 @@ def _order_row_to_dto(row, names):
 
 
 def flow_L2_105(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_OP_ORDER_NEXT_COMB', 'RULE_IP_01', 'RULE_IP_02', 'RULE_IP_03', 'RULE_IP_05', 'RULE_OP_04']
     """
     医嘱用量重算：治疗医嘱的总数必须 = 单次量 × 频次次数 × 天数，且重算接口算出来的与库里存的**一致**。
 
@@ -3678,6 +3705,7 @@ def flow_L2_105(ctx: Ctx) -> LoopResult:
 # L6-032 收费日结 · 收费员日结与对账
 # ---------------------------------------------------------------------------
 def flow_L6_032(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
     """
     收费员日结与对账：**从"钱"的角度**把日结核一遍（与 L6-036 的"票"角度互补）。
 
@@ -3829,6 +3857,37 @@ _FLOWS: Dict[str, Callable[[Ctx], LoopResult]] = {
     "L2-107": flow_L2_107,
     "L2-105": flow_L2_105,
 }
+
+flow_L2_105.requires_rules = ['CONV_OP_ORDER_NEXT_COMB', 'RULE_IP_01', 'RULE_IP_02', 'RULE_IP_03', 'RULE_IP_05', 'RULE_OP_04']
+flow_L2_107.requires_rules = ['CONV_OP_ORDER_NEXT_COMB', 'CONV_SAMPLE_IMMUTABLE_SORT', 'RULE_IP_01', 'RULE_IP_02']
+flow_L6_001.requires_rules = ['CONV_ADMIN_TOKEN_ONCE', 'CONV_ID_CARD_COLLISION_SEED', 'RULE_OP_01']
+flow_L6_002.requires_rules = []
+flow_L6_004.requires_rules = ['CONV_PATIENT_INVALIDATE_SEMANTICS']
+flow_L6_005.requires_rules = ['CONV_EQUAL_SCOPE_ASSERTION', 'CONV_SAMPLE_AVOID_EMPTY_SET', 'RULE_OP_01', 'RULE_OP_02', 'RULE_OP_03', 'RULE_OP_07']
+flow_L6_008.requires_rules = ['CONV_MUTATION_NON_NUMERIC', 'RULE_OP_02', 'RULE_OP_07']
+flow_L6_009.requires_rules = ['CONV_ID_CARD_COLLISION_SEED', 'CONV_REG_GRADE_DICT_DRIFT']
+flow_L6_012.requires_rules = ['CONV_REG_GRADE_DICT_DRIFT', 'CONV_REG_NOON_SERIAL']
+flow_L6_014.requires_rules = []
+flow_L6_015.requires_rules = ['CONV_REFUNDABLE_REG_ROWS']
+flow_L6_018.requires_rules = ['RULE_IP_01', 'RULE_IP_05', 'RULE_IP_06']
+flow_L6_020.requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
+flow_L6_024.requires_rules = ['CONV_OP_UNPAID_SEE_NO_GROUP']
+flow_L6_025.requires_rules = ['CONV_OP_CHARGE_APPLY_CHAIN']
+flow_L6_028.requires_rules = ['CONV_OP_CHARGE_APPLY_CHAIN']
+flow_L6_032.requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
+flow_L6_033.requires_rules = ['CONV_RECEIPT_PAYMENT_ACTIVE']
+flow_L6_036.requires_rules = ['CONV_OP_DAY_BALANCE_SCOPE']
+flow_L6_039.requires_rules = []
+flow_L6_045.requires_rules = []
+flow_L6_046.requires_rules = ['CONV_MUTATION_NON_NUMERIC', 'CONV_OP_CHARGE_APPLY_CHAIN', 'RULE_IP_07', 'RULE_OP_05', 'RULE_OP_06', 'RULE_OP_08']
+flow_L6_047.requires_rules = ['CONV_ADMIN_TOKEN_ONCE', 'CONV_MUTATION_NON_NUMERIC', 'CONV_REFUND_DEPT_ISOLATION', 'RULE_IP_07', 'RULE_OP_06', 'RULE_OP_08']
+flow_L6_050.requires_rules = ['CONV_PREPAY_DAY_BALANCE_SCOPE', 'RULE_IP_06']
+flow_L6_052.requires_rules = ['RULE_IP_08']
+flow_L9_010.requires_rules = ['RULE_PHA_DISPENSE_PRIORITY']
+flow_L9_011.requires_rules = ['CONV_ASSERTION_HONEST_EVIDENCE', 'CONV_DEAD_CONFIG_FALLBACK_ORDER', 'CONV_DISPENSE_ORDER_SPLIT', 'CONV_DRUG_QUALITY_DICT', 'RULE_PHA_DISPENSE_PRIORITY', 'RULE_PHA_INFUSION_QUALITY']
+flow_L9_014.requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT', 'CONV_PHA_DISPENSE_OUTPUTTED', 'RULE_IP_07']
+
+FLOW_RULES = {cid: getattr(fn, 'requires_rules', []) for cid, fn in _FLOWS.items()}
 
 # 并行协作：把 verify/flows/*.py 里各自注册的用例并进来（见 verify/flows/__init__.py）
 try:

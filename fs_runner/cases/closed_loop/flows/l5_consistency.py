@@ -52,6 +52,7 @@ def _collect(cur, sql: str, rid: int) -> List[Any]:
 
 
 def flow_L5_036(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_CROSS_SYS_DEPT_DISTINCTION', 'CONV_INPATIENT_SAMPLE_INCOMPLETE']
     res = LoopResult(case_id="L5-036", title="病历文书·EMR与HIS/LIS/PACS数据一致性")
     t0 = time.time()
     try:
@@ -220,6 +221,13 @@ def flow_L5_036(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L5_036.requires_rules = ['CONV_CROSS_SYS_DEPT_DISTINCTION', 'CONV_INPATIENT_SAMPLE_INCOMPLETE']
+
 FLOWS = {
     "L5-036": flow_L5_036,
+}
+
+
+FLOW_RULES = {
+    "L5-036": flow_L5_036.requires_rules,
 }

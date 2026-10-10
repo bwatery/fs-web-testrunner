@@ -94,6 +94,7 @@ _TEMP_FIELDS = [
 
 
 def flow_L5_001(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     体温单：曲线所依赖的那批数据，必须与库里一模一样。
 
@@ -218,6 +219,7 @@ def flow_L5_001(ctx: Ctx) -> LoopResult:
 # L5-003 一般护理记录单录入与签名
 # ---------------------------------------------------------------------------
 def flow_L5_003(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     护理记录单：{记录单 → 若干时间点 → 每个时间点一组数据元} 的结构必须与库一致。
 
@@ -346,6 +348,7 @@ def flow_L5_003(ctx: Ctx) -> LoopResult:
 # L5-020 结构化模板与元素引用 / L5-021 模板权限与版本管理
 # ---------------------------------------------------------------------------
 def flow_L5_020(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     结构化病历模板：模板清单、分类归属、内容可取，三件事都得对。
 
@@ -447,6 +450,7 @@ def flow_L5_020(ctx: Ctx) -> LoopResult:
 
 
 def flow_L5_021(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     模板权限（科室/个人授权）与版本管理。
 
@@ -548,6 +552,7 @@ def flow_L5_021(ctx: Ctx) -> LoopResult:
 # L5-006 护理记录修改留痕
 # ---------------------------------------------------------------------------
 def flow_L5_006(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     护理记录修改留痕：改过的行必须留下历史，且历史里的**原值**要能查出来。
 
@@ -668,6 +673,7 @@ _FP_FIELDS = [
 
 
 def flow_L5_019(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     病案首页：首页数据与库一致，且「编码」能取到。
 
@@ -877,22 +883,27 @@ def _verify_record_type(ctx: Ctx, case_id: str, title: str, type_name: str) -> L
 
 
 def flow_L5_010(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     return _verify_record_type(ctx, "L5-010", "住院文书·上级医师审核首次病程", "首次病程记录")
 
 
 def flow_L5_011(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     return _verify_record_type(ctx, "L5-011", "住院文书·日常病程记录书写", "日常病程记录")
 
 
 def flow_L5_012(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     return _verify_record_type(ctx, "L5-012", "住院文书·上级医师查房记录", "主治医师查房记录")
 
 
 def flow_L5_013(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     return _verify_record_type(ctx, "L5-013", "住院文书·会诊意见与疑难病例讨论", "住院会诊申请")
 
 
 def flow_L5_014(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """用例要求「术前讨论**与**术前小结」两种文书，两个都要核。"""
     a = _verify_record_type(ctx, "L5-014", "住院文书·术前讨论与术前小结", "术前讨论")
     b = _verify_record_type(ctx, "L5-014", "住院文书·术前讨论与术前小结", "术前小结")
@@ -907,10 +918,12 @@ def flow_L5_014(ctx: Ctx) -> LoopResult:
 
 
 def flow_L5_015(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     return _verify_record_type(ctx, "L5-015", "住院文书·手术记录书写与归档", "手术记录")
 
 
 def flow_L5_016(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """用例要求「术后首次病程**与**术后记录」，两种文书都核（术后病程记录当前库里 0 条）。"""
     a = _verify_record_type(ctx, "L5-016", "住院文书·术后首次病程与术后记录", "术后首次病程")
     b = _verify_record_type(ctx, "L5-016", "住院文书·术后首次病程与术后记录", "术后病程记录")
@@ -931,6 +944,7 @@ def flow_L5_016(ctx: Ctx) -> LoopResult:
 # L5-024 医师签名与时间戳 / L5-025 签名权限与上级审签 / L5-026 已签名修改与解锁
 # ---------------------------------------------------------------------------
 def flow_L5_024(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     电子签名（本期无 CA，走**账号确认**方式）：签了名的文书必须有签名人与时间戳，且时间线自洽。
 
@@ -1027,6 +1041,7 @@ def flow_L5_024(ctx: Ctx) -> LoopResult:
 
 
 def flow_L5_025(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_MUTATION_NON_NUMERIC']
     """
     签名权限与上级审签：签名归属要按**人**记录（谁写的、谁签的、谁审的），不能糊成一个人。
 
@@ -1101,6 +1116,7 @@ def flow_L5_025(ctx: Ctx) -> LoopResult:
 
 
 def flow_L5_026(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     已签名病历修改与解锁：文书操作日志必须与库一致，且**同一文书要有多次操作**（改过就留痕）。
 
@@ -1194,6 +1210,7 @@ def flow_L5_026(ctx: Ctx) -> LoopResult:
 # L5-023 专科病历模板覆盖
 # ---------------------------------------------------------------------------
 def flow_L5_023(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     专科病历模板覆盖：各专科都得有**可用的**病历模板。
 
@@ -1296,6 +1313,7 @@ def flow_L5_023(ctx: Ctx) -> LoopResult:
 # L5-008 既往史与过敏史引用
 # ---------------------------------------------------------------------------
 def flow_L5_008(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     既往史与过敏史引用：引用的内容必须是**这个患者自己的**，不能串患者。
 
@@ -1380,6 +1398,7 @@ def flow_L5_008(ctx: Ctx) -> LoopResult:
 # L5-022 既往病历引用与复制
 # ---------------------------------------------------------------------------
 def flow_L5_022(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT']
     """
     既往病历引用与复制：要有**可引用**的文书元素才谈得上验"引用的内容对不对"。
 
@@ -1455,6 +1474,7 @@ def _num(v):
 
 
 def flow_L5_004(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     """
     出入量自动合计：**合计必须等于明细的和**，而且要按对作用域。
 
@@ -1559,6 +1579,7 @@ def flow_L5_004(ctx: Ctx) -> LoopResult:
 # L5-037 病历内容检索与结构化查询
 # ---------------------------------------------------------------------------
 def flow_L5_037(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT']
     """
     病历内容检索：**本环境既没有检索接口，也没有已归档病历** —— 如实判「未执行」。
 
@@ -1627,6 +1648,28 @@ def flow_L5_037(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L5_001.requires_rules = []
+flow_L5_003.requires_rules = []
+flow_L5_004.requires_rules = []
+flow_L5_006.requires_rules = []
+flow_L5_008.requires_rules = []
+flow_L5_010.requires_rules = []
+flow_L5_011.requires_rules = []
+flow_L5_012.requires_rules = []
+flow_L5_013.requires_rules = []
+flow_L5_014.requires_rules = []
+flow_L5_015.requires_rules = []
+flow_L5_016.requires_rules = []
+flow_L5_019.requires_rules = []
+flow_L5_020.requires_rules = []
+flow_L5_021.requires_rules = []
+flow_L5_022.requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT']
+flow_L5_023.requires_rules = []
+flow_L5_024.requires_rules = []
+flow_L5_025.requires_rules = ['CONV_MUTATION_NON_NUMERIC']
+flow_L5_026.requires_rules = []
+flow_L5_037.requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT']
+
 FLOWS = {
     "L5-001": flow_L5_001,
     "L5-003": flow_L5_003,
@@ -1649,4 +1692,29 @@ FLOWS = {
     "L5-025": flow_L5_025,
     "L5-026": flow_L5_026,
     "L5-037": flow_L5_037,
+}
+
+
+FLOW_RULES = {
+    "L5-001": flow_L5_001.requires_rules,
+    "L5-003": flow_L5_003.requires_rules,
+    "L5-004": flow_L5_004.requires_rules,
+    "L5-006": flow_L5_006.requires_rules,
+    "L5-008": flow_L5_008.requires_rules,
+    "L5-010": flow_L5_010.requires_rules,
+    "L5-011": flow_L5_011.requires_rules,
+    "L5-012": flow_L5_012.requires_rules,
+    "L5-013": flow_L5_013.requires_rules,
+    "L5-014": flow_L5_014.requires_rules,
+    "L5-015": flow_L5_015.requires_rules,
+    "L5-016": flow_L5_016.requires_rules,
+    "L5-019": flow_L5_019.requires_rules,
+    "L5-020": flow_L5_020.requires_rules,
+    "L5-021": flow_L5_021.requires_rules,
+    "L5-022": flow_L5_022.requires_rules,
+    "L5-023": flow_L5_023.requires_rules,
+    "L5-024": flow_L5_024.requires_rules,
+    "L5-025": flow_L5_025.requires_rules,
+    "L5-026": flow_L5_026.requires_rules,
+    "L5-037": flow_L5_037.requires_rules,
 }

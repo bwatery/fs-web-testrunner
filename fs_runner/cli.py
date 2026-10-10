@@ -511,7 +511,27 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_check.add_argument("--mutation", action="store_true", help="执行变异自检（回答通过率是否虚高）")
     p_check.add_argument("--gateway", default=None, help="指定网关地址")
 
+    # rules 子命令
+    p_rules = subparsers.add_parser("rules", help="业务规则库与测试口径管理")
+    p_rules.add_argument("--check", action="store_true", help="严格校验 rules/*.yaml 的 Schema")
+    p_rules.add_argument("--case", help="反查指定用例依赖的规则与口径（如 L9-011）")
+    p_rules.add_argument("--rule", help="反查指定规则约束的用例清单（如 RULE_PHA_DISPENSE_PRIORITY）")
+    p_rules.add_argument("--list", action="store_true", help="列出全部已登记的规则与口径")
+    p_rules.add_argument("--dead-config", action="store_true", help="执行死配置扫描（无条件兜底排在有条件前报警）")
+    p_rules.add_argument("--source", choices=["db", "snapshot"], default=None, help="指定死配置扫描数据源：db（当前库）或 snapshot（快照）")
+    p_rules.add_argument("--snapshot", default=None, help="指定历史快照 JSON 路径执行死配置扫描")
+    p_rules.add_argument("--lint", action="store_true", help="执行死配置扫描与采样规范抽查")
+    p_rules.add_argument("--json", action="store_true", help="以 JSON 格式输出反查表")
+
+    if not args_list:
+        parser.print_help()
+        return 0
+
     parsed = parser.parse_args(args_list)
+
+    if parsed.command == "rules":
+        from .rules.cli import run_rules_command
+        return run_rules_command(parsed)
 
     if parsed.command == "regression":
         return run_regression()

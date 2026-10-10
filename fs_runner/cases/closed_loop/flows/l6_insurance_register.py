@@ -33,6 +33,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L6_038(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     res = LoopResult(case_id="L6-038", title="医保登记与补登记")
     t0 = time.time()
     try:
@@ -206,6 +207,13 @@ def flow_L6_038(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L6_038.requires_rules = []
+
 FLOWS = {
     "L6-038": flow_L6_038,
+}
+
+
+FLOW_RULES = {
+    "L6-038": flow_L6_038.requires_rules,
 }

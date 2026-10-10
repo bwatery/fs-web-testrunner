@@ -23,6 +23,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L4_048(ctx: Ctx) -> LoopResult:
+    requires_rules = ["RULE_IP_04", "RULE_OP_04"]
     res = LoopResult(case_id="L4-048", title="临嘱专项校验")
     t0 = time.time()
     try:
@@ -149,6 +150,12 @@ def flow_L4_048(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L4_048.requires_rules = ["RULE_IP_04", "RULE_OP_04"]
+
 FLOWS = {
     "L4-048": flow_L4_048,
+}
+
+FLOW_RULES = {
+    "L4-048": flow_L4_048.requires_rules,
 }

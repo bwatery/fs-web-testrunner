@@ -41,6 +41,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L6_056(ctx: Ctx) -> LoopResult:
+    requires_rules = ['RULE_EBILL_RED_BLUE_OFFSET']
     res = LoopResult(case_id="L6-056", title="住院电子发票与票据管理")
     t0 = time.time()
     try:
@@ -253,6 +254,13 @@ def flow_L6_056(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L6_056.requires_rules = ['RULE_EBILL_RED_BLUE_OFFSET']
+
 FLOWS = {
     "L6-056": flow_L6_056,
+}
+
+
+FLOW_RULES = {
+    "L6-056": flow_L6_056.requires_rules,
 }

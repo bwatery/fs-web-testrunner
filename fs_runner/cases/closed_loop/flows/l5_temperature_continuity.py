@@ -37,6 +37,7 @@ class _EmrClient:
 
 
 def flow_L5_002(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     res = LoopResult(case_id="L5-002", title="体温单跨日连续性与数据引用")
     t0 = time.time()
     try:
@@ -206,6 +207,13 @@ def flow_L5_002(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L5_002.requires_rules = []
+
 FLOWS = {
     "L5-002": flow_L5_002,
+}
+
+
+FLOW_RULES = {
+    "L5-002": flow_L5_002.requires_rules,
 }

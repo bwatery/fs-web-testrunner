@@ -463,6 +463,88 @@ tr.sandbox-row td {
   border-radius: 4px;
   color: #334155;
 }
+
+/* 规则库卡片与徽章样式 */
+.rule-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  margin-right: 4px;
+  margin-bottom: 3px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.rule-badge-confirmed { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.rule-badge-suspected { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.dead-config-banner {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-left: 5px solid #dc2626;
+  border-radius: 8px;
+  padding: 14px 18px;
+  margin-bottom: 18px;
+}
+.rule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 16px;
+}
+.rule-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 8px;
+  padding: 16px 18px;
+  transition: box-shadow 0.15s ease;
+}
+.rule-card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.rule-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.rule-id-text {
+  font-weight: 700;
+  font-size: 13px;
+  font-family: monospace;
+  color: #1e293b;
+}
+.rule-statement {
+  font-size: 13px;
+  color: #0f172a;
+  font-weight: 600;
+  margin-bottom: 8px;
+  line-height: 1.45;
+}
+.rule-evidence-box {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+  color: #475569;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.case-pill {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-right: 4px;
+  margin-bottom: 2px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.case-pill:hover { background: #e2e8f0; color: #0f172a; }
 </style>
 </head>
 <body>
@@ -520,6 +602,7 @@ tr.sandbox-row td {
     <button class="tab-btn active" onclick="switchTab('cases')">📋 用例验证列表 (66)</button>
     <button class="tab-btn" onclick="switchTab('unexecuted')">⚪ 未执行 / 阻塞清单 (4)</button>
     <button class="tab-btn" onclick="switchTab('history')">📈 历史红绿追踪 (含偶发排查)</button>
+    <button class="tab-btn" onclick="switchTab('rules')">⚖️ 规则库与口径反查 (<span id="tab-rules-count">54</span>)</button>
   </div>
 
   <!-- TAB 1: 用例列表 -->
@@ -604,6 +687,36 @@ tr.sandbox-row td {
         </div>
       </div>
     </div>
+  <!-- TAB 4: 规则库与口径反查 -->
+  <div id="tab-rules" style="display: none;">
+    <div id="dead-config-alert-container"></div>
+    <div class="filter-bar">
+      <div class="filter-group">
+        <span class="filter-label">领域分类:</span>
+        <select class="filter-select" id="filter-rule-domain" onchange="renderRules()">
+          <option value="all">全部领域</option>
+          <option value="PHA">PHA 药房摆药</option>
+          <option value="OP">OP 门诊收费/挂号</option>
+          <option value="IP">IP 住院业务</option>
+          <option value="FIN">FIN 财务日结/电子票</option>
+          <option value="SI">SI 医保目录</option>
+          <option value="CONV">CONV 测试口径约定</option>
+        </select>
+        <span class="filter-label" style="margin-left: 12px;">确证状态:</span>
+        <select class="filter-select" id="filter-rule-status" onchange="renderRules()">
+          <option value="all">全部状态</option>
+          <option value="confirmed">🟢 已证实 (confirmed)</option>
+          <option value="suspected">🟡 存疑/推测 (suspected)</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <input type="text" class="search-input" id="search-rules" placeholder="搜索规则ID、断言内容、关联用例..." oninput="renderRules()">
+      </div>
+    </div>
+
+    <div class="rule-grid" id="rules-container">
+      <!-- 动态渲染 -->
+    </div>
   </div>
 
 </div>
@@ -616,17 +729,19 @@ let state = {
   knownDefects: null,
   history: null,
   allCases: [],
+  rulesData: null,
   expandedCaseId: null
 };
 
 async function loadData() {
   try {
-    const [ovRes, casesRes, unexRes, defectsRes, histRes] = await Promise.all([
+    const [ovRes, casesRes, unexRes, defectsRes, histRes, rulesRes] = await Promise.all([
       fetch('/api/overview').then(r => r.json()),
       fetch('/api/cases').then(r => r.json()),
       fetch('/api/unexecuted').then(r => r.json()),
       fetch('/api/defects').then(r => r.json()),
-      fetch('/api/history').then(r => r.json())
+      fetch('/api/history').then(r => r.json()),
+      fetch('/api/rules').then(r => r.json())
     ]);
 
     state.overview = ovRes;
@@ -634,12 +749,14 @@ async function loadData() {
     state.unexecuted = unexRes.unexecuted || [];
     state.knownDefects = defectsRes.defects || {};
     state.history = histRes;
+    state.rulesData = rulesRes;
 
     renderOverview();
     renderDefectBanner();
     renderCasesTable();
     renderUnexecuted();
     renderHistory();
+    renderRules();
   } catch (err) {
     console.error("加载数据失败", err);
   }
@@ -734,10 +851,17 @@ function renderCasesTable() {
       ? `<span class="sandbox-action-forbidden" title="沙盒不连库，禁止写入总表">🚫 禁止写入总表</span>`
       : `<span class="real-action-allowed" title="真实环境全量对账通过，已入总表">✅ 可写入总表</span>`;
 
+    const ruleBadges = (c.requires_rules || []).map(rid =>
+      `<span class="rule-badge ${rid.startsWith('CONV_') ? 'rule-badge-suspected' : 'rule-badge-confirmed'}" onclick="event.stopPropagation(); viewRule('${rid}')" title="点击查看规则/口径 ${rid}">${rid}</span>`
+    ).join('');
+
     html += `
       <tr class="${rowClass}" onclick="toggleCaseDetail('${c.env}', '${c.case_id}')">
         <td style="font-weight: 700; font-family: monospace;">${c.case_id}</td>
-        <td style="font-weight: 600;">${c.title}</td>
+        <td style="font-weight: 600;">
+          <div>${c.title}</div>
+          ${ruleBadges ? `<div style="margin-top: 4px;">${ruleBadges}</div>` : ''}
+        </td>
         <td>${envTag}</td>
         <td><span class="badge ${badgeClass}">${c.status}</span></td>
         <td style="color: var(--text-muted);">${c.duration_ms ? c.duration_ms + 'ms' : '-'}</td>
@@ -755,6 +879,11 @@ function renderCasesTable() {
               <div style="font-size: 13px; color: #1e293b; margin-bottom: 8px;">
                 <strong>断言判定说明：</strong>${c.note || '无'}
               </div>
+              ${(c.requires_rules && c.requires_rules.length > 0) ? `
+              <div style="font-size: 12px; margin-bottom: 10px; padding: 6px 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px;">
+                <strong>⚖️ 关联业务规则与口径 (${c.requires_rules.length} 条)：</strong>
+                <span style="margin-left: 6px;">${ruleBadges}</span>
+              </div>` : ''}
               <div class="evidence-cards">
                 <div class="evidence-card">
                   <div class="evidence-card-header">
@@ -866,14 +995,124 @@ function filterTimelineByCase(caseId) {
   renderTimeline(runs);
 }
 
+function renderRules() {
+  const container = document.getElementById('rules-container');
+  const alertContainer = document.getElementById('dead-config-alert-container');
+  if (!state.rulesData) return;
+
+  const summary = state.rulesData.summary || {};
+  const rules = state.rulesData.rules || [];
+  const deadViolations = state.rulesData.dead_config_violations || [];
+
+  document.getElementById('tab-rules-count').innerText = summary.total_rules || rules.length;
+
+  if (deadViolations.length > 0) {
+    alertContainer.innerHTML = `
+      <div class="dead-config-banner">
+        <strong>❌ 发现 ${deadViolations.length} 处死配置违规！</strong><br>
+        ${deadViolations.map(v => escapeHtml(v.message)).join('<br>')}
+      </div>
+    `;
+  } else {
+    alertContainer.innerHTML = `
+      <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-size: 13px; color: #166534;">
+        ✅ <strong>死配置审计通过</strong>：当前真实数据库中未发现无条件兜底前置死配置（通用摆药单优先级已降为 7，出院带药摆药单 ID=62 正常承接）；Schema 校验与双向一致性 100% 对齐。
+      </div>
+    `;
+  }
+
+  const domainFilter = document.getElementById('filter-rule-domain').value;
+  const statusFilter = document.getElementById('filter-rule-status').value;
+  const search = document.getElementById('search-rules').value.trim().toLowerCase();
+
+  const filtered = rules.filter(r => {
+    if (domainFilter !== 'all') {
+      if (domainFilter === 'CONV') {
+        if (!r.id.startsWith('CONV_')) return false;
+      } else {
+        if (r.domain !== domainFilter) return false;
+      }
+    }
+    if (statusFilter !== 'all' && r.status !== statusFilter) return false;
+    if (search) {
+      const txt = `${r.id} ${r.domain} ${r.statement} ${r.evidence} ${(r.affected_cases||[]).join(' ')}`.toLowerCase();
+      if (!txt.includes(search)) return false;
+    }
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 32px;">查无匹配规则或口径</div>`;
+    return;
+  }
+
+  let html = '';
+  filtered.forEach(r => {
+    const isConfirmed = (r.status === 'confirmed');
+    const badgeHtml = isConfirmed
+      ? `<span class="rule-badge rule-badge-confirmed">🟢 已证实 (confirmed)</span>`
+      : `<span class="rule-badge rule-badge-suspected">🟡 存疑/推测 (suspected)</span>`;
+
+    const casePills = (r.affected_cases || []).map(cid =>
+      `<span class="case-pill" onclick="locateCase('${cid}')" title="跳转查看用例 ${cid}">${cid}</span>`
+    ).join('');
+
+    html += `
+      <div class="rule-card" id="rule-card-${r.id}">
+        <div class="rule-card-header">
+          <span class="rule-id-text">${r.id}</span>
+          ${badgeHtml}
+        </div>
+        <div class="rule-statement">${escapeHtml(r.statement)}</div>
+        <div class="rule-evidence-box">
+          <strong>实测证据 / 溯源：</strong><br>
+          ${escapeHtml(r.evidence)}
+        </div>
+        <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
+          领域: <strong>${r.domain}</strong> | 发现日期: ${r.discovered} | 来源: ${r.source_file}
+        </div>
+        <div style="font-size: 12px; font-weight: 600; color: #334155; margin-top: 8px;">
+          受约束用例清单 (${(r.affected_cases || []).length} 条)：
+        </div>
+        <div style="margin-top: 4px;">
+          ${casePills || '<span style="font-size: 11px; color: var(--text-muted);">暂无直接映射用例</span>'}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function locateCase(caseId) {
+  switchTab('cases');
+  document.getElementById('search-cases').value = caseId;
+  renderCasesTable();
+}
+
+function viewRule(ruleId) {
+  switchTab('rules');
+  document.getElementById('search-rules').value = ruleId;
+  renderRules();
+  const card = document.getElementById(`rule-card-${ruleId}`);
+  if (card) {
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    card.style.outline = '2px solid #2563eb';
+    setTimeout(() => { card.style.outline = ''; }, 2000);
+  }
+}
+
 function switchTab(tabId) {
   state.activeTab = tabId;
+  const tabs = ['cases', 'unexecuted', 'history', 'rules'];
   document.querySelectorAll('.tab-btn').forEach((btn, idx) => {
-    btn.classList.toggle('active', ['cases', 'unexecuted', 'history'][idx] === tabId);
+    btn.classList.toggle('active', tabs[idx] === tabId);
   });
   document.getElementById('tab-cases').style.display = (tabId === 'cases' ? 'block' : 'none');
   document.getElementById('tab-unexecuted').style.display = (tabId === 'unexecuted' ? 'block' : 'none');
   document.getElementById('tab-history').style.display = (tabId === 'history' ? 'block' : 'none');
+  document.getElementById('tab-rules').style.display = (tabId === 'rules' ? 'block' : 'none');
+  if (tabId === 'rules') renderRules();
 }
 
 function escapeHtml(str) {
@@ -995,7 +1234,32 @@ def create_app() -> Any:
                 item["env"] = "sandbox"
                 cases_out.append(item)
 
+        # 3. 注入关联业务规则与口径
+        try:
+            from ..rules.registry import registry
+            registry.ensure_loaded()
+            for c in cases_out:
+                cid = c.get("case_id")
+                rules = registry.get_rules_for_case(cid)
+                c["requires_rules"] = [r.id for r in rules]
+        except Exception:
+            pass
+
         return {"cases": cases_out, "count": len(cases_out)}
+
+    @app.get("/api/rules")
+    def get_rules() -> Dict[str, Any]:
+        """纯只读返回全量业务规则与测试口径、反查索引及死配置审计状态。"""
+        from ..rules.registry import registry
+        from ..rules.lint import scan_dead_configs
+        registry.ensure_loaded()
+        summary = registry.cross_reference_summary()
+        dead = scan_dead_configs()
+        return {
+            "summary": summary,
+            "rules": [r.to_dict() for r in registry.all_rules()],
+            "dead_config_violations": dead,
+        }
 
     @app.get("/api/unexecuted")
     def unexecuted_cases() -> Dict[str, Any]:

@@ -43,6 +43,7 @@ class _EmrClient:
 
 
 def flow_L5_005(ctx: Ctx) -> LoopResult:
+    requires_rules = []
     res = LoopResult(case_id="L5-005", title="护理记录与医嘱、体温单数据一致性")
     t0 = time.time()
     try:
@@ -171,6 +172,13 @@ def flow_L5_005(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L5_005.requires_rules = []
+
 FLOWS = {
     "L5-005": flow_L5_005,
+}
+
+
+FLOW_RULES = {
+    "L5-005": flow_L5_005.requires_rules,
 }

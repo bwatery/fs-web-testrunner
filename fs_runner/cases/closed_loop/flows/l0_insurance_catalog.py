@@ -34,6 +34,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L0_010(ctx: Ctx) -> LoopResult:
+    requires_rules = ["RULE_SI_CATALOG_CHECK"]
     res = LoopResult(case_id="L0-010", title="医保三大目录对照与限价")
     t0 = time.time()
     try:
@@ -220,6 +221,12 @@ def flow_L0_010(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L0_010.requires_rules = ["RULE_SI_CATALOG_CHECK"]
+
 FLOWS = {
     "L0-010": flow_L0_010,
+}
+
+FLOW_RULES = {
+    "L0-010": flow_L0_010.requires_rules,
 }

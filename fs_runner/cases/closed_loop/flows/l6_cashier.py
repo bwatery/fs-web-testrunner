@@ -33,6 +33,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L6_026(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT', 'RULE_FIN_CASHIER_SEGMENT', 'RULE_OP_05', 'RULE_OP_08']
     res = LoopResult(case_id="L6-026", title="自费收银与医保收银")
     t0 = time.time()
     try:
@@ -229,6 +230,13 @@ def flow_L6_026(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L6_026.requires_rules = ['CONV_GATE_OBSERVATION_EXPLICIT', 'RULE_FIN_CASHIER_SEGMENT', 'RULE_OP_05', 'RULE_OP_08']
+
 FLOWS = {
     "L6-026": flow_L6_026,
+}
+
+
+FLOW_RULES = {
+    "L6-026": flow_L6_026.requires_rules,
 }

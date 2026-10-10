@@ -52,6 +52,7 @@ class _EmrClient:
 
 
 def flow_L5_027(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_CHAR_PAD_SPACE_OVERFLOW']
     res = LoopResult(case_id="L5-027", title="病历封存与解封")
     t0 = time.time()
     try:
@@ -207,6 +208,13 @@ def flow_L5_027(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L5_027.requires_rules = ['CONV_CHAR_PAD_SPACE_OVERFLOW']
+
 FLOWS = {
     "L5-027": flow_L5_027,
+}
+
+
+FLOW_RULES = {
+    "L5-027": flow_L5_027.requires_rules,
 }

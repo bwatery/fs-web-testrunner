@@ -26,6 +26,7 @@ from ..closed_loop import Ctx, LoopResult, _oracle_conn
 
 
 def flow_L6_063(ctx: Ctx) -> LoopResult:
+    requires_rules = ['CONV_NO_SPECULATIVE_EQUATION']
     res = LoopResult(case_id="L6-063", title="基金结算单查询打印")
     t0 = time.time()
     try:
@@ -144,6 +145,7 @@ def flow_L6_063(ctx: Ctx) -> LoopResult:
 
 
 def flow_L6_068(ctx: Ctx) -> LoopResult:
+    requires_rules = ['RULE_IP_08']
     res = LoopResult(case_id="L6-068", title="医保结算单与异地单补打")
     t0 = time.time()
     try:
@@ -244,7 +246,16 @@ def flow_L6_068(ctx: Ctx) -> LoopResult:
     return res
 
 
+flow_L6_063.requires_rules = ['CONV_NO_SPECULATIVE_EQUATION']
+flow_L6_068.requires_rules = ['RULE_IP_08']
+
 FLOWS = {
     "L6-063": flow_L6_063,
     "L6-068": flow_L6_068,
+}
+
+
+FLOW_RULES = {
+    "L6-063": flow_L6_063.requires_rules,
+    "L6-068": flow_L6_068.requires_rules,
 }
