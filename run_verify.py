@@ -20,12 +20,20 @@ import sys
 import time
 from pathlib import Path
 
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 BASE_DIR = Path(__file__).resolve().parent
+if str(BASE_DIR) not in sys.path:
+    sys.path.insert(0, str(BASE_DIR))
 if str(BASE_DIR.parent) not in sys.path:
     sys.path.insert(0, str(BASE_DIR.parent))
 
-from fs_web_testrunner.config import EMR_API_URL, REPORTS_DIR  # noqa: E402
-from fs_web_testrunner.core.env_config import env_config       # noqa: E402
+from fs_runner.config import GATEWAY_URL, REPORTS_DIR, env_config  # noqa: E402
 from fs_web_testrunner.verify import api_surface, fixtures, smoke_api  # noqa: E402
 
 VERIFY_DIR = Path(REPORTS_DIR) / "verify"
@@ -107,7 +115,7 @@ def _flatten_menu_names(nodes, out=None, prefix=""):
 def _run_ui_walk(args, gateway: str, frontend: str) -> int:
     """L2 · 真实用户操作模拟：像真人一样点开每一级菜单，逐页断言。"""
     import requests
-    from fs_web_testrunner.core.browser_driver import BrowserDriver
+    from fs_runner.cases.ui_probe import CDPBrowserDriver as BrowserDriver
     from fs_web_testrunner.verify.ui_walk import UIWalker
 
     shots = str(Path(REPORTS_DIR) / "screenshots" / "uiwalk")
@@ -369,15 +377,17 @@ def _run_closed_loop(args, gateway: str) -> int:
     out_dir = Path(REPORTS_DIR) / "verify"
     out_dir.mkdir(parents=True, exist_ok=True)
     ts = time.strftime("%Y%m%d_%H%M%S")
+    env_name = getattr(args, "env", "real") or "real"
     payload = {
-        "meta": {"started": time.strftime("%Y-%m-%d %H:%M:%S"), "gateway": gateway},
+        "meta": {"started": time.strftime("%Y-%m-%d %H:%M:%S"), "gateway": gateway, "env": env_name},
         "summary": {
             "通过": sum(1 for r in results if r.status == "通过"),
             "失败": sum(1 for r in results if r.status == "失败"),
             "未执行": sum(1 for r in results if r.status == "未执行"),
         },
         "results": [{"case_id": r.case_id, "title": r.title, "status": r.status,
-                     "note": r.note, "evidence": r.evidence,
+                     "note": r.note,
+                     "evidence": {**(r.evidence if isinstance(r.evidence, dict) else {"data": r.evidence}), "env": env_name},
                      "duration_ms": r.duration_ms} for r in results],
     }
     with open(out_dir / f"closed_loop_{ts}.json", "w", encoding="utf-8") as f:
@@ -443,9 +453,10 @@ def main() -> int:
     ap.add_argument("--username", default="admin", help="登录账号")
     ap.add_argument("--password", default="admin123", help="登录口令")
     ap.add_argument("--max-pages", type=int, default=0, help="UI 巡检最多点几项菜单")
+    ap.add_argument("--env", choices=["real", "sandbox"], default="real", help="运行环境（real=真实环境，sandbox=沙盒模式）")
     args = ap.parse_args()
 
-    gateway = (args.gateway or EMR_API_URL).rstrip("/")
+    gateway = (args.gateway or GATEWAY_URL).rstrip("/")
     frontend = env_config.get_frontend_url()
 
     # P0 关键业务闭环真校验

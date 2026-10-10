@@ -27,6 +27,8 @@ if hasattr(sys.stdout, "reconfigure"):
         pass
 
 ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 OUT = ROOT / "reports" / "verify" / "协作产出"
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -180,46 +182,9 @@ def _failed_ids(stdout: str):
 
 
 def cmd_regression():
-    known = _load_known_defects()
-    log = OUT / f"regression_{time.strftime('%Y%m%d_%H%M%S')}.log"
-    ok = 0
-    seen_known, seen_new = set(), set()
-    with open(log, "w", encoding="utf-8") as f:
-        for i in (1, 2, 3):
-            f.write(f"\n===== 第 {i} 轮 =====\n")
-            p = subprocess.run([sys.executable, "run_verify.py", "--closed-loop"],
-                               cwd=str(ROOT), capture_output=True, text=True,
-                               encoding="utf-8", errors="replace")
-            out = p.stdout or ""
-            f.write("\n".join(out.splitlines()[-25:]) + "\n")
-            failed = _failed_ids(out)
-            new = sorted(failed - set(known))
-            kn = sorted(failed & set(known))
-            seen_new |= set(new)
-            seen_known |= set(kn)
-            ok += 1 if not new else 0
-            if new:
-                print(f"  第{i}轮: ❌ 红 —— 新失败 {len(new)} 条：{', '.join(new)}")
-            elif kn:
-                print(f"  第{i}轮: 绿（含已知缺陷 {len(kn)} 条：{', '.join(kn)}）")
-            else:
-                print(f"  第{i}轮: 绿")
-    print(f"[产出] {log}")
-
-    if seen_known:
-        print(f"\n  ⚠️ 已知缺陷 {len(seen_known)} 条（绿灯不掩盖，逐条列出）：")
-        for cid in sorted(seen_known):
-            v = known.get(cid) or {}
-            print(f"     {cid}  {v.get('title', '')}")
-            print(f"          {v.get('reason', '')}")
-            print(f"          （{v.get('since', '')}）")
-
-    if ok == 3:
-        tail = f"（另有 {len(seen_known)} 条已知缺陷，见上）" if seen_known else ""
-        print(f"  三轮全绿 ✓ —— 直接回报'三轮全绿'即可{tail}")
-        return 0
-    print("  ⚠️ 有**新**失败！**不要自己改代码**，把上面这个 log 原样交给主力")
-    return 1
+    """执行三轮全量闭环回归（转调 fs_runner regression 统一执行器）。"""
+    from fs_runner.cli import run_regression
+    return run_regression()
 
 
 def cmd_emr_by_tag():

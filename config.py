@@ -29,7 +29,7 @@ REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
 
 # Dynamic Target Environment Configuration
-from fs_web_testrunner.core.env_config import env_config
+from fs_runner.config import env_config
 
 def get_emr_designer_url() -> str:
     return env_config.get_emr_designer_url()
