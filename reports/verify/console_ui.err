@@ -10,3 +10,14 @@ INFO:     connection closed
 INFO:     ('127.0.0.1', 57823) - "WebSocket /ws/run" [accepted]
 INFO:     connection open
 INFO:     connection closed
+INFO:     ('127.0.0.1', 50686) - "WebSocket /ws/run" [accepted]
+INFO:     connection open
+INFO:     ('127.0.0.1', 61025) - "WebSocket /ws/run" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     ('127.0.0.1', 59616) - "WebSocket /ws/run" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     ('127.0.0.1', 60656) - "WebSocket /ws/run" [accepted]
+INFO:     connection open

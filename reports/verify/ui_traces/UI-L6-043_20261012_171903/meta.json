@@ -1,0 +1,42 @@
+{
+  "case_id": "UI-L6-043",
+  "timestamp": "2026-10-12 17:19:03",
+  "note": "界面分类表格读到床位费总额 ¥227.5；库中有效床位计提记录 5 笔，累加总额 ¥327.5 —— 等式不成立存在差异（变异自检生效：内存扰动库值成功导致断言变红）",
+  "route": {
+    "href": "http://192.168.1.198:8088/#/inpatient/finance/syntheticfquery",
+    "origin": "http://192.168.1.198:8088",
+    "pathname": "/",
+    "hash": "#/inpatient/finance/syntheticfquery",
+    "title": "费用综合查询 - HIOP",
+    "readyState": "complete"
+  },
+  "screenshot_saved": true,
+  "dom_bytes": 637358,
+  "console_entries_count": 24,
+  "network_requests_count": 256,
+  "evidence": {
+    "用例编号": "UI-L6-043",
+    "运行模式": "[界面·无头]",
+    "界面元素选择器": ".el-table__row (包含'床位费'分类行)",
+    "界面读出值": {
+      "住院号": "012331",
+      "费用类别": "床位费",
+      "界面床位费总额": 227.5
+    },
+    "数据库真实值": {
+      "计提条数": 5,
+      "库中床位费总额": 327.5
+    },
+    "验证等式": "界面床位费总额(227.5) == 库中计提总额(327.5)",
+    "等式成立": false,
+    "变异扰动": true
+  },
+  "files": [
+    "meta.json",
+    "dom.html",
+    "route.json",
+    "console.json",
+    "network.json",
+    "screenshot.png"
+  ]
+}
