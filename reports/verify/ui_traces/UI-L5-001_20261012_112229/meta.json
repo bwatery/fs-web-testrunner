@@ -1,0 +1,50 @@
+{
+  "case_id": "UI-L5-001",
+  "timestamp": "2026-10-12 11:22:29",
+  "note": "体温单SVG图表渲染日期 ['2026-10-7', '2026-10-8']，测温事件/值包含 ['外出', '拒测']；库中 EMR_NURSE_TEMPERATURE 2026-10-08 记录事件为 ['39.8', '高热_扰动'] —— 等式不成立存在差异（变异自检生效：内存扰动测温记录导致断言变红）",
+  "route": {
+    "href": "http://192.168.1.198:8088/#/inpatient/doctor/medicalRecord",
+    "origin": "http://192.168.1.198:8088",
+    "pathname": "/",
+    "hash": "#/inpatient/doctor/medicalRecord",
+    "title": "住院工作站 - HIOP",
+    "readyState": "complete"
+  },
+  "screenshot_saved": true,
+  "dom_bytes": 1406765,
+  "console_entries_count": 485,
+  "network_requests_count": 703,
+  "evidence": {
+    "用例编号": "UI-L5-001",
+    "运行模式": "[界面·无头]",
+    "界面元素选择器": "#print-chart-container svg[fstype='page'] (体温单矢量曲线、日期与测温状态事件文本)",
+    "界面读出值": {
+      "住院号": "000016",
+      "图表测温日期": "2026-10-8",
+      "界面测温事件集合": [
+        "外出",
+        "拒测"
+      ]
+    },
+    "数据库真实值": {
+      "库中测温日期": "2026-10-08",
+      "库中测温事件集合": [
+        "39.8",
+        "高热_扰动"
+      ]
+    },
+    "验证等式": "界面测温事件(['外出', '拒测']) == 库中EMR_NURSE_TEMPERATURE事件(['39.8', '高热_扰动'])",
+    "等式成立": false,
+    "截图存证": "reports/verify/screenshots/l5_001_temperature_chart.png",
+    "定性结论": "选择器优化修正：页面真实渲染2026-10-08竖排红色[拒测/外出]事件，原选择器误取导航栏图标SVG，已纠正为体温单主图表SVG",
+    "变异扰动": true
+  },
+  "files": [
+    "meta.json",
+    "dom.html",
+    "route.json",
+    "console.json",
+    "network.json",
+    "screenshot.png"
+  ]
+}

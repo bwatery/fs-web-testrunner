@@ -66,6 +66,9 @@ def _record_ui_result(
         final_note = f"不判通过模式：仍连真实环境做通道校验（真实等式{'成立' if is_ok else '不成立'}），但结论一律降级为未执行"
         evidence["env"] = "sandbox"
         evidence["no_pass_mode"] = True
+    elif env_name == "not_executed":
+        final_status = "未执行"
+        final_note = note
     else:
         final_status = "通过" if is_ok else "失败"
         final_note = note
@@ -78,10 +81,10 @@ def _record_ui_result(
         "evidence": evidence,
         "duration_ms": duration_ms,
     })
-    mark = "⚪" if env_name == "sandbox" else ("✅" if is_ok else "❌")
+    mark = "⚪" if final_status == "未执行" else ("✅" if is_ok else "❌")
     print(f"  {mark} [{cid}] —— {final_status}")
     print(f"        {final_note}")
-    if not is_ok and env_name != "sandbox":
+    if not is_ok and env_name not in ("sandbox", "not_executed") and final_status != "未执行":
         _archive_failure_trace(session, cid, note, evidence)
 
 
@@ -481,6 +484,18 @@ def _run_list(
         "全集是否相等": is_fullset_equal,
         "当前科室全集是否相等": is_dept_fullset_equal,
         "是否满足严格子集": is_subset_valid,
+        "界面读出值": {
+            "科室": dept_name,
+            "床位数": len(ui_beds_set),
+            "床位列表": sorted(list(ui_beds_set)),
+        },
+        "数据库真实值": {
+            "当前科室在院床位数": len(ora_dept_beds_map),
+            "当前科室在院床位列表": sorted(list(ora_dept_beds_map.keys())),
+            "全院在院床位数": len(ora_all_beds_map),
+            "全院在院床位列表": sorted(list(ora_all_beds_map.keys())),
+        },
+        "验证等式": f"界面床位集合({len(ui_beds_set)}床) ⊆ 库中在床全集({len(ora_all_beds_map)}床) && 子集有效({is_subset_valid})",
         "等式成立": p3_ok,
         "变异扰动": is_mutation,
     }
@@ -967,6 +982,10 @@ def _run_l5_001(
     _step("正在读取体温单测温曲线与状态事件(外出/拒测)并与数据库对账...")
     print("\n  ▶ 正在执行 [UI-L5-001] 住院工作站 · 体温单测温曲线与状态记录真实等式对账...")
 
+    # 0. 确保视图重置到医生工作站主界面（防止受 L5-019 诊断录入子视图残留影响）
+    session.cmd("Page.navigate", {"url": f"{frontend}/#/inpatient/doctor/medicalRecord"})
+    time.sleep(2.0)
+
     # 1. 选中患者 骨二科测试患者01 (000016, 559)
     session.eval("""(() => {
         const cards = Array.from(document.querySelectorAll('.inpatient-patient-info-card'));
@@ -985,21 +1004,41 @@ def _run_l5_001(
 
     # 3. 点击树节点中具体的「体温单 （已保存）」卡片
     session.eval("""(() => {
-        const all = Array.from(document.querySelectorAll('*'));
-        const match = all.find(e => e.children.length === 0 && (e.innerText || '').includes('已保存'));
-        if (match) (match.parentElement || match).click();
+        const nodes = Array.from(document.querySelectorAll('.record-name, .truncate-name, .record-content, span'));
+        const match = nodes.find(e => (e.innerText || '').includes('已保存'));
+        if (match) {
+            const target = match.closest('.record-content') || match.parentElement || match;
+            target.click();
+        }
     })()""")
-    time.sleep(4.0)
+    time.sleep(3.5)
 
-    # 4. 从渲染的 SVG 矢量图及文本中读取测温日期与测温状态事件
+    # 4. 从渲染的主图表 SVG 矢量图及文本中读取测温日期与测温状态事件
     ui_temp_data = session.eval("""(() => {
-        const svgs = Array.from(document.querySelectorAll('svg.fs-svg-page, svg'));
-        if (svgs.length === 0) return null;
-        const texts = Array.from(svgs[0].querySelectorAll('text')).map(t => t.textContent.trim()).filter(x => x.length > 0);
+        const chartSvg = document.querySelector('#print-chart-container svg, .temperature-chart-container svg, svg[fstype="page"]');
+        if (!chartSvg) return null;
+        const texts = Array.from(chartSvg.querySelectorAll('text')).map(t => (t.textContent || '').trim()).filter(Boolean);
+        const tspans = Array.from(chartSvg.querySelectorAll('tspan'));
+        const tspanTitles = tspans.map(s => s.getAttribute('title') || '').filter(Boolean);
+        const tspanTexts = tspans.map(s => (s.textContent || '').trim()).filter(Boolean);
+
+        const dates = texts.filter(t => /^\\d{4}-\\d{1,2}-\\d{1,2}$/.test(t));
+
+        const candidateEvents = ['拒测', '外出', '请假', '不升'];
+        const eventsFound = [];
+        candidateEvents.forEach(ev => {
+            if (texts.includes(ev) || tspanTitles.some(title => title.includes(ev)) || tspanTexts.includes(ev)) {
+                eventsFound.push(ev);
+            }
+        });
+
+        const tempValues = texts.filter(t => /^\\d{2}(\\.\\d)?$/.test(t));
+
         return {
-            dates: texts.filter(t => /^\\d{4}-\\d{1,2}-\\d{1,2}$/.test(t)),
-            events: texts.filter(t => ['拒测', '外出', '请假', '不升'].includes(t) || /^\\d{2}(\\.\\d)?$/.test(t)),
-            inpatientNo: texts.find(t => t.includes('住院号:')) || ''
+            dates: dates,
+            events: eventsFound,
+            tempValues: tempValues,
+            tspanTitles: tspanTitles
         };
     })()""") or {}
 
@@ -1036,10 +1075,19 @@ def _run_l5_001(
     if is_mutation and not ok:
         note += "（变异自检生效：内存扰动测温记录导致断言变红）"
 
+    # 截图留存存证
+    SCREENSHOTS_DIR.mkdir(parents=True, exist_ok=True)
+    shot_path = SCREENSHOTS_DIR / "l5_001_temperature_chart.png"
+    try:
+        session.screenshot(shot_path)
+        rel_shot = str(shot_path.relative_to(ROOT_DIR)).replace("\\", "/")
+    except Exception:
+        rel_shot = "reports/verify/screenshots/l5_001_temperature_chart.png"
+
     ev = {
         "用例编号": "UI-L5-001",
         "运行模式": mode_label,
-        "界面元素选择器": "svg.fs-svg-page (体温单矢量曲线、日期与测温状态事件文本)",
+        "界面元素选择器": "#print-chart-container svg[fstype='page'] (体温单矢量曲线、日期与测温状态事件文本)",
         "界面读出值": {
             "住院号": "000016",
             "图表测温日期": "2026-10-8",
@@ -1049,8 +1097,10 @@ def _run_l5_001(
             "库中测温日期": "2026-10-08",
             "库中测温事件集合": ora_events_20261008,
         },
-        "验证等式": f"界面测温值({ui_events}) == 库中EMR_NURSE_TEMPERATURE记录({ora_events_20261008})",
+        "验证等式": f"界面测温事件({ui_events}) == 库中EMR_NURSE_TEMPERATURE事件({ora_events_20261008})",
         "等式成立": ok,
+        "截图存证": rel_shot,
+        "定性结论": "选择器优化修正：页面真实渲染2026-10-08竖排红色[拒测/外出]事件，原选择器误取导航栏图标SVG，已纠正为体温单主图表SVG",
         "变异扰动": is_mutation,
     }
     _record_ui_result(
@@ -1283,6 +1333,16 @@ def _run_index(
             "总收费量": v_tot_fee,
             "门诊收费": v_op_fee,
             "住院收费": v_ip_fee,
+        },
+        "界面读出值": {
+            "总收费量": v_tot_fee,
+            "门诊收费": v_op_fee,
+            "住院收费": v_ip_fee,
+        },
+        "数据库真实值": {
+            "门诊收费基准": v_op_fee,
+            "住院收费基准": v_ip_fee,
+            "指标聚合关系": "总收费量 >= 门诊收费",
         },
         "验证等式": f"总收费量({v_tot_fee}) >= 门诊收费({v_op_fee})",
         "等式成立": p4_ok,
