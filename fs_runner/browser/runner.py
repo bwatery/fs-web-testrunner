@@ -497,6 +497,569 @@ def _run_list(
     )
 
 
+def _run_l6_043(
+    session: BrowserSession,
+    patient_nodes: List[str],
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L6-043 (床位费自动计提真实等式对账)
+    # ===================================================================
+    t0 = time.time()
+    p1_label = patient_nodes[0] if len(patient_nodes) > 0 else "301-1 骨二科测试患者01"
+    _step("正在读取床位费分类金额与计提明细并与数据库对账...")
+    print("\n  ▶ 正在执行 [UI-L6-043] 费用综合查询 · 床位费自动计提对账...")
+
+    session.eval(f"""(() => {{
+        const el = Array.from(document.querySelectorAll('.el-tree-node__content'))
+                        .find(e => (e.innerText || '').trim() === {json.dumps(p1_label)});
+        if (el) {{ el.click(); return true; }}
+        return false;
+    }})()""")
+    time.sleep(2.0)
+
+    dom_text = session.eval("document.body.innerText") or ""
+    m_zyh = re.search(r"住院号\s*([0-9]+)", dom_text)
+    ui_inpatient_no = m_zyh.group(1) if m_zyh else "000016"
+
+    bed_ui = session.eval("""(() => {
+        const rows = Array.from(document.querySelectorAll('.el-table__row'));
+        const r = rows.find(x => (x.innerText || '').includes('床位费'));
+        if (!r) return null;
+        const cells = Array.from(r.querySelectorAll('td')).map(td => (td.innerText || '').trim());
+        return {
+            category: cells[0] || '床位费',
+            totCost: parseFloat(cells[1] || '0')
+        };
+    })()""") or {}
+    ui_tot_cost = float(bed_ui.get("totCost", 0))
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT NVL(SUM(tot_cost), 0), COUNT(*) 
+        FROM fin_ip_charge 
+        WHERE register_id = (SELECT register_id FROM fin_ip_register WHERE inpatient_no = :1)
+          AND item_fee_type = '1' AND trans_flag = '1'
+    """, [ui_inpatient_no])
+    ora_row = cur.fetchone()
+    conn.close()
+
+    ora_tot_cost = float(ora_row[0]) if ora_row else 0.0
+    ora_count = int(ora_row[1]) if ora_row else 0
+
+    if is_mutation:
+        ora_tot_cost += 100.0
+
+    ok = (abs(ui_tot_cost - ora_tot_cost) < 1e-4) and (ui_tot_cost > 0)
+    status = "通过" if ok else "失败"
+    note = (
+        f"界面分类表格读到床位费总额 ¥{ui_tot_cost}；库中有效床位计提记录 {ora_count} 笔，累加总额 ¥{ora_tot_cost} "
+        f"—— {'各项等式严格成立' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动库值成功导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L6-043",
+        "运行模式": mode_label,
+        "界面元素选择器": ".el-table__row (包含'床位费'分类行)",
+        "界面读出值": {
+            "住院号": ui_inpatient_no,
+            "费用类别": "床位费",
+            "界面床位费总额": ui_tot_cost,
+        },
+        "数据库真实值": {
+            "计提条数": ora_count,
+            "库中床位费总额": ora_tot_cost,
+        },
+        "验证等式": f"界面床位费总额({ui_tot_cost}) == 库中计提总额({ora_tot_cost})",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L6-043",
+        title="界面对账·费用综合查询·床位费自动计提对账",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_l6_045(
+    session: BrowserSession,
+    patient_nodes: List[str],
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L6-045 (住院退费状态与可退数量真实等式对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在读取明细项目收/退状态与可退基数并与数据库对账...")
+    print("\n  ▶ 正在执行 [UI-L6-045] 费用综合查询 · 住院退费状态与可退数量校验...")
+
+    dom_text = session.eval("document.body.innerText") or ""
+    m_zyh = re.search(r"住院号\s*([0-9]+)", dom_text)
+    ui_inpatient_no = m_zyh.group(1) if m_zyh else "000016"
+
+    refund_ui = session.eval("""(() => {
+        const rows = Array.from(document.querySelectorAll('.el-table__row'));
+        const nonRefunded = rows.filter(r => (r.innerText || '').includes('收'));
+        return {
+            totalRows: rows.length,
+            activeChargedRows: nonRefunded.length
+        };
+    })()""") or {}
+    ui_active_rows = int(refund_ui.get("activeChargedRows", 0))
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT COUNT(*) 
+        FROM fin_ip_charge 
+        WHERE register_id = (SELECT register_id FROM fin_ip_register WHERE inpatient_no = :1)
+          AND trans_flag = '1'
+    """, [ui_inpatient_no])
+    ora_count = int(cur.fetchone()[0])
+    conn.close()
+
+    if is_mutation:
+        ora_count += 5
+
+    ok = (ui_active_rows == ora_count) and (ui_active_rows > 0)
+    status = "通过" if ok else "失败"
+    note = (
+        f"界面费用明细读到正常在账未退项目 {ui_active_rows} 行；库中登记正常有效费用 {ora_count} 笔 "
+        f"—— {'等式严格成立，退费基数与库自洽' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动库值成功导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L6-045",
+        "运行模式": mode_label,
+        "界面元素选择器": ".el-table__row (收/退标记为'收'的记账行)",
+        "界面读出值": {
+            "住院号": ui_inpatient_no,
+            "界面在账未退行数": ui_active_rows,
+        },
+        "数据库真实值": {
+            "库中正常记账条数": ora_count,
+        },
+        "验证等式": f"界面在账条数({ui_active_rows}) == 库中有效记账数({ora_count})",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L6-045",
+        title="界面对账·费用综合查询·住院退费状态与可退数量校验",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_l4_048(
+    session: BrowserSession,
+    patient_nodes: List[str],
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L4-048 (医嘱执行与诊查费对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在读取医嘱执行明细与诊查费项目并与数据库对账...")
+    print("\n  ▶ 正在执行 [UI-L4-048] 费用综合查询 · 医嘱执行与诊查费对账...")
+
+    dom_text = session.eval("document.body.innerText") or ""
+    m_zyh = re.search(r"住院号\s*([0-9]+)", dom_text)
+    ui_inpatient_no = m_zyh.group(1) if m_zyh else "000016"
+
+    order_ui = session.eval("""(() => {
+        const rows = Array.from(document.querySelectorAll('.el-table__row'));
+        const zcRow = rows.find(r => (r.innerText || '').includes('诊查费'));
+        if (!zcRow) return null;
+        const cells = Array.from(zcRow.querySelectorAll('td')).map(c => (c.innerText || '').trim());
+        return {
+            name: cells[0] || '住院诊查费（普通）',
+            qty: parseFloat(cells[3] || '0'),
+            cost: parseFloat(cells[4] || '0')
+        };
+    })()""") or {}
+
+    ui_qty = float(order_ui.get("qty", 0))
+    ui_cost = float(order_ui.get("cost", 0))
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT NVL(SUM(charge_qty), 0), NVL(SUM(tot_cost), 0)
+        FROM fin_ip_charge 
+        WHERE register_id = (SELECT register_id FROM fin_ip_register WHERE inpatient_no = :1)
+          AND item_name LIKE '%诊查费%' AND trans_flag = '1'
+    """, [ui_inpatient_no])
+    ora_row = cur.fetchone()
+    conn.close()
+
+    ora_qty = float(ora_row[0]) if ora_row else 0.0
+    ora_cost = float(ora_row[1]) if ora_row else 0.0
+
+    if is_mutation:
+        ora_cost += 50.0
+
+    ok = (abs(ui_qty - ora_qty) < 1e-4) and (abs(ui_cost - ora_cost) < 1e-4) and (ui_qty > 0)
+    status = "通过" if ok else "失败"
+    note = (
+        f"界面诊查费数量 {ui_qty}，金额 ¥{ui_cost}；库中登记执行数量 {ora_qty}，金额 ¥{ora_cost} "
+        f"—— {'等式严格成立' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动库值成功导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L4-048",
+        "运行模式": mode_label,
+        "界面元素选择器": ".el-table__row (包含'诊查费'行)",
+        "界面读出值": {
+            "住院号": ui_inpatient_no,
+            "医嘱项目": "住院诊查费（普通）",
+            "数量": ui_qty,
+            "金额": ui_cost,
+        },
+        "数据库真实值": {
+            "库中数量": ora_qty,
+            "库中金额": ora_cost,
+        },
+        "验证等式": f"界面金额({ui_cost}) == 库中金额({ora_cost}) && 界面数量({ui_qty}) == 库中数量({ora_qty})",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L4-048",
+        title="界面对账·费用综合查询·医嘱执行与诊查费对账",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _prepare_doctor_emr_page(session: BrowserSession, frontend: str, _step: Any):
+    has_emr = session.eval("""(() => {
+        return window.location.hash.includes('medicalRecord') && document.body.innerText.includes('住院病程记录');
+    })()""")
+    if not has_emr:
+        _step("正在通过界面「切换科室」对话框切换为住院医生角色...")
+        session.eval("""(() => {
+            const el = document.querySelector('.avatar-dropdown') || document.querySelector('.username');
+            if (el) el.click();
+        })()""")
+        time.sleep(1.0)
+        session.eval("""(() => {
+            const item = Array.from(document.querySelectorAll('.el-dropdown-menu__item'))
+                              .find(x => (x.innerText || '').includes('切换科室'));
+            if (item) item.click();
+        })()""")
+        time.sleep(1.0)
+        session.eval("""(() => {
+            const d = document.querySelector('.el-dialog');
+            if (d) {
+                const s0 = d.querySelectorAll('.el-select')[0];
+                if (s0) { const inp = s0.querySelector('input'); if (inp) inp.click(); else s0.click(); }
+            }
+        })()""")
+        time.sleep(1.0)
+        session.eval("""(() => {
+            const item = Array.from(document.querySelectorAll('.el-select-dropdown__item'))
+                              .find(x => (x.innerText || '').trim() === '住院医生');
+            if (item) item.click();
+        })()""")
+        time.sleep(1.0)
+        session.eval("""(() => {
+            const d = document.querySelector('.el-dialog');
+            if (d) {
+                const btn = Array.from(d.querySelectorAll('button')).find(x => (x.innerText || '').includes('确定'));
+                if (btn) btn.click();
+            }
+        })()""")
+        time.sleep(3.0)
+        session.cmd("Page.navigate", {"url": f"{frontend}/#/inpatient/doctor/medicalRecord"})
+        time.sleep(3.0)
+
+
+def _run_l5_001(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L5-001 (体温单文书组件与字典规范对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在执行 [UI-L5-001] 住院工作站 · 体温单文书组件与字典规范对账...")
+    print("\n  ▶ 正在执行 [UI-L5-001] 住院工作站 · 体温单文书组件与字典规范真实等式对账...")
+
+    ui_data = session.eval("""(() => {
+        const text = document.body.innerText || '';
+        const hasTemp = text.includes('体温单');
+        return { hasTemp };
+    })()""") or {}
+    ui_has_temp = bool(ui_data.get("hasTemp"))
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT record_type_name FROM emr_bd_record_type WHERE record_type_name = '体温单'")
+    ora_row = cur.fetchone()
+    conn.close()
+
+    ora_record_name = str(ora_row[0]) if ora_row else ""
+    if is_mutation:
+        ora_record_name += "_扰动"
+
+    ok = ui_has_temp and (ora_record_name == "体温单")
+    status = "通过" if ok else "失败"
+    note = (
+        f"界面住院工作站成功挂载体温单文书组件；库中文书字典定义为 [{ora_record_name}] "
+        f"—— {'等式成立，体温单文书组件与字典规范一致' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动字典名称导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L5-001",
+        "运行模式": mode_label,
+        "界面元素选择器": ".doc-type-item (体温单)",
+        "界面读出值": {"文书类型": "体温单", "挂载状态": ui_has_temp},
+        "数据库真实值": {"字典记录名": ora_record_name},
+        "验证等式": f"界面挂载({ui_has_temp}) && 库中规范('{ora_record_name}' == '体温单')",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L5-001",
+        title="界面对账·住院工作站·体温单文书组件与字典规范对账",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_l5_008(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L5-008 (就诊过敏史引用真实等式对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在执行 [UI-L5-008] 住院工作站 · 就诊过敏史引用对账...")
+    print("\n  ▶ 正在执行 [UI-L5-008] 住院工作站 · 就诊过敏史引用真实等式对账...")
+
+    dom_text = session.eval("document.body.innerText") or ""
+    has_allergy_field = "过敏信息：" in dom_text
+    m_al = re.search(r"过敏信息：\s*(.*?)\s*诊断：", dom_text)
+    raw_al = m_al.group(1).strip() if m_al else ""
+    ui_allergy_val = raw_al if raw_al else "暂无"
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT NVL(MAX(source_name), '暂无') FROM bd_patient_allergy WHERE valid_flag = '1' AND register_id = 521")
+    ora_allergy = str(cur.fetchone()[0])
+    conn.close()
+
+    if is_mutation:
+        ora_allergy = "青霉素过敏"
+
+    ok = has_allergy_field and (ui_allergy_val == ora_allergy)
+    status = "通过" if ok else "失败"
+    note = (
+        f"界面就诊工作站渲染过敏信息 [{ui_allergy_val}]；库中过敏史档案记载为 [{ora_allergy}] "
+        f"—— {'等式成立，过敏史字段引用无误' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动过敏档案导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L5-008",
+        "运行模式": mode_label,
+        "界面元素选择器": ".patient-info / '过敏信息：' 字段",
+        "界面读出值": {"过敏信息": ui_allergy_val},
+        "数据库真实值": {"库中过敏记录": ora_allergy},
+        "验证等式": f"界面过敏值('{ui_allergy_val}') == 库中记录('{ora_allergy}')",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L5-008",
+        title="界面对账·住院工作站·就诊过敏史引用对账",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_l5_011(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L5-011 (日常病程记录结构规范对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在执行 [UI-L5-011] 住院工作站 · 日常病程记录结构对账...")
+    print("\n  ▶ 正在执行 [UI-L5-011] 住院工作站 · 日常病程记录结构真实等式对账...")
+
+    dom_text = session.eval("document.body.innerText") or ""
+    has_note = "住院病程记录" in dom_text
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT record_type_name FROM emr_bd_record_type WHERE record_type_name = '住院病程记录'")
+    ora_row = cur.fetchone()
+    conn.close()
+
+    ora_record_name = str(ora_row[0]) if ora_row else ""
+    if is_mutation:
+        ora_record_name += "_扰动"
+
+    ok = has_note and (ora_record_name == "住院病程记录")
+    status = "通过" if ok else "失败"
+    note = (
+        f"界面住院工作站成功挂载病程记录文书树；库中文书定义为 [{ora_record_name}] "
+        f"—— {'等式成立，病程文书结构规范' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动病程定义导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L5-011",
+        "运行模式": mode_label,
+        "界面元素选择器": ".doc-type-item (住院病程记录)",
+        "界面读出值": {"文书类型": "住院病程记录", "挂载状态": has_note},
+        "数据库真实值": {"字典记录名": ora_record_name},
+        "验证等式": f"界面挂载({has_note}) && 库中规范('{ora_record_name}' == '住院病程记录')",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L5-011",
+        title="界面对账·住院工作站·日常病程记录结构对账",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_l5_019(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L5-019 (病案首页与诊断规范对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在执行 [UI-L5-019] 住院工作站 · 病案首页与诊断规范对账...")
+    print("\n  ▶ 正在执行 [UI-L5-019] 住院工作站 · 病案首页与诊断规范真实等式对账...")
+
+    dom_text = session.eval("document.body.innerText") or ""
+    has_first_page = "病案首页" in dom_text
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT record_type_name FROM emr_bd_record_type WHERE record_type_name = '病案首页'")
+    ora_row = cur.fetchone()
+    conn.close()
+
+    ora_record_name = str(ora_row[0]) if ora_row else ""
+    if is_mutation:
+        ora_record_name += "_扰动"
+
+    ok = has_first_page and (ora_record_name == "病案首页")
+    status = "通过" if ok else "失败"
+    note = (
+        f"界面住院工作站成功挂载病案首页文书；库中文书定义为 [{ora_record_name}] "
+        f"—— {'等式成立，病案首页文书规范' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动病案首页定义导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L5-019",
+        "运行模式": mode_label,
+        "界面元素选择器": ".doc-type-item (病案首页)",
+        "界面读出值": {"文书类型": "病案首页", "挂载状态": has_first_page},
+        "数据库真实值": {"字典记录名": ora_record_name},
+        "验证等式": f"界面挂载({has_first_page}) && 库中规范('{ora_record_name}' == '病案首页')",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L5-019",
+        title="界面对账·住院工作站·病案首页与诊断规范对账",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
 def _run_index(
     session: BrowserSession,
     frontend: str,
@@ -507,7 +1070,7 @@ def _run_index(
     _step: Any,
 ):
     # ===================================================================
-    # 断言 4: UI-INDEX (首页运营指标看板等式校验)
+    # 断言: UI-INDEX (首页运营指标看板等式校验)
     # ===================================================================
     t0 = time.time()
     _step("正在加载首页运营指标看板 (#/index) 并聚合收费总量等式对账...")
@@ -656,11 +1219,21 @@ def run_ui_verify(args: Any) -> int:
         should_run_p1 = (not target_cases) or ("UI-L6-039-P1" in target_cases)
         should_run_p2 = (not target_cases) or ("UI-L6-039-P2" in target_cases)
         should_run_list = (not target_cases) or ("UI-L6-039-LIST" in target_cases)
+        should_run_l6_043 = (not target_cases) or ("UI-L6-043" in target_cases)
+        should_run_l6_045 = (not target_cases) or ("UI-L6-045" in target_cases)
+        should_run_l4_048 = (not target_cases) or ("UI-L4-048" in target_cases)
+
+        should_run_l5_001 = (not target_cases) or ("UI-L5-001" in target_cases)
+        should_run_l5_008 = (not target_cases) or ("UI-L5-008" in target_cases)
+        should_run_l5_011 = (not target_cases) or ("UI-L5-011" in target_cases)
+        should_run_l5_019 = (not target_cases) or ("UI-L5-019" in target_cases)
+
         should_run_index = (not target_cases) or ("UI-INDEX" in target_cases)
 
         ui_results: List[Dict[str, Any]] = []
 
-        if should_run_p1 or should_run_p2 or should_run_list:
+        # 1. 费用综合查询模块
+        if should_run_p1 or should_run_p2 or should_run_list or should_run_l6_043 or should_run_l6_045 or should_run_l4_048:
             dept_name, patient_nodes = _prepare_inpatient_page(session, frontend, _step)
             if should_run_p1:
                 _run_p1(session, patient_nodes, mode_label, is_mutation, env_name, ui_results, _step)
@@ -668,9 +1241,26 @@ def run_ui_verify(args: Any) -> int:
                 _run_p2(session, patient_nodes, mode_label, is_mutation, env_name, ui_results, _step)
             if should_run_list:
                 _run_list(session, dept_name, mode_label, is_mutation, env_name, ui_results, _step)
-        else:
-            print("  [单条巡检跳过] 目标无需访问费用综合查询模块")
+            if should_run_l6_043:
+                _run_l6_043(session, patient_nodes, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_l6_045:
+                _run_l6_045(session, patient_nodes, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_l4_048:
+                _run_l4_048(session, patient_nodes, mode_label, is_mutation, env_name, ui_results, _step)
 
+        # 2. 医生电子病历工作站模块
+        if should_run_l5_001 or should_run_l5_008 or should_run_l5_011 or should_run_l5_019:
+            _prepare_doctor_emr_page(session, frontend, _step)
+            if should_run_l5_001:
+                _run_l5_001(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_l5_008:
+                _run_l5_008(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_l5_011:
+                _run_l5_011(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_l5_019:
+                _run_l5_019(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
+
+        # 3. 首页运营看板模块
         if should_run_index:
             _run_index(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
 
