@@ -364,7 +364,9 @@ function renderCaseTable() {
     }
     if (gState.searchKeyword) {
       const target = (c.case_id + " " + (c.title || "")).toLowerCase();
-      if (!target.includes(gState.searchKeyword)) return false;
+      // 两侧都要转小写：用例ID 是大写（L6-015），只转一侧会恒不匹配 →
+      // 侧边栏点用例后右侧表格空白、搜索框输大写搜不到
+      if (!target.includes(String(gState.searchKeyword).toLowerCase())) return false;
     }
     return true;
   });
