@@ -237,11 +237,12 @@ function renderDrawerCategories() {
     for (const prefix of Object.keys(moduleMap)) {
       if (c.case_id.startsWith(prefix) || (prefix === "UI" && c.case_id.startsWith("UI-"))) {
         groups[prefix].push(c);
+        c._module = prefix;          // 供 renderCaseTable 按模块筛选
         matched = true;
         break;
       }
     }
-    if (!matched) groups["OTHER"].push(c);
+    if (!matched) { groups["OTHER"].push(c); c._module = "OTHER"; }
   });
 
   Object.keys(groups).forEach((key) => {
@@ -253,12 +254,12 @@ function renderDrawerCategories() {
     wrap.className = "nav-cat-wrap";
 
     const header = document.createElement("div");
-    header.className = "nav-cat-header";
+    header.className = "nav-cat-header" + (gState.moduleFilter === key ? " module-active" : "");
     header.innerHTML = `
       <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
         <span class="arrow">▾</span>
         <input type="checkbox" class="cat-select-chk" checked title="勾选/取消该分类全部用例">
-        <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${catName}</span>
+        <span class="cat-name" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;" title="只看该模块（再点一次回到全部）">${catName}</span>
       </div>
       <span class="nav-pill">${list.length}</span>
     `;
@@ -283,6 +284,20 @@ function renderDrawerCategories() {
       };
       subList.appendChild(item);
     });
+
+    // 点分类名 → 只看该模块；再点一次回到全部
+    const nameEl = header.querySelector(".cat-name");
+    if (nameEl) {
+      nameEl.onclick = (e) => {
+        e.stopPropagation();
+        gState.moduleFilter = gState.moduleFilter === key ? "ALL" : key;
+        gState.searchKeyword = "";        // 与关键字互斥，避免两者叠加出空表
+        const inp = document.getElementById("searchInput");
+        if (inp) inp.value = "";
+        renderDrawerCategories();         // 重画以更新高亮
+        renderCaseTable();
+      };
+    }
 
     // 展开/收缩点击事件
     header.onclick = (e) => {
@@ -321,6 +336,16 @@ function expandAllCategories() {
 // 状态过滤
 function filterByStatus(status) {
   gState.statusFilter = status;
+  // 「全部」= 回到全量：把模块筛选与搜索关键字一并清掉。
+  // 否则点过侧栏用例 / 分类之后再点「全部」仍然被过滤，界面看着就是"切不回全部"（用户实测反馈）。
+  if (status === "ALL") {
+    gState.moduleFilter = "ALL";
+    gState.searchKeyword = "";
+    const inp = document.getElementById("searchInput");
+    if (inp) inp.value = "";
+    document.querySelectorAll(".nav-sub-item").forEach((el) => el.classList.remove("active"));
+    renderDrawerCategories();
+  }
   const btns = [
     { id: "btnFilterAll", s: "ALL" },
     { id: "btnFilterPass", s: "通过" },
@@ -359,6 +384,10 @@ function renderCaseTable() {
   const isSandbox = gState.env === "sandbox";
 
   const filtered = gState.casesData.filter((c) => {
+    // 按模块筛选（点侧栏分类名进入，再点一次或点「全部」退出）
+    if (gState.moduleFilter !== "ALL" && c._module !== gState.moduleFilter) {
+      return false;
+    }
     if (gState.statusFilter !== "ALL" && c.status !== gState.statusFilter) {
       return false;
     }
