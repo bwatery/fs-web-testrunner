@@ -482,7 +482,7 @@ class AuditTracer:
                 for k in self.residual_baseline
             }
 
-            allow_creation = os.environ.get("FS_ALLOW_CREATE_PATIENT") == "1"
+            allow_creation = os.environ.get("FS_ALLOW_CREATE_PATIENT", "").strip() in ("1", "true", "True")
             residual_alarms = []
 
             for k, diff in residual_diffs.items():
@@ -592,18 +592,18 @@ def run_cleanup_testdata(
         return total
 
     tables_plan = [
-        ("FIN_OP_CHARGE_BALANCE", "SELECT COUNT(*) FROM fin_op_charge_balance WHERE charge_id IN (SELECT charge_id FROM fin_op_charge WHERE patient_id IN ({ph}))",
-         "DELETE FROM fin_op_charge_balance WHERE charge_id IN (SELECT charge_id FROM fin_op_charge WHERE patient_id IN ({ph}))"),
-        ("FIN_OP_CHARGE", "SELECT COUNT(*) FROM fin_op_charge WHERE patient_id IN ({ph})",
-         "DELETE FROM fin_op_charge WHERE patient_id IN ({ph})"),
+        ("FIN_OP_CHARGE_BALANCE", "SELECT COUNT(*) FROM fin_op_charge_balance WHERE register_id IN (SELECT register_id FROM fin_op_register WHERE patient_id IN ({ph}))",
+         "DELETE FROM fin_op_charge_balance WHERE register_id IN (SELECT register_id FROM fin_op_register WHERE patient_id IN ({ph}))"),
+        ("FIN_OP_CHARGE", "SELECT COUNT(*) FROM fin_op_charge WHERE register_id IN (SELECT register_id FROM fin_op_register WHERE patient_id IN ({ph}))",
+         "DELETE FROM fin_op_charge WHERE register_id IN (SELECT register_id FROM fin_op_register WHERE patient_id IN ({ph}))"),
         ("FIN_OP_INVOICE_RECEIPT", "SELECT COUNT(*) FROM fin_op_invoice_receipt WHERE patient_id IN ({ph})",
          "DELETE FROM fin_op_invoice_receipt WHERE patient_id IN ({ph})"),
         ("FIN_OP_BALANCE", "SELECT COUNT(*) FROM fin_op_balance WHERE patient_id IN ({ph})",
          "DELETE FROM fin_op_balance WHERE patient_id IN ({ph})"),
-        ("FIN_OP_APPLY_DETAIL", "SELECT COUNT(*) FROM fin_op_apply_detail WHERE apply_id IN (SELECT apply_id FROM fin_op_apply WHERE patient_id IN ({ph}))",
-         "DELETE FROM fin_op_apply_detail WHERE apply_id IN (SELECT apply_id FROM fin_op_apply WHERE patient_id IN ({ph}))"),
-        ("FIN_OP_APPLY", "SELECT COUNT(*) FROM fin_op_apply WHERE patient_id IN ({ph})",
-         "DELETE FROM fin_op_apply WHERE patient_id IN ({ph})"),
+        ("FIN_OP_APPLY_DETAIL", "SELECT COUNT(*) FROM fin_op_apply_detail WHERE register_id IN (SELECT register_id FROM fin_op_register WHERE patient_id IN ({ph}))",
+         "DELETE FROM fin_op_apply_detail WHERE register_id IN (SELECT register_id FROM fin_op_register WHERE patient_id IN ({ph}))"),
+        ("FIN_OP_APPLY", "SELECT COUNT(*) FROM fin_op_apply WHERE register_id IN (SELECT register_id FROM fin_op_register WHERE patient_id IN ({ph}))",
+         "DELETE FROM fin_op_apply WHERE register_id IN (SELECT register_id FROM fin_op_register WHERE patient_id IN ({ph}))"),
         ("FIN_OP_REGISTER", "SELECT COUNT(*) FROM fin_op_register WHERE patient_id IN ({ph})",
          "DELETE FROM fin_op_register WHERE patient_id IN ({ph})"),
         ("BD_PATIENT_CARD", "SELECT COUNT(*) FROM bd_patient_card WHERE patient_id IN ({ph})",

@@ -53,6 +53,7 @@ class PreconditionManager:
         self.used_existing_cases: Set[str] = set()
         self.auto_created_cases: Set[str] = set()
         self.unmet_cases: Dict[str, Dict[str, Any]] = {}
+        self.created_entities: List[Dict[str, Any]] = []
         self.register_vocabulary()
 
     def reset_run(self):
@@ -61,6 +62,7 @@ class PreconditionManager:
         self.used_existing_cases.clear()
         self.auto_created_cases.clear()
         self.unmet_cases.clear()
+        self.created_entities.clear()
 
     def register_term(self, term: PreconditionTerm):
         self.vocabulary[term.name] = term
@@ -290,15 +292,140 @@ class PreconditionManager:
                 description="运行环境允许真实创建门诊患者档案（FS_ALLOW_CREATE_PATIENT=1）",
                 custom_check=self._check_create_patient_gate,
             ),
+            PreconditionTerm(
+                name="有测试挂号患者",
+                description="库中有当前跑批专用的有效测试患者 (若缺项且开启FS_ALLOW_CREATE_PATIENT=1则通过接口自动补齐并回读)",
+                custom_check=self._check_test_patient,
+                fulfill_fn=self._fulfill_test_patient,
+            ),
         ]
         for t in standard_terms:
             self.register_term(t)
 
     def _check_create_patient_gate(self, ctx: Any) -> Tuple[bool, str, int]:
-        allowed = os.environ.get("FS_ALLOW_CREATE_PATIENT") == "1"
+        allowed = os.environ.get("FS_ALLOW_CREATE_PATIENT", "").strip() in ("1", "true", "True")
         if not allowed:
             return False, "造数闸门未开启 (FS_ALLOW_CREATE_PATIENT!=1)，默认跳过避免污染生产库", 0
         return True, "造数闸门已开启", 1
+
+    def _check_test_patient(self, ctx: Any) -> Tuple[bool, str, int]:
+        """检查当前跑批是否有已补齐且未消耗的专属测试患者。"""
+        if ctx is not None and getattr(ctx, "precondition_patient", None):
+            pat = ctx.precondition_patient
+            return True, f"当前批次已补齐可用测试患者 ID={pat.get('patientId')}", 1
+
+        if os.environ.get("FS_ALLOW_CREATE_PATIENT", "").strip() not in ("1", "true", "True"):
+            return False, "造数闸门未开启 (FS_ALLOW_CREATE_PATIENT!=1)，默认跳过避免污染生产库", 0
+
+        # 若闸门开启，检查 Oracle 中是否已有当前 runId 标记的有效测试患者
+        try:
+            from .audit import audit_tracer
+            run_id = audit_tracer.run_id
+            conn = _default_oracle_conn()
+            cur = conn.cursor()
+            cur.execute(
+                """SELECT patient_id, patient_name, phone, identifier_type, identifier_no,
+                          sex_code, TO_CHAR(birthday, 'YYYY-MM-DD HH24:MI:SS')
+                   FROM bd_patient
+                   WHERE valid_flag='1' AND patient_name LIKE :1
+                   ORDER BY patient_id DESC FETCH FIRST 1 ROWS ONLY""",
+                [f"%{run_id}%"],
+            )
+            row = cur.fetchone()
+            conn.close()
+            if row:
+                if ctx is not None:
+                    ctx.precondition_patient = {
+                        "patientId": int(row[0]),
+                        "patientName": row[1],
+                        "phone": row[2],
+                        "identifierType": row[3],
+                        "identifierNo": row[4],
+                        "sexCode": row[5],
+                        "birthday": row[6],
+                    }
+                return True, f"库中已存在当前批次有效测试患者 ID={row[0]}", 1
+        except Exception:
+            pass
+
+        return False, "库中无当前跑批测试患者（需要接口补齐）", 0
+
+    def _fulfill_test_patient(self, ctx: Any) -> Tuple[bool, str]:
+        """通过被测系统自身接口创建前置测试患者，并严格执行 Oracle 回读确认。"""
+        if os.environ.get("FS_ALLOW_CREATE_PATIENT", "").strip() not in ("1", "true", "True"):
+            return False, "造数闸门未开启 (FS_ALLOW_CREATE_PATIENT!=1)，禁止自动补齐造数"
+
+        from .audit import audit_tracer
+        run_id = audit_tracer.run_id
+        import random
+
+        stamp = time.strftime("%m%d%H%M%S")
+        seed = random.randint(100000, 999999)
+        region = "110101"
+        birth = "19900101"
+        seq = f"{seed % 1000:03d}"
+        body_id = region + birth + seq
+        weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
+        check_map = "10X98765432"
+        total = sum(int(c) * w for c, w in zip(body_id, weights))
+        idno = body_id + check_map[total % 11]
+
+        marker = f"测试_{run_id}_{stamp}"
+        phone = f"13{seed:09d}"[:11]
+        req_body = {
+            "patientName": marker,
+            "identifierNo": idno,
+            "identifierType": "01",
+            "birthday": "1990-01-01 00:00:00",
+            "sexCode": "1",
+            "phone": phone,
+            "payType": "O",
+        }
+
+        # 1. 真实调用被测系统业务接口
+        resp = ctx.post("/faith/patient/save", req_body)
+        code = resp.get("code")
+        if code != 200 or not resp.get("data"):
+            return False, f"调用接口 /faith/patient/save 失败: code={code}, msg={resp.get('msg')}"
+
+        pid = int(resp["data"])
+
+        # 2. 严格执行 Oracle 数据库回读确认（断言式回读）
+        conn = _default_oracle_conn()
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT patient_id, patient_name FROM bd_patient WHERE patient_id = :1 AND valid_flag = '1'",
+            [pid],
+        )
+        row = cur.fetchone()
+        conn.close()
+
+        if not row:
+            return False, f"接口建档返回成功 (patientId={pid})，但数据库回读查无记录，回读确认失败！"
+
+        db_pid, db_name = int(row[0]), str(row[1]).strip()
+        if db_name != marker:
+            return False, f"数据库回读姓名不一致: {db_name} != {marker}"
+
+        pat_info = {
+            "patientId": pid,
+            "patientName": marker,
+            "identifierNo": idno,
+            "phone": phone,
+            "sexCode": "1",
+            "birthday": "1990-01-01 00:00:00",
+            "identifierType": "01",
+        }
+        ctx.precondition_patient = pat_info
+        self.created_entities.append(pat_info)
+
+        print(f"    [前置补齐] 🚀 成功调用接口 /faith/patient/save 创建前置测试患者:")
+        print(f"               • 实体 ID: patientId = {pid}")
+        print(f"               • 姓名标记: {marker}")
+        print(f"               • 身份证号: {idno}")
+        print(f"    [前置补齐] 🔍 数据库回读断言确认: BD_PATIENT 存在有效记录 (ID={db_pid}, NAME={db_name}) ✓")
+
+        return True, f"通过接口新建患者成功并回读确认 (patientId={pid})"
 
     def check_oracle_precondition(self, env_obj: Optional[Any] = None) -> Tuple[bool, str]:
         """检查数据库底层网络与连接可用性。"""

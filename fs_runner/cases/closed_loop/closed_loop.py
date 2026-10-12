@@ -328,7 +328,7 @@ def _patient_creation_allowed() -> bool:
     如需真的验证建档类用例：显式设 `FS_ALLOW_CREATE_PATIENT=1` 单独跑，
     **并在跑完后自行清理**新建患者。
     """
-    return os.environ.get("FS_ALLOW_CREATE_PATIENT") == "1"
+    return os.environ.get("FS_ALLOW_CREATE_PATIENT", "").strip() in ("1", "true", "True")
 
 
 _SKIP_CREATE_PATIENT_NOTE = (
@@ -2631,31 +2631,38 @@ def flow_L6_012(ctx: Ctx) -> LoopResult:
             res.note = "本用例需通过接口真实挂号（产生挂号记录）。默认不执行 —— 用户 2026-10-10 反馈「先别测试会新增数据的测试用例，免得增加垃圾数据」"
             return res
 
-        # 号序用例不缺患者，优先复用既有的测试患者，别每轮都多造一个
-        conn = _oracle_conn()
-        cur = conn.cursor()
-        cur.execute("""SELECT patient_id, patient_name, phone, identifier_type, identifier_no,
-                              sex_code, TO_CHAR(birthday,'YYYY-MM-DD HH24:MI:SS')
-                       FROM bd_patient
-                       WHERE valid_flag='1' AND patient_name LIKE '测试%'
-                       ORDER BY patient_id DESC FETCH FIRST 1 ROWS ONLY""")
-        row = cur.fetchone()
-        conn.close()
-        if row:
+        if getattr(ctx, "precondition_patient", None):
+            pat = ctx.precondition_patient
             pid, marker, phone, idtype, idno, sex, bday = (
-                int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6])
+                pat["patientId"], pat["patientName"], pat["phone"],
+                pat["identifierType"], pat["identifierNo"], pat["sexCode"], pat["birthday"]
+            )
         else:
-            if not _patient_creation_allowed():
-                res.status = "跳过"
-                res.note = _SKIP_CREATE_PATIENT_NOTE
-                return res
-            created = _create_test_patient(ctx, "测试号序")
-            if not created:
-                res.status = "失败"
-                res.note = "号序用例建档未成功（含撞号重试后仍失败）"
-                return res
-            pid, marker, idno, phone, _save = created
-            idtype, sex, bday = "01", "1", "1990-01-01 00:00:00"
+            # 号序用例不缺患者，优先复用既有的测试患者，别每轮都多造一个
+            conn = _oracle_conn()
+            cur = conn.cursor()
+            cur.execute("""SELECT patient_id, patient_name, phone, identifier_type, identifier_no,
+                                  sex_code, TO_CHAR(birthday,'YYYY-MM-DD HH24:MI:SS')
+                           FROM bd_patient
+                           WHERE valid_flag='1' AND patient_name LIKE '测试%'
+                           ORDER BY patient_id DESC FETCH FIRST 1 ROWS ONLY""")
+            row = cur.fetchone()
+            conn.close()
+            if row:
+                pid, marker, phone, idtype, idno, sex, bday = (
+                    int(row[0]), row[1], row[2], row[3], row[4], row[5], row[6])
+            else:
+                if not _patient_creation_allowed():
+                    res.status = "跳过"
+                    res.note = _SKIP_CREATE_PATIENT_NOTE
+                    return res
+                created = _create_test_patient(ctx, "测试号序")
+                if not created:
+                    res.status = "失败"
+                    res.note = "号序用例建档未成功（含撞号重试后仍失败）"
+                    return res
+                pid, marker, idno, phone, _save = created
+                idtype, sex, bday = "01", "1", "1990-01-01 00:00:00"
 
         base = {"patientId": pid, "patientName": marker, "sexCode": sex,
                 "birthday": bday, "identifierType": idtype, "identifierNo": idno,
@@ -2665,6 +2672,7 @@ def flow_L6_012(ctx: Ctx) -> LoopResult:
                 "presentProvince": "44", "presentCity": "440800000", "presentArea": "440802000",
                 "presentAddress": "医院"}
         bad = []
+        stalled = []
         N = 5
         for k in range(N):
             pre = ctx.post("/faith/finance/outpatient/register/save/preBalance", base)
@@ -4079,7 +4087,7 @@ CASE_REQUIRES: Dict[str, List[str]] = {
     "L6-005": ["有门诊患者", "有门诊挂号"],
     "L6-008": ["有排班数据"],
     "L6-009": ["允许真实建档"],
-    "L6-012": ["允许真实建档", "有门诊患者", "有排班数据"],
+    "L6-012": ["有测试挂号患者", "有排班数据"],
     "L6-014": ["有门诊患者"],
     "L6-015": ["有门诊患者", "有门诊挂号"],
     "L6-018": ["有预约记录"],
