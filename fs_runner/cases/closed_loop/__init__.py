@@ -11,6 +11,7 @@ from .closed_loop import (
     supported_cases,
     _oracle_conn,
     _FLOWS,
+    UI_SUPPORTED_CASES,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "supported_cases",
     "_oracle_conn",
     "_FLOWS",
+    "UI_SUPPORTED_CASES",
 ]

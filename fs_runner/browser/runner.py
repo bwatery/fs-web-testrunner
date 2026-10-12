@@ -703,8 +703,16 @@ def _run_l4_048(
     # 断言: UI-L4-048 (医嘱执行与诊查费对账)
     # ===================================================================
     t0 = time.time()
+    p_label = patient_nodes[0] if len(patient_nodes) > 0 else "301-1 骨二科测试患者01"
     _step("正在读取医嘱执行明细与诊查费项目并与数据库对账...")
     print("\n  ▶ 正在执行 [UI-L4-048] 费用综合查询 · 医嘱执行与诊查费对账...")
+    session.eval(f"""(() => {{
+        const el = Array.from(document.querySelectorAll('.el-tree-node__content'))
+                        .find(e => (e.innerText || '').trim() === {json.dumps(p_label)});
+        if (el) {{ el.click(); return true; }}
+        return false;
+    }})()""")
+    time.sleep(2.5)
 
     dom_text = session.eval("document.body.innerText") or ""
     m_zyh = re.search(r"住院号\s*([0-9]+)", dom_text)
@@ -1762,6 +1770,95 @@ def _run_index(
         env_name=env_name,
         session=session,
     )
+
+
+UI_SUPPORTED_CASES = {
+    "L6-039", "L6-043", "L6-045", "L4-048",
+    "L5-001", "L5-002", "L5-004", "L5-005",
+    "L5-008", "L5-011", "L5-019", "L5-036",
+}
+
+
+def run_case_ui(
+    session: BrowserSession,
+    case_id: str,
+    frontend: Optional[str] = None,
+    mode_label: str = "[界面]",
+    is_mutation: bool = False,
+    env_name: str = "real",
+    _step: Any = None,
+) -> Dict[str, Any]:
+    """执行单条界面真实业务断言并返回结果字典。
+
+    与 ui-verify 子命令 100% 共享相同断言逻辑与选择器，杜绝两套实现分叉。
+    """
+    if _step is None:
+        def _step(desc: str):
+            pass
+
+    fe = (frontend or FRONTEND_URL).rstrip("/")
+    raw_cid = case_id.strip()
+    cid = raw_cid[3:] if raw_cid.startswith("UI-") else raw_cid
+
+    temp_results: List[Dict[str, Any]] = []
+
+    # 1. 费用综合查询模块 (住院护士)
+    if cid in ("L6-039", "L6-039-P1", "L6-039-P2", "L6-039-LIST", "L6-043", "L6-045", "L4-048"):
+        dept_name, patient_nodes = _prepare_inpatient_page(session, fe, _step)
+        if cid in ("L6-039", "L6-039-P1"):
+            _run_p1(session, patient_nodes, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L6-039-P2":
+            _run_p2(session, patient_nodes, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L6-039-LIST":
+            _run_list(session, dept_name, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L6-043":
+            _run_l6_043(session, patient_nodes, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L6-045":
+            _run_l6_045(session, patient_nodes, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L4-048":
+            _run_l4_048(session, patient_nodes, mode_label, is_mutation, env_name, temp_results, _step)
+
+    # 2. 电子病历工作站 (住院医生 · 骨二科)
+    elif cid in ("L5-019", "L5-001", "L5-002", "L5-004", "L5-005", "L5-008"):
+        _switch_doctor_dept(session, fe, "住院医生", "骨二科", _step)
+        if cid == "L5-019":
+            _run_l5_019(session, fe, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L5-001":
+            _run_l5_001(session, fe, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L5-002":
+            _run_l5_002(session, fe, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L5-004":
+            _run_l5_004(session, fe, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L5-005":
+            _run_l5_005(session, fe, mode_label, is_mutation, env_name, temp_results, _step)
+        elif cid == "L5-008":
+            _run_l5_008(session, fe, mode_label, is_mutation, env_name, temp_results, _step)
+
+    # 3. 电子病历工作站 (住院医生 · 内一科)
+    elif cid == "L5-011":
+        _switch_doctor_dept(session, fe, "住院医生", "内一科", _step)
+        _run_l5_011(session, fe, mode_label, is_mutation, env_name, temp_results, _step)
+
+    # 4. 护士日清单 (住院护士 · 骨二科)
+    elif cid == "L5-036":
+        _switch_doctor_dept(session, fe, "住院护士", "骨二科", _step)
+        _run_l5_036(session, fe, mode_label, is_mutation, env_name, temp_results, _step)
+
+    # 5. 首页看板
+    elif cid in ("INDEX", "UI-INDEX"):
+        _run_index(session, fe, mode_label, is_mutation, env_name, temp_results, _step)
+
+    if temp_results:
+        return temp_results[0]
+
+    return {
+        "case_id": f"UI-{cid}",
+        "title": "",
+        "status": "未执行",
+        "note": f"该用例尚未实现界面业务断言 ({cid})",
+        "evidence": {"状态": "无（未实现）", "说明": "该用例尚未实现界面业务断言"},
+        "duration_ms": 0.0,
+    }
 
 
 def run_ui_verify(args: Any) -> int:

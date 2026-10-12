@@ -4125,6 +4125,34 @@ for _cid, _fn in _FLOWS.items():
 
 FLOW_REQUIRES = {cid: getattr(fn, "requires", []) for cid, fn in _FLOWS.items()}
 
+UI_SUPPORTED_CASES = {
+    "L6-039", "L6-043", "L6-045", "L4-048",
+    "L5-001", "L5-002", "L5-004", "L5-005",
+    "L5-008", "L5-011", "L5-019", "L5-036",
+}
+
+
+def _make_ui_verify_fn(cid: str):
+    def _ui_runner(session, frontend=None, mode_label="[界面]", is_mutation=False, env_name="real", _step=None):
+        from ...browser.runner import run_case_ui
+        return run_case_ui(
+            session=session,
+            case_id=cid,
+            frontend=frontend,
+            mode_label=mode_label,
+            is_mutation=is_mutation,
+            env_name=env_name,
+            _step=_step,
+        )
+    return _ui_runner
+
+
+for _cid, _fn in _FLOWS.items():
+    if _cid in UI_SUPPORTED_CASES:
+        _fn.ui_verify = _make_ui_verify_fn(_cid)
+    else:
+        _fn.ui_verify = None
+
 
 _CASE_TITLES: Dict[str, str] = {
     "L0-010": "医保三大目录对照与限价",
@@ -4200,8 +4228,19 @@ def supported_cases() -> List[str]:
     return sorted(_FLOWS.keys())
 
 
-def run(selected: List[str], gateway: str, admin_token: str,
-        progress=None) -> List[LoopResult]:
+def run(
+    selected: List[str],
+    gateway: str,
+    admin_token: str,
+    progress=None,
+    enable_ui: bool = False,
+    is_windowed: bool = False,
+    browser_session: Optional[Any] = None,
+    frontend: Optional[str] = None,
+    slowmo: int = 0,
+    is_mutation: bool = False,
+    env_name: str = "real",
+) -> List[LoopResult]:
     from ...core.preconditions import precondition_manager
     precondition_manager.reset_run()
     ctx = Ctx(gateway, admin_token)
@@ -4258,6 +4297,67 @@ def run(selected: List[str], gateway: str, admin_token: str,
                     if r.status != "通过":
                         precondition_manager.used_existing_cases.discard(cid)
                         precondition_manager.auto_created_cases.discard(cid)
+
+            # 3. 界面腿联合执行（当显式开启 --ui 或 --windowed 时）
+            if enable_ui:
+                ui_fn = getattr(fn, "ui_verify", None)
+                if ui_fn is not None:
+                    mode_label = "[界面·窗口]" if is_windowed else "[界面·无头]"
+                    if browser_session is not None:
+                        def _step(desc: str):
+                            print(f"        [步骤] {desc}")
+                            if slowmo > 0:
+                                time.sleep(slowmo / 1000.0)
+
+                        try:
+                            ui_res = ui_fn(
+                                session=browser_session,
+                                frontend=frontend,
+                                mode_label=mode_label,
+                                is_mutation=is_mutation,
+                                env_name=env_name,
+                                _step=_step,
+                            )
+                        except Exception as exc:
+                            ui_res = {
+                                "case_id": f"UI-{cid}",
+                                "title": r.title,
+                                "status": "失败",
+                                "note": f"界面执行异常: {exc}",
+                                "evidence": {"error": str(exc), "运行模式": mode_label},
+                                "duration_ms": 0.0,
+                            }
+
+                        orig_evidence = dict(r.evidence)
+                        r.evidence = {
+                            "业务腿": orig_evidence,
+                            "界面腿": ui_res.get("evidence", {}),
+                        }
+                        ui_note = ui_res.get("note", "")
+                        if ui_note:
+                            r.note = f"{r.note}  {mode_label} {ui_note}".strip()
+
+                        # 门禁约束：界面腿失败 = 整条用例失败
+                        if ui_res.get("status") == "失败":
+                            r.status = "失败"
+                    else:
+                        orig_evidence = dict(r.evidence)
+                        r.evidence = {
+                            "业务腿": orig_evidence,
+                            "界面腿": {"状态": "未执行", "说明": "未提供有效浏览器会话"},
+                        }
+                        r.note = f"{r.note}  [界面·无会话]".strip()
+                else:
+                    orig_evidence = dict(r.evidence)
+                    r.evidence = {
+                        "业务腿": orig_evidence,
+                        "界面腿": {
+                            "状态": "无（未实现）",
+                            "说明": "该用例尚未实现界面业务断言",
+                        },
+                    }
+                    r.note = f"{r.note}  [界面腿·无(未实现)]".strip()
+
         out.append(r)
         if progress:
             progress(i, len(selected), r)

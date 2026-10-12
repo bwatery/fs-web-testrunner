@@ -58,6 +58,13 @@ def run_closed_loop(
     cases_arg: Optional[str] = None,
     gateway: Optional[str] = None,
     env: str = "real",
+    enable_ui: bool = False,
+    is_windowed: bool = False,
+    frontend: Optional[str] = None,
+    slowmo: int = 0,
+    screenshot: bool = False,
+    standalone: bool = False,
+    is_mutation: bool = False,
 ) -> int:
     """执行 P0 关键业务闭环真校验。"""
     from .core.audit import audit_tracer
@@ -66,6 +73,7 @@ def run_closed_loop(
 
     env_obj = RealEnv() if env == "real" else SandboxEnv()
     gw = (gateway or GATEWAY_URL).rstrip("/")
+    fe = (frontend or FRONTEND_URL).rstrip("/")
     all_supported = get_supported_cases()
     selected = [c.strip() for c in cases_arg.split(",") if c.strip()] if cases_arg else all_supported
 
@@ -77,7 +85,42 @@ def run_closed_loop(
     print("─" * 66)
     print(f"  环境      : {'真实环境 (Real)' if env == 'real' else '隔离沙盒 (Sandbox: 永不判通过)'}")
     print(f"  本次校验 {len(selected)} 条：{', '.join(selected)}")
-    print(f"  已实现闭环的用例：{', '.join(all_supported)}\n")
+    print(f"  已实现闭环的用例：{', '.join(all_supported)}")
+
+    browser_session = None
+    if enable_ui or is_windowed:
+        from .cases.closed_loop import UI_SUPPORTED_CASES
+        cases_with_ui = [c for c in selected if c in UI_SUPPORTED_CASES]
+        mode_label = "[界面·独立窗口]" if standalone else ("[界面·窗口]" if is_windowed else "[界面·无头]")
+        print(f"  界面验证  : 开启 ({mode_label})")
+        if not cases_with_ui:
+            print(f"  [提示] 本批 {len(selected)} 条用例无界面腿，未打开浏览器")
+        else:
+            print(f"  [提示] 本批包含 {len(cases_with_ui)} 条界面腿用例：{', '.join(cases_with_ui)}")
+            from .browser.cdp import launch_browser
+            from .browser.auth import login_ui
+            headless = not is_windowed and not standalone and (os.environ.get("FS_STANDALONE_BROWSER") != "1")
+            try:
+                browser_session = launch_browser(headless=headless, port=9222, standalone=standalone or (not headless))
+                print(f"  浏览器    : 就绪 ({'可见窗口' if not headless else 'Headless 无头'})")
+            except Exception as e:
+                print(f"\n❌ [浏览器启动失败] {e}")
+                print("   硬约束：浏览器无法就绪时立即报错退出，严禁静默降级。")
+                return 2
+
+            try:
+                login_res = login_ui(browser_session, fe, username="admin", password="admin123", wait_sec=8.0)
+                if not login_res.ok:
+                    print(f"❌ 界面认证失败 [{login_res.error_type}]: {login_res.detail}")
+                    browser_session.close()
+                    return 1
+                print(f"  界面认证  : ✅ 成功 ({login_res.detail})")
+            except Exception as e:
+                print(f"❌ 界面认证异常: {e}")
+                browser_session.close()
+                return 1
+
+    print()
 
     # 登录获取 JWT（沙盒模式离线纯参数校验，绝不触碰真实网络）
     if env == "sandbox":
@@ -91,9 +134,13 @@ def run_closed_loop(
             token = (r_login.json() or {}).get("data")
             if not token:
                 print("  [致命] 登录网关未获取到有效令牌")
+                if browser_session is not None:
+                    browser_session.close()
                 return 2
         except Exception as e:
             print(f"  [致命] 无法登录网关：{e}")
+            if browser_session is not None:
+                browser_session.close()
             return 2
 
     def _progress(i, n, r):
@@ -105,7 +152,26 @@ def run_closed_loop(
         if r.evidence:
             print(f"        证据: {json.dumps(r.evidence, ensure_ascii=False)[:260]}")
 
-    raw_results = run_closed_loop_cases(selected, gateway=gw, admin_token=token, progress=_progress)
+    try:
+        raw_results = run_closed_loop_cases(
+            selected,
+            gateway=gw,
+            admin_token=token,
+            progress=_progress,
+            enable_ui=enable_ui or is_windowed,
+            is_windowed=is_windowed,
+            browser_session=browser_session,
+            frontend=fe,
+            slowmo=slowmo,
+            is_mutation=is_mutation,
+            env_name=env,
+        )
+    finally:
+        if browser_session is not None:
+            try:
+                browser_session.close()
+            except Exception:
+                pass
 
     # 门禁过滤与 evidence 注入：沙盒模式绝不产出「通过」
     results = []
@@ -483,42 +549,48 @@ def main(argv: Optional[List[str]] = None) -> int:
     """CLI 统一分发器，兼容两套入口格式。"""
     args_list = list(sys.argv[1:] if argv is None else argv)
 
-    # 兼容老式直接传参格式（例如 --closed-loop, --api, --ui, --workstations）
-    if "--closed-loop" in args_list:
-        cases = None
-        if "--cases" in args_list:
-            idx = args_list.index("--cases")
-            if idx + 1 < len(args_list):
-                cases = args_list[idx + 1]
-        env = "sandbox" if ("--env" in args_list and "sandbox" in args_list) else "real"
-        return run_closed_loop(cases_arg=cases, env=env)
+    # 若第一个参数是标准子命令，直接走标准子命令解析，防止被老式参数检查（如 --ui）拦截
+    KNOWN_SUBCOMMANDS = {
+        "run", "regression", "serve", "serve-ui", "selfcheck",
+        "rules", "cleanup-testdata", "api-contract", "ui-verify"
+    }
+    if not (args_list and args_list[0] in KNOWN_SUBCOMMANDS):
+        # 兼容老式直接传参格式（例如 --closed-loop, --api, --ui, --workstations）
+        if "--closed-loop" in args_list:
+            cases = None
+            if "--cases" in args_list:
+                idx = args_list.index("--cases")
+                if idx + 1 < len(args_list):
+                    cases = args_list[idx + 1]
+            env = "sandbox" if ("--env" in args_list and "sandbox" in args_list) else "real"
+            return run_closed_loop(cases_arg=cases, env=env)
 
-    if "--regression" in args_list:
-        return run_regression()
+        if "--regression" in args_list:
+            return run_regression()
 
-    if "--api" in args_list:
-        p = argparse.ArgumentParser()
-        p.add_argument("--gateway", default=None)
-        p.add_argument("--limit", type=int, default=0)
-        p.add_argument("--workers", type=int, default=12)
-        p.add_argument("--no-oracle", action="store_true")
-        p.add_argument("--env", choices=["real", "sandbox"], default="real")
-        parsed, _ = p.parse_known_args(args_list)
-        return run_api_smoke(parsed)
+        if "--api" in args_list:
+            p = argparse.ArgumentParser()
+            p.add_argument("--gateway", default=None)
+            p.add_argument("--limit", type=int, default=0)
+            p.add_argument("--workers", type=int, default=12)
+            p.add_argument("--no-oracle", action="store_true")
+            p.add_argument("--env", choices=["real", "sandbox"], default="real")
+            parsed, _ = p.parse_known_args(args_list)
+            return run_api_smoke(parsed)
 
-    if "--ui" in args_list:
-        p = argparse.ArgumentParser()
-        p.add_argument("--gateway", default=None)
-        parsed, _ = p.parse_known_args(args_list)
-        return run_ui_walk(parsed)
+        if "--ui" in args_list:
+            p = argparse.ArgumentParser()
+            p.add_argument("--gateway", default=None)
+            parsed, _ = p.parse_known_args(args_list)
+            return run_ui_walk(parsed)
 
-    if "--workstations" in args_list:
-        p = argparse.ArgumentParser()
-        p.add_argument("--gateway", default=None)
-        p.add_argument("--username", default="admin")
-        p.add_argument("--password", default="admin123")
-        parsed, _ = p.parse_known_args(args_list)
-        return run_workstations(parsed)
+        if "--workstations" in args_list:
+            p = argparse.ArgumentParser()
+            p.add_argument("--gateway", default=None)
+            p.add_argument("--username", default="admin")
+            p.add_argument("--password", default="admin123")
+            parsed, _ = p.parse_known_args(args_list)
+            return run_workstations(parsed)
 
     # 标准子命令解析
     parser = argparse.ArgumentParser(
@@ -533,6 +605,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     p_run.add_argument("--cases", help="指定用例ID，逗号分隔")
     p_run.add_argument("--env", choices=["real", "sandbox"], default="real")
     p_run.add_argument("--gateway", default=None)
+    p_run.add_argument("--frontend", default=None)
+    p_run.add_argument("--ui", action="store_true", default=False, help="启用界面腿断言（无头模式）")
+    p_run.add_argument("--windowed", action="store_true", default=False, help="启用界面腿断言（窗口模式，可见浏览器）")
+    p_run.add_argument("--standalone", action="store_true", default=False, help="独立拉起可见 Chrome 窗口")
+    p_run.add_argument("--slowmo", type=int, default=0, help="步骤间慢放等待毫秒数")
+    p_run.add_argument("--screenshot", action="store_true", default=False, help="抓取界面执行截图")
+    p_run.add_argument("--mutation", action="store_true", default=False, help="内存扰动库值执行变异自检（断言必须变红）")
     p_run.add_argument("--limit", type=int, default=0)
     p_run.add_argument("--workers", type=int, default=12)
     p_run.add_argument("--no-oracle", action="store_true")
@@ -627,7 +706,21 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     if parsed.command == "run":
         if parsed.suite == "closed-loop":
-            return run_closed_loop(cases_arg=parsed.cases, gateway=parsed.gateway, env=parsed.env)
+            is_standalone = getattr(parsed, "standalone", False) or os.environ.get("FS_STANDALONE_BROWSER") == "1"
+            is_windowed = getattr(parsed, "windowed", False) or is_standalone
+            enable_ui = getattr(parsed, "ui", False) or is_windowed
+            return run_closed_loop(
+                cases_arg=parsed.cases,
+                gateway=parsed.gateway,
+                env=parsed.env,
+                enable_ui=enable_ui,
+                is_windowed=is_windowed,
+                frontend=parsed.frontend,
+                slowmo=getattr(parsed, "slowmo", 0),
+                screenshot=getattr(parsed, "screenshot", False),
+                standalone=is_standalone,
+                is_mutation=getattr(parsed, "mutation", False),
+            )
         if parsed.suite == "api":
             return run_api_smoke(parsed)
         if parsed.suite == "ui":

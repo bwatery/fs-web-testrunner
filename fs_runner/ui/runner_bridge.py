@@ -150,6 +150,10 @@ class RunnerBridge:
                 cmd.extend(["--case", ",".join(cases)])
         else:
             cmd.extend(["run", "--suite", "closed-loop"])
+            if show_browser:
+                cmd.append("--windowed")
+            if slowmo > 0:
+                cmd.extend(["--slowmo", str(slowmo)])
             if cases:
                 cmd.extend(["--cases", ",".join(cases)])
             if env == "sandbox":
