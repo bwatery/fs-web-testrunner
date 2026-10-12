@@ -27,7 +27,7 @@ def get_closed_loop_cases() -> Dict[str, Any]:
     """
     获取 66 条闭环用例定义及最新运行结果。
     """
-    from ..cases.closed_loop.closed_loop import supported_cases, _CASE_TITLES
+    from ..cases.closed_loop.closed_loop import supported_cases, _CASE_TITLES, _FLOWS
 
     all_ids = supported_cases()
     latest_file = _VERIFY_DIR / "closed_loop_latest.json"
@@ -77,8 +77,6 @@ def get_closed_loop_cases() -> Dict[str, Any]:
         # 严格按判定依据打标：命中界面巡检则为「接口+界面」，否则为「接口」
         has_ui = cid in ui_covered_cases
         verify_mode = "接口+界面" if has_ui else "接口"
-
-    from ..cases.closed_loop.closed_loop import supported_cases, _CASE_TITLES, _FLOWS
         cases_list.append({
             "case_id": cid,
             "title": title,

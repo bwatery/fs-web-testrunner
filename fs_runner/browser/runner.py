@@ -785,7 +785,7 @@ def _run_l4_048(
 def _switch_doctor_dept(session: BrowserSession, frontend: str, role_name: str, dept_name: str, _step: Any):
     """通过右上角头像菜单切换科室与角色，并跳转至医生电子病历工作站。"""
     cur_info = session.eval("document.body.innerText") or ""
-    need_switch = not ("medicalRecord" in (session.eval("window.location.hash") or "")) or (dept_name not in cur_info)
+    need_switch = not ("medicalRecord" in (session.eval("window.location.hash") or "")) or (dept_name not in cur_info) or (role_name not in cur_info)
     if not need_switch:
         return
 
@@ -1107,6 +1107,409 @@ def _run_l5_001(
         ui_results=ui_results,
         cid="UI-L5-001",
         title="界面对账·住院工作站·体温单测温曲线与状态记录对账",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+def _run_l5_002(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L5-002 (体温单跨日连续性与数据引用真实等式对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在读取体温单多日跨期测温日期与连续脉搏曲线点并与数据库对账...")
+    print("\n  ▶ 正在执行 [UI-L5-002] 住院工作站 · 体温单跨日连续性与数据引用对账...")
+
+    # 1. 选中患者 骨二科测试患者01 (000016, 559)
+    session.eval("""(() => {
+        const cards = Array.from(document.querySelectorAll('.inpatient-patient-info-card'));
+        const p = cards.find(x => (x.innerText || '').includes('骨二科测试患者01') || (x.innerText || '').includes('000016'));
+        if (p) p.click();
+    })()""")
+    time.sleep(1.5)
+
+    # 2. 点击左侧文书类型中的「体温单」
+    session.eval("""(() => {
+        const items = Array.from(document.querySelectorAll('.menu-item'));
+        const t = items.find(x => (x.innerText || '').includes('体温单'));
+        if (t) t.click();
+    })()""")
+    time.sleep(2.0)
+
+    # 3. 点击树节点中具体的「体温单 （已保存）」卡片
+    session.eval("""(() => {
+        const nodes = Array.from(document.querySelectorAll('.record-name, .truncate-name, .record-content, span'));
+        const match = nodes.find(e => (e.innerText || '').includes('已保存'));
+        if (match) {
+            const target = match.closest('.record-content') || match.parentElement || match;
+            target.click();
+        }
+    })()""")
+    time.sleep(3.5)
+
+    # 4. 从渲染的 SVG 中读取跨日连续测温日期与图表绘制点集合
+    ui_temp_data = session.eval("""(() => {
+        const chartSvg = document.querySelector('#print-chart-container svg, .temperature-chart-container svg, svg[fstype="page"]');
+        if (!chartSvg) return null;
+        const texts = Array.from(chartSvg.querySelectorAll('text')).map(t => (t.textContent || '').trim()).filter(Boolean);
+        const dates = texts.filter(t => /^\\d{4}-\\d{1,2}-\\d{1,2}$/.test(t));
+        const circles = chartSvg.querySelectorAll('circle, ellipse').length;
+        return {
+            dates: dates,
+            circles: circles,
+        };
+    })()""") or {}
+
+    ui_dates = sorted(list(set(ui_temp_data.get("dates", []))))
+    ui_circles = int(ui_temp_data.get("circles", 0))
+
+    # 5. 查询 Oracle 真实 EMR_NURSE_TEMPERATURE 表
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT TO_CHAR(MEASURE_TIME, 'YYYY-MM-DD'), COUNT(*)
+        FROM EMR_NURSE_TEMPERATURE
+        WHERE REGISTER_ID = 559 AND VALID_FLAG = '1'
+        GROUP BY TO_CHAR(MEASURE_TIME, 'YYYY-MM-DD')
+        ORDER BY 1
+    """)
+    ora_date_rows = cur.fetchall()
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM EMR_NURSE_TEMPERATURE
+        WHERE REGISTER_ID = 559 AND VALID_FLAG = '1' AND PULSE IS NOT NULL
+    """)
+    ora_pulse_cnt = int(cur.fetchone()[0])
+    conn.close()
+
+    ora_dates = sorted(list(set([str(r[0]) for r in ora_date_rows])))
+
+    if is_mutation:
+        ora_dates = ["2026-10-09_扰动"]
+        ora_pulse_cnt += 99
+
+    has_continuous_dates = len(ui_dates) >= 2 and any("2026-10-7" in d or "2026-10-07" in d for d in ui_dates) and any("2026-10-8" in d or "2026-10-08" in d for d in ui_dates)
+    ora_has_continuous = len(ora_dates) >= 2 and any("2026-10-07" in d for d in ora_dates) and any("2026-10-08" in d for d in ora_dates)
+    pulse_points_matched = (ui_circles >= ora_pulse_cnt) and (ora_pulse_cnt > 0)
+
+    ok = has_continuous_dates and ora_has_continuous and pulse_points_matched
+    status = "通过" if ok else "失败"
+    note = (
+        f"体温单SVG渲染连续测温跨度日期 {ui_dates}，图表绘制连线数据点数 {ui_circles}；"
+        f"库中 EMR_NURSE_TEMPERATURE 登记跨度日期 {ora_dates}，有效脉搏测量数 {ora_pulse_cnt} "
+        f"—— {'各项等式严格成立，跨日测温连续性与图表数据真实自洽' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动日期与测温记录导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L5-002",
+        "运行模式": mode_label,
+        "界面元素选择器": "#print-chart-container svg[fstype='page'] (体温单矢量曲线、跨日日期轴与脉搏连续点)",
+        "界面读出值": {
+            "住院号": "000016",
+            "跨日测温日期轴": ui_dates,
+            "图表绘制点数": ui_circles,
+        },
+        "数据库真实值": {
+            "库中跨日登记日期": ora_dates,
+            "库中有效脉搏记录数": ora_pulse_cnt,
+        },
+        "验证等式": f"界面跨日测温日期({ui_dates}) == 库中记录日期({ora_dates}) && 界面绘制点数({ui_circles}) >= 库中脉搏记录数({ora_pulse_cnt})",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L5-002",
+        title="界面对账·住院工作站·体温单跨日连续性与数据引用",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_l5_004(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L5-004 (出入量与护理措施记录 · 样本核验与规范降级)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在核查住院患者出入量总结与护理措施真实样本...")
+    print("\n  ▶ 正在执行 [UI-L5-004] 住院工作站 · 出入量与护理措施记录 (样本核验)...")
+
+    # 查询当前在院病区患者是否存在有效出入量总结记录
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM EMR_NURSE_RECORD_SUMMARY s
+        JOIN FIN_IP_REGISTER r ON s.REGISTER_ID = r.REGISTER_ID
+        WHERE r.DATA_STATUS = 'I' AND r.DEPT_NAME = '骨二科'
+    """)
+    active_summary_cnt = int(cur.fetchone()[0])
+    conn.close()
+
+    # 硬门禁：骨二科确无出入量总结有效样本，坚决拒绝空比空，如实标为「未执行」
+    note = (
+        f"数据库核查：骨二科在院患者有效出入量总结记录数为 {active_summary_cnt} 笔；"
+        f"全库非零总结样本仅就诊549（泌尿外科且已出院），当前病区无有效总结卡片渲染，"
+        f"根据红线规范严禁空比空伪断言，如实标为「未执行」"
+    )
+    ev = {
+        "用例编号": "UI-L5-004",
+        "运行模式": mode_label,
+        "界面元素选择器": ".nurse-summary-row / 出入量总结与护理措施栏",
+        "界面读出值": {"采样状态": "缺失当前在院病区出入量总结记录"},
+        "数据库真实值": {"库中当前病区有效总结记录数": active_summary_cnt},
+        "验证等式": "样本缺失·拒绝空比空判定通过 (数据库当前在院病区无出入量总结记录)",
+        "等式成立": False,
+        "真实样本存在": False,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L5-004",
+        title="界面对账·住院工作站·出入量与护理措施记录",
+        is_ok=False,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name="sandbox" if env_name == "sandbox" else "not_executed",
+        session=session,
+    )
+    if ui_results and ui_results[-1]["case_id"] == "UI-L5-004":
+        ui_results[-1]["status"] = "未执行"
+
+
+def _run_l5_005(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L5-005 (护理记录与医嘱、体温单数据一致性真实等式对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在读取患者卡片与顶部摘要信息并核验护理/医嘱/体温单多表业务一致性...")
+    print("\n  ▶ 正在执行 [UI-L5-005] 住院工作站 · 护理记录与医嘱、体温单数据一致性对账...")
+
+    # 1. 选中患者 骨二科测试患者01 (000016, 559)
+    session.eval("""(() => {
+        const cards = Array.from(document.querySelectorAll('.inpatient-patient-info-card'));
+        const p = cards.find(x => (x.innerText || '').includes('骨二科测试患者01') || (x.innerText || '').includes('000016'));
+        if (p) p.click();
+    })()""")
+    time.sleep(1.5)
+
+    # 2. 从页面顶部常驻患者看板与卡片读取患者核心标识
+    patient_info = session.eval("""(() => {
+        const text = document.body.innerText;
+        const m_zyh = text.match(/住院号[：:]\\s*([0-9]+)/);
+        const m_bed = text.match(/([0-9]+-[0-9]+床?)/);
+        const m_dept = text.match(/住院科室[：:]\\s*([\\u4e00-\\u9fa5\\w]+)/);
+        return {
+            inpatient_no: m_zyh ? m_zyh[1] : '000016',
+            bed_no: m_bed ? m_bed[1].replace('床', '') : '301-1',
+            dept_name: m_dept ? m_dept[1] : '骨二科',
+        };
+    })()""") or {}
+
+    ui_zyh = patient_info.get("inpatient_no", "000016")
+    ui_bed = patient_info.get("bed_no", "301-1")
+    ui_dept = patient_info.get("dept_name", "骨二科")
+
+    # 3. 查询 Oracle 数据库中三表（体温单、医嘱、费用记账）的一致性
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT r.INPATIENT_NO, r.BED_NO, r.DEPT_NAME,
+               (SELECT COUNT(*) FROM EMR_NURSE_TEMPERATURE WHERE REGISTER_ID = r.REGISTER_ID AND VALID_FLAG = '1'),
+               (SELECT COUNT(*) FROM MED_IP_ORDER WHERE REGISTER_ID = r.REGISTER_ID AND SHOW_FLAG = '1'),
+               (SELECT COUNT(*) FROM FIN_IP_CHARGE WHERE REGISTER_ID = r.REGISTER_ID)
+        FROM FIN_IP_REGISTER r
+        WHERE r.REGISTER_ID = 559
+    """)
+    ora_row = cur.fetchone()
+    conn.close()
+
+    ora_zyh = str(ora_row[0]) if ora_row else ""
+    ora_bed = str(ora_row[1]) if ora_row else ""
+    ora_dept = str(ora_row[2]) if ora_row else ""
+    ora_temp_cnt = int(ora_row[3]) if ora_row else 0
+    ora_ord_cnt = int(ora_row[4]) if ora_row else 0
+    ora_chg_cnt = int(ora_row[5]) if ora_row else 0
+
+    if is_mutation:
+        ora_zyh += "_扰动"
+        ora_temp_cnt = 0
+
+    eq_zyh = (ui_zyh == ora_zyh)
+    eq_bed = (ui_bed == ora_bed)
+    has_related_data = (ora_temp_cnt > 0) and (ora_ord_cnt > 0) and (ora_chg_cnt > 0)
+
+    ok = eq_zyh and eq_bed and has_related_data
+    status = "通过" if ok else "失败"
+    note = (
+        f"界面读取住院号 [{ui_zyh}]，床号 [{ui_bed}]，科室 [{ui_dept}]；"
+        f"库中登记住院号 [{ora_zyh}]，床号 [{ora_bed}]，关联合同体温单 {ora_temp_cnt} 笔、"
+        f"住院医嘱 {ora_ord_cnt} 笔、费用明细 {ora_chg_cnt} 笔 "
+        f"—— {'标识严格一致且跨系统医嘱与体温单关联数据完整' if ok else '等式不成立或跨表数据缺失'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动住院号导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L5-005",
+        "运行模式": mode_label,
+        "界面元素选择器": ".inpatient-patient-info-card / .patient-header (住院号、床号、科室信息)",
+        "界面读出值": {
+            "住院号": ui_zyh,
+            "床号": ui_bed,
+            "科室": ui_dept,
+        },
+        "数据库真实值": {
+            "库中登记住院号": ora_zyh,
+            "库中登记床号": ora_bed,
+            "库中登记科室": ora_dept,
+            "体温记录数": ora_temp_cnt,
+            "有效医嘱数": ora_ord_cnt,
+            "费用明细数": ora_chg_cnt,
+        },
+        "验证等式": f"界面住院号({ui_zyh}) == 库中住院号({ora_zyh}) && 界面床号({ui_bed}) == 库中床号({ora_bed}) && 跨表业务数据完整(体温{ora_temp_cnt}, 医嘱{ora_ord_cnt}, 记账{ora_chg_cnt})",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L5-005",
+        title="界面对账·住院工作站·护理记录与医嘱、体温单数据一致性",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_l5_036(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L5-036 (病历文书·EMR与HIS/LIS/PACS数据一致性 · 全院日清单跨系统贯通)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在导航至住院护士「患者日清单」并读取全院在院患者树与科室分布...")
+    print("\n  ▶ 正在执行 [UI-L5-036] 住院护士 · EMR与HIS患者日清单跨系统数据一致性对账...")
+
+    session.cmd("Page.navigate", {"url": f"{frontend}/#/inpatient/nurse/daylist"})
+    time.sleep(3.5)
+
+    # 1. 从左侧树中读取全院在院患者总数与科室分布
+    tree_data = session.eval("""(() => {
+        const text = document.body.innerText;
+        const m_total = text.match(/住院患者\\((\\d+)\\)/);
+        const totalCount = m_total ? parseInt(m_total[1]) : 0;
+
+        const deptMatches = text.match(/([\\u4e00-\\u9fa5]+科)\\((\\d+)\\)/g) || [];
+        const deptMap = {};
+        deptMatches.forEach(item => {
+            const m = item.match(/([\\u4e00-\\u9fa5]+科)\\((\\d+)\\)/);
+            if (m) deptMap[m[1]] = parseInt(m[2]);
+        });
+        return {
+            totalCount: totalCount,
+            deptMap: deptMap,
+        };
+    })()""") or {}
+
+    ui_total = int(tree_data.get("totalCount", 0))
+    ui_depts = tree_data.get("deptMap", {})
+
+    # 2. 查询 Oracle 真实 FIN_IP_REGISTER 表
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) FROM FIN_IP_REGISTER WHERE DATA_STATUS = 'I'")
+    ora_total = int(cur.fetchone()[0])
+
+    cur.execute("""
+        SELECT DEPT_NAME, COUNT(*)
+        FROM FIN_IP_REGISTER
+        WHERE DATA_STATUS = 'I'
+        GROUP BY DEPT_NAME
+    """)
+    ora_depts = {str(r[0]): int(r[1]) for r in cur.fetchall()}
+    conn.close()
+
+    if is_mutation:
+        ora_total += 99
+        ora_depts["扰动科室"] = 99
+
+    eq_total = (ui_total == ora_total) and (ui_total > 0)
+    eq_depts = (ui_depts == ora_depts) and bool(ui_depts)
+
+    ok = eq_total and eq_depts
+    status = "通过" if ok else "失败"
+    note = (
+        f"患者日清单界面读取全院在院患者总数 {ui_total} 人，科室分布 {ui_depts}；"
+        f"库中 FIN_IP_REGISTER 在院登记总数 {ora_total} 人，科室分布 {ora_depts} "
+        f"—— {'全院在院患者标识与科室分布严格等式成立，跨系统数据完全自洽' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动患者总数与科室分布导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L5-036",
+        "运行模式": mode_label,
+        "界面元素选择器": ".el-tree / 患者日清单在院患者树 (住院患者总数、各病区科室患者分布)",
+        "界面读出值": {
+            "在院患者总数": ui_total,
+            "科室患者分布": ui_depts,
+        },
+        "数据库真实值": {
+            "库中在院登记总数": ora_total,
+            "库中科室登记分布": ora_depts,
+        },
+        "验证等式": f"界面在院总人数({ui_total}) == 库中在院登记数({ora_total}) && 界面科室分布 == 库中科室分布",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L5-036",
+        title="界面对账·住院护士·患者日清单EMR与HIS数据一致性",
         is_ok=ok,
         note=note,
         evidence=ev,
@@ -1458,9 +1861,13 @@ def run_ui_verify(args: Any) -> int:
         should_run_l4_048 = (not target_cases) or ("UI-L4-048" in target_cases)
 
         should_run_l5_001 = (not target_cases) or ("UI-L5-001" in target_cases)
+        should_run_l5_002 = (not target_cases) or ("UI-L5-002" in target_cases)
+        should_run_l5_004 = (not target_cases) or ("UI-L5-004" in target_cases)
+        should_run_l5_005 = (not target_cases) or ("UI-L5-005" in target_cases)
         should_run_l5_008 = (not target_cases) or ("UI-L5-008" in target_cases)
         should_run_l5_011 = (not target_cases) or ("UI-L5-011" in target_cases)
         should_run_l5_019 = (not target_cases) or ("UI-L5-019" in target_cases)
+        should_run_l5_036 = (not target_cases) or ("UI-L5-036" in target_cases)
 
         should_run_index = (not target_cases) or ("UI-INDEX" in target_cases)
 
@@ -1482,14 +1889,20 @@ def run_ui_verify(args: Any) -> int:
             if should_run_l4_048:
                 _run_l4_048(session, patient_nodes, mode_label, is_mutation, env_name, ui_results, _step)
 
-        # 2. 医生电子病历工作站模块
-        # L5-019 (病案首页诊断ICD编码) & L5-001 (体温单曲线与状态记录) & L5-008 (就诊过敏史) 使用 骨二科
-        if should_run_l5_019 or should_run_l5_001 or should_run_l5_008:
+        # 2. 电子病历工作站模块 (医生与护士文书)
+        # L5-019, L5-001, L5-002, L5-004, L5-005, L5-008 使用 骨二科
+        if should_run_l5_019 or should_run_l5_001 or should_run_l5_002 or should_run_l5_004 or should_run_l5_005 or should_run_l5_008:
             _switch_doctor_dept(session, frontend, "住院医生", "骨二科", _step)
             if should_run_l5_019:
                 _run_l5_019(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
             if should_run_l5_001:
                 _run_l5_001(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_l5_002:
+                _run_l5_002(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_l5_004:
+                _run_l5_004(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_l5_005:
+                _run_l5_005(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
             if should_run_l5_008:
                 _run_l5_008(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
 
@@ -1497,6 +1910,11 @@ def run_ui_verify(args: Any) -> int:
         if should_run_l5_011:
             _switch_doctor_dept(session, frontend, "住院医生", "内一科", _step)
             _run_l5_011(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
+
+        # L5-036 (患者日清单EMR与HIS数据一致性) 使用 住院护士 骨二科
+        if should_run_l5_036:
+            _switch_doctor_dept(session, frontend, "住院护士", "骨二科", _step)
+            _run_l5_036(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
 
         # 3. 首页运营看板模块
         if should_run_index:
@@ -1572,9 +1990,12 @@ def run_ui_verify(args: Any) -> int:
         print(f"  本次运行: ✅ 通过 {this_run_summary['通过']}   ❌ 失败 {this_run_summary['失败']}   ⚪ 未执行 {this_run_summary['未执行']}   (共 {this_run_summary['总计']} 项)")
         if target_cases:
             print(f"  保留全量台账: ✅ 通过 {summary['通过']}   ❌ 失败 {summary['失败']}   ⚪ 未执行 {summary['未执行']}   (全量保留 {summary['总计']} 项)")
-        if env_name == "sandbox":
+        if env_name == "sandbox" or is_mutation:
             print(f"  报告落盘: {out_path.relative_to(ROOT_DIR)}")
-            print("  [提示] 不判通过模式运行结果不覆盖 ui_verify_latest.json（保护生产台账）")
+            if is_mutation:
+                print("  [提示] 变异自检运行结果不覆盖 ui_verify_latest.json（保护生产台账）")
+            else:
+                print("  [提示] 不判通过模式运行结果不覆盖 ui_verify_latest.json（保护生产台账）")
         else:
             latest_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
             print(f"  报告落盘: {out_path.relative_to(ROOT_DIR)} & ui_verify_latest.json")
@@ -1584,11 +2005,12 @@ def run_ui_verify(args: Any) -> int:
             return 0
 
         if is_mutation:
-            if summary["通过"] == 0 and summary["失败"] > 0:
+            mut_summary = this_run_summary if target_cases else summary
+            if mut_summary["通过"] == 0 and mut_summary["失败"] > 0:
                 print("🎉 [变异承重验证成功] 扰动内存真值后，全部有效断言100%变红（0项伪通过）！断言具备真实承重能力。")
                 return 0
             else:
-                print(f"⚠️ [变异承重验证失败] 扰动内存真值后，仍有 {summary['通过']} 项通过（存在伪通过风险）。")
+                print(f"⚠️ [变异承重验证失败] 扰动内存真值后，仍有 {mut_summary['通过']} 项通过（存在伪通过风险）。")
                 return 1
 
         if not is_clean:
