@@ -74,12 +74,6 @@
 
       <!-- Group 3: 工具与配置 -->
       <div class="tools-btn-group">
-        <select class="target-select" id="slowmoSelect" style="height:32px; font-size:12px;" title="动作间慢放延迟">
-          <option value="0">慢放: 正常 (0ms)</option>
-          <option value="500">慢放: 500ms</option>
-          <option value="1000">慢放: 1秒</option>
-        </select>
-
         <button class="g-btn g-btn-outlined" id="btnOpenRunConfig" title="运行环境与控制台信息">
           <svg class="ui-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="3"></circle>
@@ -369,19 +363,13 @@
 
               <div style="height:16px; width:1px; background:var(--g-border); margin:0 4px;"></div>
 
-              <!-- Quick Switch for Headless / Visible Execution -->
-              <label class="m-switch" id="lblHeadlessSwitch" title="勾选后实测将在桌面打开实体独立 Chrome 窗口供实时观看">
-                <input type="checkbox" id="showBrowserCheck" onchange="onBrowserCheckChange(this)">
-                <span class="m-switch-track">
-                  <span class="m-switch-thumb"></span>
-                </span>
-                <span class="m-switch-text">
-                  <span id="headlessSwitchModeText" style="display:inline-flex; align-items:center; gap:4px;">
-                    <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> 窗口模式
-                  </span>
-                  <span class="m-switch-tip" id="headlessSwitchTipText">(可看页面在动)</span>
-                </span>
-              </label>
+              <!-- 顶部界面断言覆盖率统计与说明 -->
+              <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue); font-size:12px; padding:3px 8px; font-weight:600;" id="uiCoverageBadge">
+                已覆盖界面断言的用例：<strong id="uiCoverageCountText" style="font-family:var(--g-mono);">1 / 66</strong>
+              </span>
+              <span style="font-size:11px; color:var(--g-text-secondary); display:inline-flex; align-items:center; gap:4px; margin-left:4px;">
+                (闭环用例为「接口+库对账」；界面验证见「<a href="javascript:void(0)" onclick="switchDomain('screen')" style="color:var(--g-blue); text-decoration:underline; font-weight:500;">界面巡检</a>」)
+              </span>
             </div>
 
             <div class="table-toolbar-right">
@@ -402,10 +390,11 @@
                   <th style="width: 44px; text-align:center;">
                     <input type="checkbox" id="chkMasterCases" checked onchange="toggleSelectAll(this)" title="全选/全不选">
                   </th>
-                  <th style="width: 140px;">用例 ID</th>
+                  <th style="width: 110px;">用例 ID</th>
+                  <th style="width: 100px; text-align:center;">验证方式</th>
                   <th>用例名称与说明</th>
-                  <th style="width: 110px;">状态</th>
-                  <th style="width: 90px;">耗时</th>
+                  <th style="width: 90px;">状态</th>
+                  <th style="width: 80px;">耗时</th>
                   <th style="width: 130px; text-align:center;">操作</th>
                 </tr>
               </thead>
@@ -549,19 +538,46 @@
           <div>
             <div style="font-size:15px; font-weight:600; display:flex; align-items:center; gap:8px;">
               独立 Chrome 界面巡检与业务等式对账
-              <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue);">4 大核心巡检项</span>
+              <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue);">4 大核心巡检项 (支持单条 / 全部执行)</span>
             </div>
             <div style="font-size:12px; color:var(--g-text-secondary); margin-top:4px;">
-              在独立 Chrome 中加载真实前端页面，读取 DOM 列表并与后端数据库/网关全集进行数学等式对账。
+              在独立 Chrome 中加载真实前端页面，读取 DOM 渲染值并与后端数据库/网关全集进行数学等式对账。
             </div>
           </div>
-          <button class="g-btn g-btn-primary" onclick="runUiVerifyNow()">
-            <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-            <span>立即执行界面巡检</span>
-          </button>
+
+          <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+            <!-- 窗口模式开关：移至界面巡检页 -->
+            <label class="m-switch" id="lblHeadlessSwitchScreen" title="另起一个独立 Chrome 窗口（不占用你自己的 9222），可看着它一步步操作" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+              <input type="checkbox" id="showBrowserCheck" onchange="onBrowserCheckChange(this)">
+              <span class="m-switch-track">
+                <span class="m-switch-thumb"></span>
+              </span>
+              <span class="m-switch-text" style="font-size:12px; display:inline-flex; align-items:center; gap:4px;">
+                <span id="headlessSwitchModeText" style="display:inline-flex; align-items:center; gap:3px; font-weight:600;">
+                  <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> 后台模式
+                </span>
+                <span class="m-switch-tip" id="headlessSwitchTipText" style="color:var(--g-text-secondary); font-size:11px;">(勾选开启窗口模式：另起独立 Chrome 窗口，可看着它一步步操作)</span>
+              </span>
+            </label>
+
+            <!-- 慢放延迟选择 -->
+            <div style="display:inline-flex; align-items:center; gap:4px;">
+              <span style="font-size:12px; color:var(--g-text-secondary);">慢放:</span>
+              <select class="target-select" id="slowmoSelect" style="height:32px; font-size:12px;" title="动作间慢放延迟">
+                <option value="0">正常 (0ms)</option>
+                <option value="500">500ms</option>
+                <option value="1000">1秒</option>
+              </select>
+            </div>
+
+            <button class="g-btn g-btn-primary" onclick="runUiVerifyNow()" title="执行全量 4 项界面巡检断言">
+              <svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+              <span>▶ 全部执行</span>
+            </button>
+          </div>
         </div>
 
-        <div id="uiResultsGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:14px; margin-top:16px;">
+        <div id="uiResultsGrid" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(360px, 1fr)); gap:14px; margin-top:16px;">
           <!-- Dynamically populated by app.js -->
         </div>
       </section>

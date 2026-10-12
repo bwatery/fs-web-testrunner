@@ -108,9 +108,11 @@ class RunnerBridge:
         """
         启动测试子进程。
         """
-        # 判断是否路由到 ui-verify
-        if (show_browser and (cases and any("039" in c for c in cases))) or is_ui_verify:
+        # 严格判断是否路由到 ui-verify（仅当显式请求 ui_verify 或目标全为 UI- 巡检用例）
+        if is_ui_verify or (cases and all(c.startswith("UI-") for c in cases)):
             is_ui_verify = True
+        else:
+            is_ui_verify = False
 
         with self.lock:
             if self.running:
@@ -120,7 +122,7 @@ class RunnerBridge:
             self.current_case = None
             self.current_index = 0
             if is_ui_verify:
-                self.total_cases = 4
+                self.total_cases = len(cases) if cases else 4
             else:
                 self.total_cases = len(cases) if cases else 66
             self.current_step = "正在启动测试进程..."
@@ -144,6 +146,8 @@ class RunnerBridge:
                 cmd.extend(["--slowmo", str(slowmo)])
             if env == "sandbox":
                 cmd.extend(["--env", "sandbox"])
+            if cases:
+                cmd.extend(["--case", ",".join(cases)])
         else:
             cmd.extend(["run", "--suite", "closed-loop"])
             if cases:

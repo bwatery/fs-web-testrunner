@@ -39,6 +39,22 @@ def get_closed_loop_cases() -> Dict[str, Any]:
         except Exception:
             latest_data = {}
 
+    # 读取界面巡检最新落盘数据，判定哪些用例具备真实界面断言
+    ui_latest_file = _VERIFY_DIR / "ui_verify_latest.json"
+    ui_covered_cases = set()
+    if ui_latest_file.exists():
+        try:
+            ui_data = json.loads(ui_latest_file.read_text(encoding="utf-8"))
+            for ur in ui_data.get("results", []):
+                ucid = ur.get("case_id", "")
+                m = re.match(r"^UI-(L\d+-\d+)", ucid)
+                if m:
+                    ui_covered_cases.add(m.group(1))
+                elif ucid:
+                    ui_covered_cases.add(ucid)
+        except Exception:
+            pass
+
     results_map = {}
     for r in latest_data.get("results", []):
         results_map[r.get("case_id")] = r
@@ -55,6 +71,10 @@ def get_closed_loop_cases() -> Dict[str, Any]:
         # 区分是否命制造数闸门
         is_create_patient = cid in ("L6-001", "L6-009", "L6-012")
 
+        # 严格按判定依据打标：命中界面巡检则为「接口+界面」，否则为「接口」
+        has_ui = cid in ui_covered_cases
+        verify_mode = "接口+界面" if has_ui else "接口"
+
         cases_list.append({
             "case_id": cid,
             "title": title,
@@ -63,7 +83,10 @@ def get_closed_loop_cases() -> Dict[str, Any]:
             "evidence": evidence,
             "duration_ms": duration_ms,
             "is_create_patient": is_create_patient,
+            "verify_mode": verify_mode,
         })
+
+    ui_covered_count = sum(1 for c in cases_list if c["verify_mode"] == "接口+界面")
 
     summary = latest_data.get("summary", {
         "通过": sum(1 for c in cases_list if c["status"] == "通过"),
@@ -73,6 +96,7 @@ def get_closed_loop_cases() -> Dict[str, Any]:
         "未执行": sum(1 for c in cases_list if c["status"] == "未执行"),
         "总计": len(cases_list),
     })
+    summary["ui_covered_count"] = ui_covered_count
 
     return {
         "cases": cases_list,

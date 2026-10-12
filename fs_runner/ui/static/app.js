@@ -19,7 +19,7 @@ let gState = {
 
 function getCaseModule(caseId) {
   if (!caseId) return "OTHER";
-  for (const prefix of ["L0", "L1", "L2", "L3", "L4", "L5", "L6"]) {
+  for (const prefix of ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9"]) {
     if (caseId.startsWith(prefix)) return prefix;
   }
   if (caseId.startsWith("UI-") || caseId.startsWith("UI")) return "UI";
@@ -165,11 +165,12 @@ function onBrowserCheckChange(cb) {
   const txtTip = document.getElementById("headlessSwitchTipText");
   if (gState.showBrowser) {
     if (txtMode) txtMode.innerHTML = `<svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> 窗口模式`;
-    if (txtTip) txtTip.innerText = `(桌面可见实操)`;
-    showToast("浏览器显示开启", "执行时将在桌面弹出独立 Chrome 窗口实时展现操作流程", "info");
+    if (txtTip) txtTip.innerText = `(另起独立 Chrome 窗口，桌面可见实操)`;
+    showToast("窗口模式开启", "执行巡检时将在桌面弹出独立 Chrome 窗口实时展现操作流程", "info");
   } else {
     if (txtMode) txtMode.innerHTML = `<svg class="ui-icon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg> 后台模式`;
-    if (txtTip) txtTip.innerText = `(隐形快速执行)`;
+    if (txtTip) txtTip.innerText = `(勾选开启窗口模式：另起独立 Chrome 窗口，可看着它一步步操作)`;
+    showToast("后台模式", "执行巡检时将在后台无头运行，快速完成 DOM 等式校验", "info");
   }
 }
 
@@ -218,6 +219,10 @@ function updateSummaryCounts(summary) {
 
   const badgeCases = document.getElementById("railBadgeCases");
   if (badgeCases) badgeCases.innerText = total;
+
+  const uiCovCount = summary.ui_covered_count || 1;
+  const elUiCov = document.getElementById("uiCoverageCountText");
+  if (elUiCov) elUiCov.innerText = `${uiCovCount} / ${total}`;
 }
 
 // 渲染左侧分类树
@@ -234,6 +239,7 @@ function renderDrawerCategories() {
     "L4": "住院护士 (L4)",
     "L5": "住院医生 (L5)",
     "L6": "住院收费 (L6)",
+    "L9": "住院药房 (L9)",
     "UI": "界面巡检 (UI)",
   };
 
@@ -370,7 +376,7 @@ function collapseAllCategories() {
   document.querySelectorAll(".nav-cat-header").forEach((h) => h.classList.add("collapsed"));
   document.querySelectorAll(".nav-sub-list").forEach((l) => l.classList.add("collapsed"));
   if (!gState.collapsedModules) gState.collapsedModules = new Set();
-  ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "UI", "OTHER"].forEach((k) => gState.collapsedModules.add(k));
+  ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "L9", "UI", "OTHER"].forEach((k) => gState.collapsedModules.add(k));
 }
 
 function expandAllCategories() {
@@ -479,11 +485,21 @@ function renderCaseTable() {
 
     const isChecked = gState.selectedCases.has(c.case_id) ? "checked" : "";
 
+    let verifyBadgeHtml = "";
+    if (c.verify_mode === "接口+界面") {
+      verifyBadgeHtml = '<span class="badge" style="background:#e8f0fe; color:#1a73e8; border:1px solid #1a73e8; font-weight:600; font-size:11px; padding:2px 6px;">接口+界面</span>';
+    } else if (c.verify_mode === "仅界面") {
+      verifyBadgeHtml = '<span class="badge" style="background:#fce8e6; color:#c5221f; border:1px solid #c5221f; font-weight:600; font-size:11px; padding:2px 6px;">仅界面</span>';
+    } else {
+      verifyBadgeHtml = '<span class="badge" style="background:#f1f3f4; color:#5f6368; border:1px solid #dadce0; font-weight:600; font-size:11px; padding:2px 6px;">接口</span>';
+    }
+
     tr.innerHTML = `
       <td style="text-align:center;">
         <input type="checkbox" value="${c.case_id}" ${isChecked} onchange="toggleSelectCase('${c.case_id}', this.checked)">
       </td>
       <td style="font-weight:600; font-family:var(--g-mono); color:var(--g-blue);">${c.case_id}</td>
+      <td style="text-align:center;">${verifyBadgeHtml}</td>
       <td>
         <div style="font-weight:500;">${c.title}</div>
         ${c.note ? `<div style="font-size:11px; color:var(--g-text-secondary); margin-top:2px;">${c.note}</div>` : ""}
@@ -503,7 +519,7 @@ function renderCaseTable() {
     trEv.id = `ev-row-${c.case_id}`;
     trEv.style.display = "none";
     trEv.innerHTML = `
-      <td colspan="6" style="padding:10px 16px; background:var(--g-surface-variant);">
+      <td colspan="7" style="padding:10px 16px; background:var(--g-surface-variant);">
         <div style="font-size:12px; font-weight:600; margin-bottom:4px; color:var(--g-text-primary);">实测比对证据 (Evidence):</div>
         <pre style="margin:0; font-family:var(--g-mono); font-size:11px; background:var(--g-surface); padding:8px 12px; border-radius:4px; border:1px solid var(--g-border); max-height:220px; overflow:auto;">${JSON.stringify(c.evidence || {}, null, 2)}</pre>
       </td>
@@ -597,12 +613,10 @@ async function executeCases(casesArray) {
   const payload = {
     cases: casesArray,
     env: gState.env,
-    show_browser: gState.showBrowser,
-    slowmo: gState.slowmo,
     is_ui_verify: false,
   };
 
-  appendTerminal(`\n🚀 [下发执行指令] 目标用例: ${casesArray ? casesArray.join(", ") : "全量66条"} (环境: ${gState.env}, 显示浏览器: ${gState.showBrowser}, 慢放: ${gState.slowmo}ms)\n`);
+  appendTerminal(`\n🚀 [下发执行指令] 目标用例: ${casesArray ? casesArray.join(", ") : "全量66条"} (环境: ${gState.env})\n`);
 
   try {
     const res = await fetch("/api/run", {
@@ -949,11 +963,20 @@ function renderUiResults(data) {
   if (!grid) return;
   grid.innerHTML = "";
 
-  const results = data.results || [];
-  if (results.length === 0) {
-    grid.innerHTML = '<div style="color:var(--g-text-secondary); font-size:13px;">暂无巡检记录，请点击上方「立即执行界面巡检」</div>';
-    return;
-  }
+  const defaultItems = [
+    { case_id: "UI-L6-039-P1", title: "界面对账·费用综合查询·在院第一患者费用明细与汇总", note: "在独立 Chrome 中加载费用综合查询，比对第一患者住院号、床号与总金额真实等式", status: "未执行" },
+    { case_id: "UI-L6-039-P2", title: "界面对账·费用综合查询·在院第二患者费用汇总", note: "在独立 Chrome 中加载费用综合查询，比对第二患者住院号、床号与挂账总额真实等式", status: "未执行" },
+    { case_id: "UI-L6-039-LIST", title: "界面对账·费用综合查询·在院患者床位分配全集与科室对账", note: "展开左侧病区树全部床位，校验界面在床集合与数据库全集严格包含等式", status: "未执行" },
+    { case_id: "UI-INDEX", title: "界面对账·首页看板·收费总量指标聚合等式", note: "在独立 Chrome 中加载首页指标看板，比对总收费量大于等于门诊细项之聚合等式", status: "未执行" },
+  ];
+
+  const knownMap = {};
+  defaultItems.forEach((d) => (knownMap[d.case_id] = Object.assign({}, d)));
+  (data.results || []).forEach((r) => {
+    knownMap[r.case_id] = Object.assign({}, knownMap[r.case_id] || {}, r);
+  });
+
+  const results = Object.values(knownMap);
 
   results.forEach((r) => {
     const card = document.createElement("div");
@@ -977,24 +1000,80 @@ function renderUiResults(data) {
         ${statusBadge}
       </div>
       <div class="ws-card-desc">${r.note || ""}</div>
-      <div class="ws-card-footer">
-        <span style="font-size:11px; color:var(--g-text-tertiary);">耗时: ${r.duration_ms}ms</span>
-        <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue);">真实 DOM 对账</span>
+      <div class="ws-card-footer" style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span style="font-size:11px; color:var(--g-text-tertiary);">耗时: ${r.duration_ms ? r.duration_ms + 'ms' : '-'}</span>
+          <span class="badge" style="background:var(--g-blue-surface); color:var(--g-blue);">真实 DOM 对账</span>
+        </div>
+        <button class="g-btn g-btn-tonal" style="height:26px; font-size:11px; padding:0 10px;" onclick="runSingleUiVerify('${r.case_id}')" title="单独执行此界面巡检项">
+          ▶ 单独执行
+        </button>
       </div>
     `;
     grid.appendChild(card);
   });
 }
 
-async function runUiVerifyNow() {
+async function runSingleUiVerify(caseId) {
+  const browserCheck = document.getElementById("showBrowserCheck");
+  if (browserCheck) {
+    gState.showBrowser = browserCheck.checked;
+  }
+  const slowmoEl = document.getElementById("slowmoSelect");
+  if (slowmoEl) {
+    gState.slowmo = parseInt(slowmoEl.value, 10) || 0;
+  }
+
   const payload = {
+    cases: [caseId],
     show_browser: gState.showBrowser,
     slowmo: gState.slowmo,
     env: gState.env,
     is_ui_verify: true,
   };
 
-  appendTerminal("\n🖥️ [触发界面巡检] 正在拉起 Chrome 执行真实业务等式对账...\n");
+  const modeText = gState.showBrowser ? "独立可见 Chrome 窗口" : "后台无头 Chrome";
+  appendTerminal(`\n🖥️ [触发单个界面巡检] 目标用例: ${caseId}，正在拉起 ${modeText} 执行真实业务等式对账...\n`);
+  switchTab("cases"); // 切换到用例控制台查看实时日志
+
+  try {
+    const res = await fetch("/api/run", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const resData = await res.json();
+    if (!resData.ok) {
+      showToast("启动失败", resData.msg, "danger");
+    } else {
+      setRunningState(true);
+      showToast("界面巡检开始", `正在单独执行 [${caseId}] 真实 DOM 比对`, "run");
+    }
+  } catch (err) {
+    showToast("请求异常", String(err), "danger");
+  }
+}
+
+async function runUiVerifyNow() {
+  const browserCheck = document.getElementById("showBrowserCheck");
+  if (browserCheck) {
+    gState.showBrowser = browserCheck.checked;
+  }
+  const slowmoEl = document.getElementById("slowmoSelect");
+  if (slowmoEl) {
+    gState.slowmo = parseInt(slowmoEl.value, 10) || 0;
+  }
+
+  const payload = {
+    cases: null,
+    show_browser: gState.showBrowser,
+    slowmo: gState.slowmo,
+    env: gState.env,
+    is_ui_verify: true,
+  };
+
+  const modeText = gState.showBrowser ? "独立可见 Chrome 窗口" : "后台无头 Chrome";
+  appendTerminal(`\n🖥️ [触发全量界面巡检] 正在拉起 ${modeText} 执行真实业务等式对账 (慢放: ${gState.slowmo}ms)...\n`);
   switchTab("cases"); // 切换到用例控制台查看实时日志
 
   try {

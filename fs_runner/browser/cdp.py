@@ -112,9 +112,16 @@ class BrowserSession:
             else:
                 args.append("--window-position=60,60")
 
+            startupinfo = None
+            if os.name == "nt" and not self.headless:
+                startupinfo = subprocess.STARTUPINFO()
+                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                startupinfo.wShowWindow = 1  # SW_SHOWNORMAL: 钉死显示，防止继承父进程的 SW_HIDE
+
             try:
                 self.proc = subprocess.Popen(
                     args,
+                    startupinfo=startupinfo,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                 )

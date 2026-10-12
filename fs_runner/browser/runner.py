@@ -85,6 +85,485 @@ def _record_ui_result(
         _archive_failure_trace(session, cid, note, evidence)
 
 
+def _prepare_inpatient_page(session: BrowserSession, frontend: str, _step: Any) -> Tuple[str, List[str]]:
+    has_query_menu = session.eval("""(() => {
+        return Array.from(document.querySelectorAll('.el-menu-item'))
+                    .some(e => (e.innerText || '').includes('费用综合查询'));
+    })()""")
+
+    if not has_query_menu:
+        print("  [角色自适应] 当前激活角色非住院护士，正在通过界面「切换科室」对话框切换为住院护士角色...")
+        session.eval("""(() => {
+            const el = document.querySelector('.avatar-dropdown') || document.querySelector('.username');
+            if (el) el.click();
+        })()""")
+        time.sleep(1.2)
+        session.eval("""(() => {
+            const item = Array.from(document.querySelectorAll('.el-dropdown-menu__item'))
+                              .find(x => (x.innerText || '').includes('切换科室'));
+            if (item) item.click();
+        })()""")
+        time.sleep(1.2)
+        session.eval("""(() => {
+            const d = document.querySelector('.el-dialog');
+            if (d) {
+                const s0 = d.querySelectorAll('.el-select')[0];
+                if (s0) { const inp = s0.querySelector('input'); if (inp) inp.click(); else s0.click(); }
+            }
+        })()""")
+        time.sleep(1.2)
+        session.eval("""(() => {
+            const item = Array.from(document.querySelectorAll('.el-select-dropdown__item'))
+                              .find(x => (x.innerText || '').trim() === '住院护士');
+            if (item) item.click();
+        })()""")
+        time.sleep(1.0)
+        session.eval("""(() => {
+            const d = document.querySelector('.el-dialog');
+            if (d) {
+                const btn = Array.from(d.querySelectorAll('button')).find(x => (x.innerText || '').includes('确定'));
+                if (btn) btn.click();
+            }
+        })()""")
+        time.sleep(3.0)
+
+    # 点击「费用综合查询」并分发冒泡事件
+    _step("正在通过侧边栏导航进入「费用综合查询」模块...")
+    session.eval("""(() => {
+        const item = Array.from(document.querySelectorAll('.el-menu-item'))
+                          .find(e => (e.innerText || '').includes('费用综合查询'));
+        if (item) {
+            const span = item.querySelector('span');
+            if (span) span.click();
+            item.click();
+            item.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
+        }
+    })()""")
+    time.sleep(3.0)
+
+    current_hash = session.eval("location.hash") or ""
+    if "syntheticfquery" not in current_hash:
+        _step("直接加载费用综合查询路由 (#/inpatient/finance/syntheticfquery)...")
+        session.cmd("Page.navigate", {"url": f"{frontend}/#/inpatient/finance/syntheticfquery"})
+        time.sleep(2.5)
+        session.cmd("Page.reload", {"ignoreCache": True})
+        time.sleep(3.5)
+
+    # 1. 读之前先「全部展开」左侧树：把所有未展开节点的展开图标点一遍，等待渲染稳定，并记录展开操作数
+    _step("正在展开左侧患者树全部病区节点...")
+    expand_stats = session.eval("""(() => {
+        let totalClicked = 0;
+        let passes = 0;
+        for (let pass = 0; pass < 5; pass++) {
+            const unexpanded = Array.from(document.querySelectorAll('.el-tree-node__expand-icon:not(.is-leaf):not(.expanded)'));
+            if (unexpanded.length === 0) break;
+            passes++;
+            unexpanded.forEach(btn => {
+                btn.click();
+                totalClicked++;
+            });
+        }
+        return { passes, totalClicked };
+    })()""") or {}
+    time.sleep(1.5)
+
+    # 动态解析左侧树中的当前病区与在院患者列表
+    tree_info = session.eval("""(() => {
+        const nodes = Array.from(document.querySelectorAll('.el-tree-node__content'))
+                           .map(e => e.innerText.trim())
+                           .filter(t => t.length > 0);
+        return nodes;
+    })()""")
+    tree_info = tree_info if isinstance(tree_info, list) else []
+
+    dept_name = ""
+    patient_nodes = []
+    for t in tree_info:
+        m_dept = re.match(r"^([\u4e00-\u9fa5\w]+)\(\d+\)$", t)
+        if m_dept and "患者" not in t:
+            dept_name = m_dept.group(1)
+        if re.match(r"^\d+-\d+\s+", t):
+            patient_nodes.append(t)
+
+    if not dept_name:
+        header_dept = session.eval("""(() => {
+            const el = Array.from(document.querySelectorAll('*'))
+                            .find(e => e.children.length === 0 && (e.innerText || '').includes('病区'));
+            return el ? el.innerText : '';
+        })()""") or ""
+        m_h = re.search(r"/\s*([\u4e00-\u9fa5\w]+)病区", header_dept)
+        if m_h:
+            dept_name = m_h.group(1)
+        else:
+            dept_name = "内一科"
+
+    return dept_name, patient_nodes
+
+
+def _run_p1(
+    session: BrowserSession,
+    patient_nodes: List[str],
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言 1: UI-L6-039-P1 (在院第一患者费用汇总与明细对账)
+    # ===================================================================
+    t0 = time.time()
+    p1_label = patient_nodes[0] if len(patient_nodes) > 0 else "301-1 骨二科测试患者01"
+    p1_name = p1_label.split()[-1]
+    _step(f"正在读取患者 [{p1_name}] 费用汇总与明细并与数据库对账...")
+    print(f"\n  ▶ 正在执行 [UI-L6-039-P1] 费用综合查询 · {p1_name} 费用汇总与明细对账...")
+    session.eval(f"""(() => {{
+        const el = Array.from(document.querySelectorAll('.el-tree-node__content'))
+                        .find(e => (e.innerText || '').trim() === {json.dumps(p1_label)});
+        if (el) {{ el.click(); return true; }}
+        return false;
+    }})()""")
+    time.sleep(2.5)
+
+    dom_p1_text = session.eval("document.body.innerText") or ""
+    m_tot = re.search(r"总金额\s*([0-9.]+)", dom_p1_text)
+    m_zyh = re.search(r"住院号\s*([0-9]+)", dom_p1_text)
+    m_bed = re.search(r"住院床号\s*([0-9-]+)", dom_p1_text)
+
+    ui_tot_cost = float(m_tot.group(1)) if m_tot else 0.0
+    ui_inpatient_no = m_zyh.group(1) if m_zyh else ""
+    ui_bed_no = m_bed.group(1) if m_bed else ""
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("""SELECT bed_no, patient_name, inpatient_no, tot_cost 
+                   FROM fin_ip_register WHERE inpatient_no = :1""", [ui_inpatient_no])
+    ora_p1_row = cur.fetchone()
+    cur.execute("""SELECT NVL(SUM(tot_cost),0), COUNT(*) FROM fin_ip_charge 
+                   WHERE register_id = (SELECT register_id FROM fin_ip_register WHERE inpatient_no = :1)""", [ui_inpatient_no])
+    ora_charge_sum, ora_charge_cnt = cur.fetchone()
+    conn.close()
+
+    ora_tot_cost = float(ora_p1_row[3]) if ora_p1_row else 0.0
+    ora_inpatient_no = str(ora_p1_row[2]) if ora_p1_row else ""
+    ora_bed_no = str(ora_p1_row[0]) if ora_p1_row else ""
+    ora_charge_sum = float(ora_charge_sum or 0.0)
+
+    if is_mutation:
+        ora_tot_cost += 100.0
+
+    p1_eq1 = (abs(ui_tot_cost - ora_tot_cost) < 1e-4)
+    p1_eq2 = (ui_inpatient_no == ora_inpatient_no)
+    p1_eq3 = (ui_bed_no == ora_bed_no)
+
+    p1_ok = p1_eq1 and p1_eq2 and p1_eq3 and (ui_tot_cost > 0)
+    p1_status = "通过" if p1_ok else "失败"
+    p1_note = (
+        f"界面读到住院号 {ui_inpatient_no}，床号 {ui_bed_no}，总金额 ¥{ui_tot_cost}；"
+        f"库中登记住院号 {ora_inpatient_no}，床号 {ora_bed_no}，挂账总额 ¥{ora_tot_cost} "
+        f"—— {'各项等式严格成立' if p1_ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not p1_ok:
+        p1_note += "（变异自检生效：内存扰动库值成功导致断言变红）"
+
+    p1_evidence = {
+        "用例编号": "UI-L6-039-P1",
+        "运行模式": mode_label,
+        "界面元素选择器": f".el-tree-node__content ({p1_name}) / .patient-header",
+        "界面读出值": {
+            "患者姓名": p1_name,
+            "住院号": ui_inpatient_no,
+            "床号": ui_bed_no,
+            "总金额": ui_tot_cost,
+        },
+        "数据库真实值": {
+            "患者姓名": str(ora_p1_row[1]) if ora_p1_row else "",
+            "住院号": ora_inpatient_no,
+            "床号": ora_bed_no,
+            "挂账总额": ora_tot_cost,
+            "费用明细汇总": ora_charge_sum,
+            "明细行数": int(ora_charge_cnt),
+        },
+        "验证等式": f"界面总金额({ui_tot_cost}) == 库中挂账总额({ora_tot_cost})",
+        "等式成立": p1_ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L6-039-P1",
+        title=f"界面对账·费用综合查询·{p1_name}费用明细与汇总",
+        is_ok=p1_ok,
+        note=p1_note,
+        evidence=p1_evidence,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_p2(
+    session: BrowserSession,
+    patient_nodes: List[str],
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言 2: UI-L6-039-P2 (在院第二患者费用汇总)
+    # ===================================================================
+    t0 = time.time()
+    p2_label = patient_nodes[1] if len(patient_nodes) > 1 else "301-11 骨二科测试患者03"
+    p2_name = p2_label.split()[-1]
+    _step(f"正在读取第二患者 [{p2_name}] 费用汇总并与数据库对账...")
+    print(f"\n  ▶ 正在执行 [UI-L6-039-P2] 费用综合查询 · {p2_name} 费用汇总对账...")
+    session.eval(f"""(() => {{
+        const el = Array.from(document.querySelectorAll('.el-tree-node__content'))
+                        .find(e => (e.innerText || '').trim() === {json.dumps(p2_label)});
+        if (el) {{ el.click(); return true; }}
+        return false;
+    }})()""")
+    time.sleep(2.0)
+
+    dom_p2_text = session.eval("document.body.innerText") or ""
+    m_tot2 = re.search(r"总金额\s*([0-9.]+)", dom_p2_text)
+    m_zyh2 = re.search(r"住院号\s*([0-9]+)", dom_p2_text)
+    m_bed2 = re.search(r"住院床号\s*([0-9-]+)", dom_p2_text)
+
+    ui_tot_cost2 = float(m_tot2.group(1)) if m_tot2 else 0.0
+    ui_inpatient_no2 = m_zyh2.group(1) if m_zyh2 else ""
+    ui_bed_no2 = m_bed2.group(1) if m_bed2 else ""
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("""SELECT bed_no, patient_name, inpatient_no, tot_cost 
+                   FROM fin_ip_register WHERE inpatient_no = :1""", [ui_inpatient_no2])
+    ora_p2_row = cur.fetchone()
+    conn.close()
+
+    ora_tot_cost2 = float(ora_p2_row[3]) if ora_p2_row else 0.0
+    ora_inpatient_no2 = str(ora_p2_row[2]) if ora_p2_row else ""
+    ora_bed_no2 = str(ora_p2_row[0]) if ora_p2_row else ""
+
+    if is_mutation:
+        ora_tot_cost2 += 50.0
+
+    p2_eq1 = (abs(ui_tot_cost2 - ora_tot_cost2) < 1e-4)
+    p2_eq2 = (ui_inpatient_no2 == ora_inpatient_no2)
+    p2_eq3 = (ui_bed_no2 == ora_bed_no2)
+
+    p2_ok = p2_eq1 and p2_eq2 and p2_eq3 and (ui_tot_cost2 > 0)
+    p2_status = "通过" if p2_ok else "失败"
+    p2_note = (
+        f"界面读到住院号 {ui_inpatient_no2}，床号 {ui_bed_no2}，总金额 ¥{ui_tot_cost2}；"
+        f"库中登记住院号 {ora_inpatient_no2}，床号 {ora_bed_no2}，挂账总额 ¥{ora_tot_cost2} "
+        f"—— {'等式严格成立' if p2_ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not p2_ok:
+        p2_note += "（变异自检生效：内存扰动库值成功导致断言变红）"
+
+    p2_evidence = {
+        "用例编号": "UI-L6-039-P2",
+        "运行模式": mode_label,
+        "界面元素选择器": f".el-tree-node__content ({p2_name}) / .patient-header",
+        "界面读出值": {
+            "患者姓名": p2_name,
+            "住院号": ui_inpatient_no2,
+            "床号": ui_bed_no2,
+            "总金额": ui_tot_cost2,
+        },
+        "数据库真实值": {
+            "患者姓名": str(ora_p2_row[1]) if ora_p2_row else "",
+            "住院号": ora_inpatient_no2,
+            "床号": ora_bed_no2,
+            "挂账总额": ora_tot_cost2,
+        },
+        "验证等式": f"界面总金额({ui_tot_cost2}) == 库中挂账总额({ora_tot_cost2})",
+        "等式成立": p2_ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L6-039-P2",
+        title=f"界面对账·费用综合查询·{p2_name}费用汇总",
+        is_ok=p2_ok,
+        note=p2_note,
+        evidence=p2_evidence,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_list(
+    session: BrowserSession,
+    dept_name: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言 3: UI-L6-039-LIST (全院与当前科室在院患者床位分配对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在展开左侧患者树并获取在院患者床位分配集合...")
+    print(f"\n  ▶ 正在执行 [UI-L6-039-LIST] 费用综合查询 · 在院患者床位列表全集与科室对账...")
+
+    expand_stats_2 = session.eval("""(() => {
+        let totalClicked = 0;
+        for (let pass = 0; pass < 5; pass++) {
+            const unexpanded = Array.from(document.querySelectorAll('.el-tree-node__expand-icon:not(.is-leaf):not(.expanded)'));
+            if (unexpanded.length === 0) break;
+            unexpanded.forEach(btn => {
+                btn.click();
+                totalClicked++;
+            });
+        }
+        return { totalClicked };
+    })()""") or {}
+    time.sleep(1.2)
+
+    cur_patient_nodes = session.eval("""(() => {
+        return Array.from(document.querySelectorAll('.el-tree-node__content'))
+                    .map(e => (e.innerText || '').trim())
+                    .filter(t => /^\\d+-\\d+\\s+/.test(t));
+    })()""") or []
+
+    ui_beds_set = {p.split()[0] for p in cur_patient_nodes}
+
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("""SELECT bed_no, patient_name, dept_name FROM fin_ip_register 
+                   WHERE data_status = 'I' AND valid_flag = '1'""")
+    all_ip_rows = cur.fetchall()
+    conn.close()
+
+    ora_all_beds_map = {str(r[0]): str(r[1]) for r in all_ip_rows}
+    ora_dept_beds_map = {str(r[0]): str(r[1]) for r in all_ip_rows if (r[2] and dept_name in str(r[2]))}
+
+    if is_mutation:
+        if ora_all_beds_map:
+            target_bed = list(ui_beds_set)[0] if ui_beds_set else list(ora_all_beds_map.keys())[0]
+            ora_all_beds_map.pop(target_bed, None)
+            ora_dept_beds_map.pop(target_bed, None)
+
+    is_fullset_equal = (ui_beds_set == set(ora_all_beds_map.keys()))
+    is_dept_fullset_equal = (bool(ora_dept_beds_map) and ui_beds_set == set(ora_dept_beds_map.keys()))
+    is_subset_valid = (len(ui_beds_set) >= 2 and ui_beds_set.issubset(set(ora_all_beds_map.keys())))
+
+    p3_ok = is_subset_valid and (is_fullset_equal or is_dept_fullset_equal or len(ui_beds_set) >= 2)
+    p3_status = "通过" if p3_ok else "失败"
+
+    check_mode_str = "全集相等" if is_fullset_equal else ("当前科室全集相等 (全院严格子集)" if is_dept_fullset_equal else "严格真子集 (界面 ⊆ 库)")
+
+    p3_note = (
+        f"界面读到在院床位 {len(ui_beds_set)} 个；库中当前科室在院 {len(ora_dept_beds_map)} 个，全院在院 {len(ora_all_beds_map)} 个 "
+        f"—— 比对模式: [{check_mode_str}]，{'界面集合严格属于库中在床集合，各项等式成立' if p3_ok else '存在未在库登记的脱节床位或集合不成立'}；"
+        f"已执行全树节点展开动作 (展开点击 {expand_stats_2.get('totalClicked', 0)} 次)"
+    )
+    if is_mutation and not p3_ok:
+        p3_note += "（变异自检生效：内存扰动剔除在床记录导致断言变红）"
+
+    p3_evidence = {
+        "用例编号": "UI-L6-039-LIST",
+        "运行模式": mode_label,
+        "界面元素选择器": ".el-tree-node__content / .tree-node",
+        "当前科室": dept_name,
+        "对账比对模式": check_mode_str,
+        "展开动作点击数": expand_stats_2.get("totalClicked", 0),
+        "界面读出床位数": len(ui_beds_set),
+        "界面读出床位集合": sorted(list(ui_beds_set)),
+        "库中当前科室在院床位数": len(ora_dept_beds_map),
+        "库中全院在院床位数": len(ora_all_beds_map),
+        "全集是否相等": is_fullset_equal,
+        "当前科室全集是否相等": is_dept_fullset_equal,
+        "是否满足严格子集": is_subset_valid,
+        "等式成立": p3_ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L6-039-LIST",
+        title=f"界面对账·费用综合查询·{dept_name}在院患者床位分配全集与科室对账",
+        is_ok=p3_ok,
+        note=p3_note,
+        evidence=p3_evidence,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
+def _run_index(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言 4: UI-INDEX (首页运营指标看板等式校验)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在加载首页运营指标看板 (#/index) 并聚合收费总量等式对账...")
+    print("\n  ▶ 正在执行 [UI-INDEX] 首页运营看板 · 收费总量聚合等式对账...")
+    session.cmd("Page.navigate", {"url": f"{frontend}/#/index"})
+    time.sleep(2.0)
+    session.cmd("Page.reload", {"ignoreCache": True})
+    time.sleep(3.0)
+
+    dom_index_text = session.eval("document.body.innerText") or ""
+    m_tot_fee = re.search(r"([0-9,]+)\s*\n\s*总收费量", dom_index_text)
+    m_op_fee = re.search(r"([0-9,]+)\s*\n\s*门诊收费", dom_index_text)
+    m_ip_fee = re.search(r"([0-9,]+)\s*\n\s*住院收费", dom_index_text)
+
+    v_tot_fee = int(m_tot_fee.group(1).replace(",", "")) if m_tot_fee else 0
+    v_op_fee = int(m_op_fee.group(1).replace(",", "")) if m_op_fee else 0
+    v_ip_fee = int(m_ip_fee.group(1).replace(",", "")) if m_ip_fee else 0
+
+    if is_mutation:
+        v_tot_fee = v_op_fee - 10
+
+    p4_ok = (v_tot_fee >= v_op_fee) and (v_tot_fee > 0)
+    p4_status = "通过" if p4_ok else "失败"
+    p4_note = (
+        f"首页看板渲染总收费量 {v_tot_fee}，门诊收费 {v_op_fee}，住院收费 {v_ip_fee} —— "
+        f"{'收费总量大于等于门诊细项，指标聚合逻辑成立' if p4_ok else '总收费量异常小于门诊收费细项'}"
+    )
+    if is_mutation and not p4_ok:
+        p4_note += "（变异自检生效：内存扰动总收费量导致断言变红）"
+
+    p4_evidence = {
+        "用例编号": "UI-INDEX",
+        "运行模式": mode_label,
+        "界面元素选择器": ".card-panel (总收费量 / 门诊收费 / 住院收费)",
+        "界面读出指标": {
+            "总收费量": v_tot_fee,
+            "门诊收费": v_op_fee,
+            "住院收费": v_ip_fee,
+        },
+        "验证等式": f"总收费量({v_tot_fee}) >= 门诊收费({v_op_fee})",
+        "等式成立": p4_ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-INDEX",
+        title="界面对账·首页看板·收费总量指标聚合等式",
+        is_ok=p4_ok,
+        note=p4_note,
+        evidence=p4_evidence,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
+
+
 def run_ui_verify(args: Any) -> int:
     """执行 ui-verify 子命令。"""
     is_windowed = getattr(args, "windowed", False)
@@ -139,7 +618,7 @@ def run_ui_verify(args: Any) -> int:
         return 2
 
     try:
-        # 3. 真实表单登录认证
+        # 2. 真实表单登录认证
         _step(f"正在通过登录表单执行界面认证 (用户: {username})...")
         print(f"\n[1/3] 正在通过登录表单执行界面认证 (用户: {username})...")
         login_res = login_ui(session, frontend, username=username, password=password, wait_sec=8.0)
@@ -166,480 +645,66 @@ def run_ui_verify(args: Any) -> int:
         print(f"  可访问菜单数: {login_res.menus_count} 项")
         print(f"  浏览器当前页: {session.eval('location.hash') or '/'}")
 
-        # 4. 执行界面业务断言
+        # 3. 动态解析本次需执行的巡检断言
         print("\n[3/3] 正在执行界面真实渲染业务断言与数据库比对...")
         print("─" * 68)
-        print("【用例选型与客观原因（宁少勿假）】：")
-        print(" • 放弃 L6-005（门诊挂号列表）：admin 账号当前仅配置住院医生/护士角色，侧边栏无门诊退号菜单")
-        print("   （直接输入 hash 会被前端路由守卫拦截并重定向回首页，不具备挂载组件）。")
-        print(" • 放弃 L9-012（药房摆药明细）：当前角色无药房窗口发药权限，发药调配组件未挂载。")
-        print(" • 放弃 L6-050（收费员日结）：当前角色非门诊收费员，日结汇总组件未挂载。")
-        print(" • 确定选型：聚焦费用与在院患者真实核心业务对账，覆盖四项真实验证：")
-        print("   1) UI-L6-039-P1: 费用综合查询 - 床号 401-2 患者陈新强费用明细与汇总对账")
-        print("   2) UI-L6-039-P2: 费用综合查询 - 床号 401-1 患者刘付立城费用明细与汇总对账")
-        print("   3) UI-L6-039-LIST: 费用综合查询 - 内一科在院患者床位分配全集对账")
-        print("   4) UI-INDEX: 首页运营指标看板 - 收费总量与细项聚合等式对账")
-        print("─" * 68)
+
+        target_cases = None
+        if cases_arg:
+            target_cases = set(c.strip() for c in str(cases_arg).split(",") if c.strip())
+
+        should_run_p1 = (not target_cases) or ("UI-L6-039-P1" in target_cases)
+        should_run_p2 = (not target_cases) or ("UI-L6-039-P2" in target_cases)
+        should_run_list = (not target_cases) or ("UI-L6-039-LIST" in target_cases)
+        should_run_index = (not target_cases) or ("UI-INDEX" in target_cases)
 
         ui_results: List[Dict[str, Any]] = []
 
-        # -------------------------------------------------------------------
-        # 导航进入：费用综合查询 (#/inpatient/finance/syntheticfquery)
-        # -------------------------------------------------------------------
-        has_query_menu = session.eval("""(() => {
-            return Array.from(document.querySelectorAll('.el-menu-item'))
-                        .some(e => (e.innerText || '').includes('费用综合查询'));
-        })()""")
+        if should_run_p1 or should_run_p2 or should_run_list:
+            dept_name, patient_nodes = _prepare_inpatient_page(session, frontend, _step)
+            if should_run_p1:
+                _run_p1(session, patient_nodes, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_p2:
+                _run_p2(session, patient_nodes, mode_label, is_mutation, env_name, ui_results, _step)
+            if should_run_list:
+                _run_list(session, dept_name, mode_label, is_mutation, env_name, ui_results, _step)
+        else:
+            print("  [单条巡检跳过] 目标无需访问费用综合查询模块")
 
-        if not has_query_menu:
-            print("  [角色自适应] 当前激活角色非住院护士，正在通过界面「切换科室」对话框切换为住院护士角色...")
-            session.eval("""(() => {
-                const el = document.querySelector('.avatar-dropdown') || document.querySelector('.username');
-                if (el) el.click();
-            })()""")
-            time.sleep(1.2)
-            session.eval("""(() => {
-                const item = Array.from(document.querySelectorAll('.el-dropdown-menu__item'))
-                                  .find(x => (x.innerText || '').includes('切换科室'));
-                if (item) item.click();
-            })()""")
-            time.sleep(1.2)
-            session.eval("""(() => {
-                const d = document.querySelector('.el-dialog');
-                if (d) {
-                    const s0 = d.querySelectorAll('.el-select')[0];
-                    if (s0) { const inp = s0.querySelector('input'); if (inp) inp.click(); else s0.click(); }
-                }
-            })()""")
-            time.sleep(1.2)
-            session.eval("""(() => {
-                const item = Array.from(document.querySelectorAll('.el-select-dropdown__item'))
-                                  .find(x => (x.innerText || '').trim() === '住院护士');
-                if (item) item.click();
-            })()""")
-            time.sleep(1.0)
-            session.eval("""(() => {
-                const d = document.querySelector('.el-dialog');
-                if (d) {
-                    const btn = Array.from(d.querySelectorAll('button')).find(x => (x.innerText || '').includes('确定'));
-                    if (btn) btn.click();
-                }
-            })()""")
-            time.sleep(3.0)
+        if should_run_index:
+            _run_index(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
 
-        # 点击「费用综合查询」并分发冒泡事件
-        _step("正在通过侧边栏导航进入「费用综合查询」模块...")
-        session.eval("""(() => {
-            const item = Array.from(document.querySelectorAll('.el-menu-item'))
-                              .find(e => (e.innerText || '').includes('费用综合查询'));
-            if (item) {
-                const span = item.querySelector('span');
-                if (span) span.click();
-                item.click();
-                item.dispatchEvent(new MouseEvent('click', {bubbles: true, cancelable: true}));
-            }
-        })()""")
-        time.sleep(3.0)
-
-        current_hash = session.eval("location.hash") or ""
-        if "syntheticfquery" not in current_hash:
-            _step("直接加载费用综合查询路由 (#/inpatient/finance/syntheticfquery)...")
-            session.cmd("Page.navigate", {"url": f"{frontend}/#/inpatient/finance/syntheticfquery"})
-            time.sleep(2.5)
-            session.cmd("Page.reload", {"ignoreCache": True})
-            time.sleep(3.5)
-
-        # 1. 读之前先「全部展开」左侧树：把所有未展开节点的展开图标点一遍，等待渲染稳定，并记录展开操作数
-        _step("正在展开左侧患者树全部病区节点...")
-        expand_stats = session.eval("""(() => {
-            let totalClicked = 0;
-            let passes = 0;
-            for (let pass = 0; pass < 5; pass++) {
-                const unexpanded = Array.from(document.querySelectorAll('.el-tree-node__expand-icon:not(.is-leaf):not(.expanded)'));
-                if (unexpanded.length === 0) break;
-                passes++;
-                unexpanded.forEach(btn => {
-                    btn.click();
-                    totalClicked++;
-                });
-            }
-            return { passes, totalClicked };
-        })()""") or {}
-        time.sleep(1.5)
-
-        # 动态解析左侧树中的当前病区与在院患者列表
-        tree_info = session.eval("""(() => {
-            const nodes = Array.from(document.querySelectorAll('.el-tree-node__content'))
-                               .map(e => e.innerText.trim())
-                               .filter(t => t.length > 0);
-            return nodes;
-        })()""")
-        tree_info = tree_info if isinstance(tree_info, list) else []
-
-        dept_name = ""
-        patient_nodes = []
-        for t in tree_info:
-            m_dept = re.match(r"^([\u4e00-\u9fa5\w]+)\(\d+\)$", t)
-            if m_dept and "患者" not in t:
-                dept_name = m_dept.group(1)
-            if re.match(r"^\d+-\d+\s+", t):
-                patient_nodes.append(t)
-
-        if not dept_name:
-            header_dept = session.eval("""(() => {
-                const el = Array.from(document.querySelectorAll('*'))
-                                .find(e => e.children.length === 0 && (e.innerText || '').includes('病区'));
-                return el ? el.innerText : '';
-            })()""") or ""
-            m_h = re.search(r"/\s*([\u4e00-\u9fa5\w]+)病区", header_dept)
-            if m_h:
-                dept_name = m_h.group(1)
-            else:
-                dept_name = "内一科"
-
-        # ===================================================================
-        # 断言 1: UI-L6-039-P1 (在院第一患者费用汇总与明细对账)
-        # ===================================================================
-        t0 = time.time()
-        p1_label = patient_nodes[0] if len(patient_nodes) > 0 else "301-1 骨二科测试患者01"
-        p1_name = p1_label.split()[-1]
-        _step(f"正在读取患者 [{p1_name}] 费用汇总与明细并与数据库对账...")
-        print(f"\n  ▶ 正在执行 [UI-L6-039-P1] 费用综合查询 · {p1_name} 费用汇总与明细对账...")
-        session.eval(f"""(() => {{
-            const el = Array.from(document.querySelectorAll('.el-tree-node__content'))
-                            .find(e => (e.innerText || '').trim() === {json.dumps(p1_label)});
-            if (el) {{ el.click(); return true; }}
-            return false;
-        }})()""")
-        time.sleep(2.5)
-
-        # 读取 DOM 渲染数据
-        dom_p1_text = session.eval("document.body.innerText") or ""
-        m_tot = re.search(r"总金额\s*([0-9.]+)", dom_p1_text)
-        m_zyh = re.search(r"住院号\s*([0-9]+)", dom_p1_text)
-        m_bed = re.search(r"住院床号\s*([0-9-]+)", dom_p1_text)
-
-        ui_tot_cost = float(m_tot.group(1)) if m_tot else 0.0
-        ui_inpatient_no = m_zyh.group(1) if m_zyh else ""
-        ui_bed_no = m_bed.group(1) if m_bed else ""
-
-        # 查询 Oracle 真实数据
-        conn = _oracle_conn()
-        cur = conn.cursor()
-        cur.execute("""SELECT bed_no, patient_name, inpatient_no, tot_cost 
-                       FROM fin_ip_register WHERE inpatient_no = :1""", [ui_inpatient_no])
-        ora_p1_row = cur.fetchone()
-        cur.execute("""SELECT NVL(SUM(tot_cost),0), COUNT(*) FROM fin_ip_charge 
-                       WHERE register_id = (SELECT register_id FROM fin_ip_register WHERE inpatient_no = :1)""", [ui_inpatient_no])
-        ora_charge_sum, ora_charge_cnt = cur.fetchone()
-        conn.close()
-
-        ora_tot_cost = float(ora_p1_row[3]) if ora_p1_row else 0.0
-        ora_inpatient_no = str(ora_p1_row[2]) if ora_p1_row else ""
-        ora_bed_no = str(ora_p1_row[0]) if ora_p1_row else ""
-        ora_charge_sum = float(ora_charge_sum or 0.0)
-
-        # 变异扰动支持
-        if is_mutation:
-            ora_tot_cost += 100.0
-
-        p1_eq1 = (abs(ui_tot_cost - ora_tot_cost) < 1e-4)
-        p1_eq2 = (ui_inpatient_no == ora_inpatient_no)
-        p1_eq3 = (ui_bed_no == ora_bed_no)
-
-        p1_ok = p1_eq1 and p1_eq2 and p1_eq3 and (ui_tot_cost > 0)
-        p1_status = "通过" if p1_ok else "失败"
-        p1_note = (
-            f"界面读到住院号 {ui_inpatient_no}，床号 {ui_bed_no}，总金额 ¥{ui_tot_cost}；"
-            f"库中登记住院号 {ora_inpatient_no}，床号 {ora_bed_no}，挂账总额 ¥{ora_tot_cost} "
-            f"—— {'各项等式严格成立' if p1_ok else '等式不成立存在差异'}"
-        )
-        if is_mutation and not p1_ok:
-            p1_note += "（变异自检生效：内存扰动库值成功导致断言变红）"
-
-        p1_evidence = {
-            "用例编号": "UI-L6-039-P1",
-            "运行模式": mode_label,
-            "界面元素选择器": f".el-tree-node__content ({p1_name}) / .patient-header",
-            "界面读出值": {
-                "患者姓名": p1_name,
-                "住院号": ui_inpatient_no,
-                "床号": ui_bed_no,
-                "总金额": ui_tot_cost,
-            },
-            "数据库真实值": {
-                "患者姓名": str(ora_p1_row[1]) if ora_p1_row else "",
-                "住院号": ora_inpatient_no,
-                "床号": ora_bed_no,
-                "挂账总额": ora_tot_cost,
-                "费用明细汇总": ora_charge_sum,
-                "明细行数": int(ora_charge_cnt),
-            },
-            "验证等式": f"界面总金额({ui_tot_cost}) == 库中挂账总额({ora_tot_cost})",
-            "等式成立": p1_ok,
-            "变异扰动": is_mutation,
-        }
-        _record_ui_result(
-            ui_results=ui_results,
-            cid="UI-L6-039-P1",
-            title=f"界面对账·费用综合查询·{p1_name}费用明细与汇总",
-            is_ok=p1_ok,
-            note=p1_note,
-            evidence=p1_evidence,
-            duration_ms=round((time.time() - t0) * 1000, 1),
-            env_name=env_name,
-            session=session,
-        )
-
-        # ===================================================================
-        # 断言 2: UI-L6-039-P2 (在院第二患者费用汇总)
-        # ===================================================================
-        t0 = time.time()
-        p2_label = patient_nodes[1] if len(patient_nodes) > 1 else "301-11 骨二科测试患者03"
-        p2_name = p2_label.split()[-1]
-        _step(f"正在读取第二患者 [{p2_name}] 费用汇总并与数据库对账...")
-        print(f"\n  ▶ 正在执行 [UI-L6-039-P2] 费用综合查询 · {p2_name} 费用汇总对账...")
-        session.eval(f"""(() => {{
-            const el = Array.from(document.querySelectorAll('.el-tree-node__content'))
-                            .find(e => (e.innerText || '').trim() === {json.dumps(p2_label)});
-            if (el) {{ el.click(); return true; }}
-            return false;
-        }})()""")
-        time.sleep(2.0)
-
-        dom_p2_text = session.eval("document.body.innerText") or ""
-        m_tot2 = re.search(r"总金额\s*([0-9.]+)", dom_p2_text)
-        m_zyh2 = re.search(r"住院号\s*([0-9]+)", dom_p2_text)
-        m_bed2 = re.search(r"住院床号\s*([0-9-]+)", dom_p2_text)
-
-        ui_tot_cost2 = float(m_tot2.group(1)) if m_tot2 else 0.0
-        ui_inpatient_no2 = m_zyh2.group(1) if m_zyh2 else ""
-        ui_bed_no2 = m_bed2.group(1) if m_bed2 else ""
-
-        conn = _oracle_conn()
-        cur = conn.cursor()
-        cur.execute("""SELECT bed_no, patient_name, inpatient_no, tot_cost 
-                       FROM fin_ip_register WHERE inpatient_no = :1""", [ui_inpatient_no2])
-        ora_p2_row = cur.fetchone()
-        conn.close()
-
-        ora_tot_cost2 = float(ora_p2_row[3]) if ora_p2_row else 0.0
-        ora_inpatient_no2 = str(ora_p2_row[2]) if ora_p2_row else ""
-        ora_bed_no2 = str(ora_p2_row[0]) if ora_p2_row else ""
-
-        if is_mutation:
-            ora_tot_cost2 += 50.0
-
-        p2_eq1 = (abs(ui_tot_cost2 - ora_tot_cost2) < 1e-4)
-        p2_eq2 = (ui_inpatient_no2 == ora_inpatient_no2)
-        p2_eq3 = (ui_bed_no2 == ora_bed_no2)
-
-        p2_ok = p2_eq1 and p2_eq2 and p2_eq3 and (ui_tot_cost2 > 0)
-        p2_status = "通过" if p2_ok else "失败"
-        p2_note = (
-            f"界面读到住院号 {ui_inpatient_no2}，床号 {ui_bed_no2}，总金额 ¥{ui_tot_cost2}；"
-            f"库中登记住院号 {ora_inpatient_no2}，床号 {ora_bed_no2}，挂账总额 ¥{ora_tot_cost2} "
-            f"—— {'等式严格成立' if p2_ok else '等式不成立存在差异'}"
-        )
-        if is_mutation and not p2_ok:
-            p2_note += "（变异自检生效：内存扰动库值成功导致断言变红）"
-
-        p2_evidence = {
-            "用例编号": "UI-L6-039-P2",
-            "运行模式": mode_label,
-            "界面元素选择器": f".el-tree-node__content ({p2_name}) / .patient-header",
-            "界面读出值": {
-                "患者姓名": p2_name,
-                "住院号": ui_inpatient_no2,
-                "床号": ui_bed_no2,
-                "总金额": ui_tot_cost2,
-            },
-            "数据库真实值": {
-                "患者姓名": str(ora_p2_row[1]) if ora_p2_row else "",
-                "住院号": ora_inpatient_no2,
-                "床号": ora_bed_no2,
-                "挂账总额": ora_tot_cost2,
-            },
-            "验证等式": f"界面总金额({ui_tot_cost2}) == 库中挂账总额({ora_tot_cost2})",
-            "等式成立": p2_ok,
-            "变异扰动": is_mutation,
-        }
-        _record_ui_result(
-            ui_results=ui_results,
-            cid="UI-L6-039-P2",
-            title=f"界面对账·费用综合查询·{p2_name}费用汇总",
-            is_ok=p2_ok,
-            note=p2_note,
-            evidence=p2_evidence,
-            duration_ms=round((time.time() - t0) * 1000, 1),
-            env_name=env_name,
-            session=session,
-        )
-
-        # ===================================================================
-        # 断言 3: UI-L6-039-LIST (全院与当前科室在院患者床位分配对账)
-        # ===================================================================
-        t0 = time.time()
-        _step("正在展开左侧患者树并获取在院患者床位分配集合...")
-        print(f"\n  ▶ 正在执行 [UI-L6-039-LIST] 费用综合查询 · 在院患者床位列表全集与科室对账...")
-
-        # 再次执行一次全树展开确证，并提取全部展开的床位节点
-        expand_stats_2 = session.eval("""(() => {
-            let totalClicked = 0;
-            for (let pass = 0; pass < 5; pass++) {
-                const unexpanded = Array.from(document.querySelectorAll('.el-tree-node__expand-icon:not(.is-leaf):not(.expanded)'));
-                if (unexpanded.length === 0) break;
-                unexpanded.forEach(btn => {
-                    btn.click();
-                    totalClicked++;
-                });
-            }
-            return { totalClicked };
-        })()""") or {}
-        time.sleep(1.2)
-
-        cur_patient_nodes = session.eval("""(() => {
-            return Array.from(document.querySelectorAll('.el-tree-node__content'))
-                        .map(e => (e.innerText || '').trim())
-                        .filter(t => /^\\d+-\\d+\\s+/.test(t));
-        })()""") or []
-        if cur_patient_nodes:
-            patient_nodes = cur_patient_nodes
-
-        ui_beds_set = {p.split()[0] for p in patient_nodes}
-
-        conn = _oracle_conn()
-        cur = conn.cursor()
-        cur.execute("""SELECT bed_no, patient_name, dept_name FROM fin_ip_register 
-                       WHERE data_status = 'I' AND valid_flag = '1'""")
-        all_ip_rows = cur.fetchall()
-        conn.close()
-
-        ora_all_beds_map = {str(r[0]): str(r[1]) for r in all_ip_rows}
-        ora_dept_beds_map = {str(r[0]): str(r[1]) for r in all_ip_rows if (r[2] and dept_name in str(r[2]))}
-
-        if is_mutation:
-            if ora_all_beds_map:
-                target_bed = list(ui_beds_set)[0] if ui_beds_set else list(ora_all_beds_map.keys())[0]
-                ora_all_beds_map.pop(target_bed, None)
-                ora_dept_beds_map.pop(target_bed, None)
-
-        is_fullset_equal = (ui_beds_set == set(ora_all_beds_map.keys()))
-        is_dept_fullset_equal = (bool(ora_dept_beds_map) and ui_beds_set == set(ora_dept_beds_map.keys()))
-        is_subset_valid = (len(ui_beds_set) >= 2 and ui_beds_set.issubset(set(ora_all_beds_map.keys())))
-
-        p3_ok = is_subset_valid and (is_fullset_equal or is_dept_fullset_equal or len(ui_beds_set) >= 2)
-        p3_status = "通过" if p3_ok else "失败"
-
-        check_mode_str = "全集相等" if is_fullset_equal else ("当前科室全集相等 (全院严格子集)" if is_dept_fullset_equal else "严格真子集 (界面 ⊆ 库)")
-
-        p3_note = (
-            f"界面读到在院床位 {len(ui_beds_set)} 个；库中当前科室在院 {len(ora_dept_beds_map)} 个，全院在院 {len(ora_all_beds_map)} 个 "
-            f"—— 比对模式: [{check_mode_str}]，{'界面集合严格属于库中在床集合，各项等式成立' if p3_ok else '存在未在库登记的脱节床位或集合不成立'}；"
-            f"已执行全树节点展开动作 (展开点击 {expand_stats_2.get('totalClicked', 0)} 次)"
-        )
-        if is_mutation and not p3_ok:
-            p3_note += "（变异自检生效：内存扰动剔除在床记录导致断言变红）"
-
-        p3_evidence = {
-            "用例编号": "UI-L6-039-LIST",
-            "运行模式": mode_label,
-            "界面元素选择器": ".el-tree-node__content / .tree-node",
-            "当前科室": dept_name,
-            "对账比对模式": check_mode_str,
-            "展开动作点击数": expand_stats_2.get("totalClicked", 0),
-            "界面读出床位数": len(ui_beds_set),
-            "界面读出床位集合": sorted(list(ui_beds_set)),
-            "库中当前科室在院床位数": len(ora_dept_beds_map),
-            "库中全院在院床位数": len(ora_all_beds_map),
-            "全集是否相等": is_fullset_equal,
-            "当前科室全集是否相等": is_dept_fullset_equal,
-            "是否满足严格子集": is_subset_valid,
-            "等式成立": p3_ok,
-            "变异扰动": is_mutation,
-        }
-        _record_ui_result(
-            ui_results=ui_results,
-            cid="UI-L6-039-LIST",
-            title=f"界面对账·费用综合查询·{dept_name}在院患者床位分配全集与科室对账",
-            is_ok=p3_ok,
-            note=p3_note,
-            evidence=p3_evidence,
-            duration_ms=round((time.time() - t0) * 1000, 1),
-            env_name=env_name,
-            session=session,
-        )
-
-        # ===================================================================
-        # 断言 4: UI-INDEX (首页运营指标看板等式校验)
-        # ===================================================================
-        t0 = time.time()
-        _step("正在加载首页运营指标看板 (#/index) 并聚合收费总量等式对账...")
-        print("\n  ▶ 正在执行 [UI-INDEX] 首页运营看板 · 收费总量聚合等式对账...")
-        session.cmd("Page.navigate", {"url": f"{frontend}/#/index"})
-        time.sleep(2.0)
-        session.cmd("Page.reload", {"ignoreCache": True})
-        time.sleep(3.0)
-
-        dom_index_text = session.eval("document.body.innerText") or ""
-        m_tot_fee = re.search(r"([0-9,]+)\s*\n\s*总收费量", dom_index_text)
-        m_op_fee = re.search(r"([0-9,]+)\s*\n\s*门诊收费", dom_index_text)
-        m_ip_fee = re.search(r"([0-9,]+)\s*\n\s*住院收费", dom_index_text)
-
-        v_tot_fee = int(m_tot_fee.group(1).replace(",", "")) if m_tot_fee else 0
-        v_op_fee = int(m_op_fee.group(1).replace(",", "")) if m_op_fee else 0
-        v_ip_fee = int(m_ip_fee.group(1).replace(",", "")) if m_ip_fee else 0
-
-        # 看板业务指标等式
-        # 总收费量 必须大于等于 门诊收费，且二者具备真实运营统计量
-        if is_mutation:
-            v_tot_fee = v_op_fee - 10
-
-        p4_ok = (v_tot_fee >= v_op_fee) and (v_tot_fee > 0)
-        p4_status = "通过" if p4_ok else "失败"
-        p4_note = (
-            f"首页看板渲染总收费量 {v_tot_fee}，门诊收费 {v_op_fee}，住院收费 {v_ip_fee} —— "
-            f"{'收费总量大于等于门诊细项，指标聚合逻辑成立' if p4_ok else '总收费量异常小于门诊收费细项'}"
-        )
-        if is_mutation and not p4_ok:
-            p4_note += "（变异自检生效：内存扰动总收费量导致断言变红）"
-
-        p4_evidence = {
-            "用例编号": "UI-INDEX",
-            "运行模式": mode_label,
-            "界面元素选择器": ".card-panel (总收费量 / 门诊收费 / 住院收费)",
-            "界面读出指标": {
-                "总收费量": v_tot_fee,
-                "门诊收费": v_op_fee,
-                "住院收费": v_ip_fee,
-            },
-            "验证等式": f"总收费量({v_tot_fee}) >= 门诊收费({v_op_fee})",
-            "等式成立": p4_ok,
-            "变异扰动": is_mutation,
-        }
-        _record_ui_result(
-            ui_results=ui_results,
-            cid="UI-INDEX",
-            title="界面对账·首页看板·收费总量指标聚合等式",
-            is_ok=p4_ok,
-            note=p4_note,
-            evidence=p4_evidence,
-            duration_ms=round((time.time() - t0) * 1000, 1),
-            env_name=env_name,
-            session=session,
-        )
-
-        # -------------------------------------------------------------------
-        # 结果汇总与落盘
-        # -------------------------------------------------------------------
+        # 4. 结果汇总与落盘（支持单条执行时与历史全量结果无缝合并，不冲掉未跑项）
         REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+        mode_file = "ui_verify_windowed.json" if is_windowed else "ui_verify_headless.json"
+        out_path = REPORTS_DIR / mode_file
+        latest_path = REPORTS_DIR / "ui_verify_latest.json"
+
+        merged_results = list(ui_results)
+        if target_cases and latest_path.exists():
+            try:
+                old_data = json.loads(latest_path.read_text(encoding="utf-8"))
+                merged_map = {r["case_id"]: r for r in old_data.get("results", [])}
+                for r in ui_results:
+                    merged_map[r["case_id"]] = r
+                merged_results = list(merged_map.values())
+            except Exception:
+                pass
+
         summary = {
             "模式": mode_label,
+            "通过": sum(1 for r in merged_results if r["status"] == "通过"),
+            "失败": sum(1 for r in merged_results if r["status"] == "失败"),
+            "未执行": sum(1 for r in merged_results if r["status"] == "未执行"),
+            "总计": len(merged_results),
+            "变异扰动": is_mutation,
+        }
+
+        this_run_summary = {
             "通过": sum(1 for r in ui_results if r["status"] == "通过"),
             "失败": sum(1 for r in ui_results if r["status"] == "失败"),
             "未执行": sum(1 for r in ui_results if r["status"] == "未执行"),
             "总计": len(ui_results),
-            "变异扰动": is_mutation,
         }
 
         payload = {
@@ -653,18 +718,16 @@ def run_ui_verify(args: Any) -> int:
                 "env": env_name,
             },
             "summary": summary,
-            "results": ui_results,
+            "results": merged_results,
         }
-
-        mode_file = "ui_verify_windowed.json" if is_windowed else "ui_verify_headless.json"
-        out_path = REPORTS_DIR / mode_file
-        latest_path = REPORTS_DIR / "ui_verify_latest.json"
 
         out_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
         print("\n" + "─" * 68)
         print(f"  界面真实业务对账完成 ({mode_label})")
-        print(f"  ✅ 通过 {summary['通过']}   ❌ 失败 {summary['失败']}   ⚪ 未执行 {summary['未执行']}   (共 {summary['总计']} 项界面断言)")
+        print(f"  本次运行: ✅ 通过 {this_run_summary['通过']}   ❌ 失败 {this_run_summary['失败']}   ⚪ 未执行 {this_run_summary['未执行']}   (共 {this_run_summary['总计']} 项)")
+        if target_cases:
+            print(f"  保留全量台账: ✅ 通过 {summary['通过']}   ❌ 失败 {summary['失败']}   ⚪ 未执行 {summary['未执行']}   (全量保留 {summary['总计']} 项)")
         if env_name == "sandbox":
             print(f"  报告落盘: {out_path.relative_to(ROOT_DIR)}")
             print("  [提示] 不判通过模式运行结果不覆盖 ui_verify_latest.json（保护生产台账）")
@@ -677,7 +740,6 @@ def run_ui_verify(args: Any) -> int:
             return 0
 
         if is_mutation:
-            # 变异自检模式下：全部变红说明断言承重，退出码应为 0
             if summary["失败"] == summary["总计"]:
                 print("🎉 [变异承重验证成功] 扰动内存真值后，所有界面断言全部变红！断言具备真实承重能力。")
                 return 0
@@ -685,7 +747,7 @@ def run_ui_verify(args: Any) -> int:
                 print("⚠️ [变异承重验证失败] 扰动内存真值后，仍有部分界面断言未变红（可能存在伪通过）。")
                 return 1
 
-        return 0 if summary["失败"] == 0 else 1
+        return 0 if this_run_summary["失败"] == 0 else 1
 
     finally:
         session.close()
