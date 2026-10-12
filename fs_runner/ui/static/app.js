@@ -7,6 +7,7 @@ let gState = {
   statusFilter: "ALL",
   searchKeyword: "",
   moduleFilter: "ALL",
+  collapsedModules: new Set(),
   selectedCases: new Set(),
   casesData: [],
   excelData: [],
@@ -15,6 +16,15 @@ let gState = {
   currentViewingLog: null,
   isTermFloating: false,
 };
+
+function getCaseModule(caseId) {
+  if (!caseId) return "OTHER";
+  for (const prefix of ["L0", "L1", "L2", "L3", "L4", "L5", "L6"]) {
+    if (caseId.startsWith(prefix)) return prefix;
+  }
+  if (caseId.startsWith("UI-") || caseId.startsWith("UI")) return "UI";
+  return "OTHER";
+}
 
 let ws = null;
 let pollTimer = null;
@@ -233,39 +243,45 @@ function renderDrawerCategories() {
   groups["OTHER"] = [];
 
   gState.casesData.forEach((c) => {
-    let matched = false;
-    for (const prefix of Object.keys(moduleMap)) {
-      if (c.case_id.startsWith(prefix) || (prefix === "UI" && c.case_id.startsWith("UI-"))) {
-        groups[prefix].push(c);
-        c._module = prefix;          // 供 renderCaseTable 按模块筛选
-        matched = true;
-        break;
-      }
+    const mod = getCaseModule(c.case_id);
+    c._module = mod;          // 供 renderCaseTable 按模块筛选
+    if (groups[mod]) {
+      groups[mod].push(c);
+    } else {
+      groups["OTHER"].push(c);
     }
-    if (!matched) { groups["OTHER"].push(c); c._module = "OTHER"; }
   });
 
   Object.keys(groups).forEach((key) => {
     const list = groups[key];
     if (list.length === 0) return;
     const catName = moduleMap[key] || "其他用例";
+    const isModuleActive = gState.moduleFilter === key;
+    const isCollapsed = gState.collapsedModules && gState.collapsedModules.has(key);
 
     const wrap = document.createElement("div");
     wrap.className = "nav-cat-wrap";
 
     const header = document.createElement("div");
-    header.className = "nav-cat-header" + (gState.moduleFilter === key ? " module-active" : "");
+    header.className = "nav-cat-header" + (isModuleActive ? " active" : "") + (isCollapsed ? " collapsed" : "");
+    header.style.cursor = "pointer";
+    if (isModuleActive) {
+      header.style.backgroundColor = "var(--g-blue-surface)";
+      header.style.color = "var(--g-blue)";
+      header.style.fontWeight = "600";
+    }
+
     header.innerHTML = `
       <div style="display:flex; align-items:center; gap:6px; overflow:hidden;">
-        <span class="arrow">▾</span>
+        <span class="arrow" style="cursor:pointer; padding:2px 4px;" title="折叠/展开分类">▾</span>
         <input type="checkbox" class="cat-select-chk" checked title="勾选/取消该分类全部用例">
-        <span class="cat-name" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;" title="只看该模块（再点一次回到全部）">${catName}</span>
+        <span class="cat-name" style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="只看该模块（再点一次回到全部）">${catName}</span>
       </div>
-      <span class="nav-pill">${list.length}</span>
+      <span class="nav-pill" style="${isModuleActive ? 'background:var(--g-blue); color:#fff; font-weight:600;' : ''}">${list.length}</span>
     `;
 
     const subList = document.createElement("div");
-    subList.className = "nav-sub-list";
+    subList.className = "nav-sub-list" + (isCollapsed ? " collapsed" : "");
 
     list.forEach((c) => {
       const item = document.createElement("div");
@@ -279,41 +295,68 @@ function renderDrawerCategories() {
         e.stopPropagation();
         document.querySelectorAll(".nav-sub-item").forEach((el) => el.classList.remove("active"));
         item.classList.add("active");
+        gState.moduleFilter = "ALL"; // 清除模块筛选
         gState.searchKeyword = c.case_id;
+        const inp = document.getElementById("searchInput");
+        if (inp) inp.value = c.case_id;
+        renderDrawerCategories();
         renderCaseTable();
       };
       subList.appendChild(item);
     });
 
-    // 点分类名 → 只看该模块；再点一次回到全部
-    const nameEl = header.querySelector(".cat-name");
-    if (nameEl) {
-      nameEl.onclick = (e) => {
+    // 1. 箭头点击：仅折叠/展开，不触发筛选，右侧列表不变
+    const arrowEl = header.querySelector(".arrow");
+    if (arrowEl) {
+      arrowEl.onclick = (e) => {
         e.stopPropagation();
-        gState.moduleFilter = gState.moduleFilter === key ? "ALL" : key;
-        gState.searchKeyword = "";        // 与关键字互斥，避免两者叠加出空表
-        const inp = document.getElementById("searchInput");
-        if (inp) inp.value = "";
-        renderDrawerCategories();         // 重画以更新高亮
-        renderCaseTable();
+        const willCollapse = !header.classList.contains("collapsed");
+        header.classList.toggle("collapsed");
+        subList.classList.toggle("collapsed");
+        if (!gState.collapsedModules) gState.collapsedModules = new Set();
+        if (willCollapse) {
+          gState.collapsedModules.add(key);
+        } else {
+          gState.collapsedModules.delete(key);
+        }
       };
     }
 
-    // 展开/收缩点击事件
-    header.onclick = (e) => {
-      if (e.target.tagName.toLowerCase() === "input") return;
-      header.classList.toggle("collapsed");
-      subList.classList.toggle("collapsed");
-    };
-
-    // 勾选分类事件
+    // 2. 复选框点击：仅改变勾选，不触发筛选，右侧列表不变
     const chk = header.querySelector(".cat-select-chk");
-    chk.onchange = (e) => {
-      const checked = e.target.checked;
-      list.forEach((c) => {
-        if (checked) gState.selectedCases.add(c.case_id);
-        else gState.selectedCases.delete(c.case_id);
-      });
+    if (chk) {
+      chk.onclick = (e) => {
+        e.stopPropagation();
+      };
+      chk.onchange = (e) => {
+        const checked = e.target.checked;
+        list.forEach((c) => {
+          if (checked) gState.selectedCases.add(c.case_id);
+          else gState.selectedCases.delete(c.case_id);
+        });
+        const selBadge = document.getElementById("selCountBadge");
+        if (selBadge) selBadge.innerText = gState.selectedCases.size;
+        // 同步更新表格里已有的勾选框，避免重画整个列表
+        const tblChecks = document.querySelectorAll("#caseTableBody input[type='checkbox']");
+        tblChecks.forEach((cb) => {
+          if (gState.selectedCases.has(cb.value)) cb.checked = true;
+          else cb.checked = false;
+        });
+      };
+    }
+
+    // 3. 模块行整体点击（名字、数量药丸、整行空白处）：筛选该模块，再点一次回到全部
+    header.onclick = (e) => {
+      // 若点击目标是 input 或 arrow，已由各自的 stopPropagation 处理；此防线兜底
+      if (e.target.tagName.toLowerCase() === "input" || e.target.classList.contains("arrow")) {
+        return;
+      }
+      gState.moduleFilter = gState.moduleFilter === key ? "ALL" : key;
+      gState.searchKeyword = ""; // 模块筛选与搜索关键字互斥，清空搜索
+      const inp = document.getElementById("searchInput");
+      if (inp) inp.value = "";
+      document.querySelectorAll(".nav-sub-item").forEach((el) => el.classList.remove("active"));
+      renderDrawerCategories(); // 重画以更新高亮
       renderCaseTable();
     };
 
@@ -326,11 +369,14 @@ function renderDrawerCategories() {
 function collapseAllCategories() {
   document.querySelectorAll(".nav-cat-header").forEach((h) => h.classList.add("collapsed"));
   document.querySelectorAll(".nav-sub-list").forEach((l) => l.classList.add("collapsed"));
+  if (!gState.collapsedModules) gState.collapsedModules = new Set();
+  ["L0", "L1", "L2", "L3", "L4", "L5", "L6", "UI", "OTHER"].forEach((k) => gState.collapsedModules.add(k));
 }
 
 function expandAllCategories() {
   document.querySelectorAll(".nav-cat-header").forEach((h) => h.classList.remove("collapsed"));
   document.querySelectorAll(".nav-sub-list").forEach((l) => l.classList.remove("collapsed"));
+  if (gState.collapsedModules) gState.collapsedModules.clear();
 }
 
 // 状态过滤
@@ -370,6 +416,10 @@ function filterByStatus(status) {
 function onSearchCases() {
   const inp = document.getElementById("searchInput");
   gState.searchKeyword = inp ? inp.value.trim().toLowerCase() : "";
+  if (gState.searchKeyword) {
+    gState.moduleFilter = "ALL"; // 模块筛选与搜索关键字互斥
+    renderDrawerCategories();
+  }
   renderCaseTable();
 }
 
@@ -384,8 +434,9 @@ function renderCaseTable() {
   const isSandbox = gState.env === "sandbox";
 
   const filtered = gState.casesData.filter((c) => {
-    // 按模块筛选（点侧栏分类名进入，再点一次或点「全部」退出）
-    if (gState.moduleFilter !== "ALL" && c._module !== gState.moduleFilter) {
+    // 按模块筛选（点侧栏分类名/模块行进入，再点一次或点「全部」退出）
+    const cModule = c._module || getCaseModule(c.case_id);
+    if (gState.moduleFilter !== "ALL" && cModule !== gState.moduleFilter) {
       return false;
     }
     if (gState.statusFilter !== "ALL" && c.status !== gState.statusFilter) {
