@@ -3424,7 +3424,7 @@ def flow_L6_014(ctx: Ctx) -> LoopResult:
         cur.execute("""SELECT patient_id, patient_name, sex_code,
                               TO_CHAR(birthday,'YYYY-MM-DD HH24:MI:SS'), phone,
                               identifier_type, identifier_no
-                       FROM bd_patient WHERE valid_flag='1' AND identifier_no IS NOT NULL
+                       FROM bd_patient WHERE valid_flag='1' AND identifier_type='01' AND identifier_no IS NOT NULL
                        ORDER BY patient_id DESC FETCH FIRST 1 ROWS ONLY""")
         p = cur.fetchone()
         conn.close()
@@ -4039,6 +4039,84 @@ try:
 except Exception as _e:            # 插件目录坏了不能拖垮主流程
     print(f"[flows] 外挂用例加载失败（忽略）: {type(_e).__name__}: {_e}")
 
+# ───────────────────────────────────────────────────────────────────────────
+# 66 条用例显式声明 requires 前置条件（与实际采样口径 100% 对应）
+# ───────────────────────────────────────────────────────────────────────────
+CASE_REQUIRES: Dict[str, List[str]] = {
+    "L0-010": ["有医保目录对照"],
+    "L2-105": ["有门诊医嘱"],
+    "L2-107": ["有门诊医嘱"],
+    "L4-048": ["在院登记"],
+    "L5-001": ["在院登记", "有体温记录"],
+    "L5-002": ["在院登记", "有体温记录"],
+    "L5-003": ["在院登记", "有护理记录"],
+    "L5-004": ["在院登记", "有护理记录"],
+    "L5-005": ["在院登记", "有护理记录", "有体温记录", "有住院医嘱"],
+    "L5-006": ["在院登记", "有护理留痕记录"],
+    "L5-008": ["在院登记", "有病程记录", "有过敏记录"],
+    "L5-010": ["在院登记", "有病程记录"],
+    "L5-011": ["在院登记", "有病程记录"],
+    "L5-012": ["在院登记", "有病程记录"],
+    "L5-013": ["在院登记", "有病程记录"],
+    "L5-014": ["在院登记", "有病程记录"],
+    "L5-015": ["在院登记", "有病程记录"],
+    "L5-016": ["在院登记", "有病程记录"],
+    "L5-019": ["在院登记", "有病案首页"],
+    "L5-020": ["有病历模板"],
+    "L5-021": ["有病历模板", "有模板授权"],
+    "L5-022": ["有可引用病历元素"],
+    "L5-023": ["有病历模板", "有模板授权"],
+    "L5-024": ["在院登记", "有病程记录"],
+    "L5-025": ["在院登记", "有病程记录"],
+    "L5-026": ["在院登记", "有病历留痕记录"],
+    "L5-027": ["在院登记", "有病历主记录"],
+    "L5-028": ["在院登记", "有病历主记录"],
+    "L5-036": ["在院登记", "有病程记录", "有住院医嘱"],
+    "L5-037": ["有病历检索功能"],
+    "L6-001": ["允许真实建档"],
+    "L6-002": ["有门诊患者"],
+    "L6-004": ["有门诊患者"],
+    "L6-005": ["有门诊患者", "有门诊挂号"],
+    "L6-008": ["有排班数据"],
+    "L6-009": ["允许真实建档"],
+    "L6-012": ["允许真实建档", "有门诊患者", "有排班数据"],
+    "L6-014": ["有门诊患者"],
+    "L6-015": ["有门诊患者", "有门诊挂号"],
+    "L6-018": ["有预约记录"],
+    "L6-020": ["有门诊日结记录", "有门诊收费"],
+    "L6-024": ["有门诊患者", "有门诊待收费"],
+    "L6-025": ["有门诊患者", "有门诊收费"],
+    "L6-026": ["有门诊收费"],
+    "L6-028": ["有门诊待收费", "有门诊收费"],
+    "L6-032": ["有门诊日结记录", "有门诊收费"],
+    "L6-033": ["有门诊收费"],
+    "L6-036": ["有门诊日结记录", "有门诊收费"],
+    "L6-038": ["在院登记", "有医保登记"],
+    "L6-039": ["在院登记", "有住院费用明细"],
+    "L6-043": ["在院登记", "有住院费用明细"],
+    "L6-045": ["在院登记", "有住院退费样本"],
+    "L6-046": ["在院登记", "有住院退费样本"],
+    "L6-047": ["在院登记", "有住院退费样本"],
+    "L6-050": ["在院登记", "有住院预交金", "有住院日结记录"],
+    "L6-052": ["在院登记", "有住院结算"],
+    "L6-055": ["在院登记", "有住院结算", "有住院日结记录"],
+    "L6-056": ["有电子发票"],
+    "L6-063": ["在院登记", "有医保结算"],
+    "L6-064": ["有单据配置"],
+    "L6-068": ["在院登记", "有医保结算"],
+    "L9-010": ["有药房摆药"],
+    "L9-011": ["有药房摆药"],
+    "L9-012": ["有药房摆药", "有住院医嘱"],
+    "L9-013": ["有出院带药发药"],
+    "L9-014": ["有待执行退药单"],
+}
+
+for _cid, _fn in _FLOWS.items():
+    if not hasattr(_fn, "requires") or not _fn.requires:
+        _fn.requires = CASE_REQUIRES.get(_cid, [])
+
+FLOW_REQUIRES = {cid: getattr(fn, "requires", []) for cid, fn in _FLOWS.items()}
+
 
 _CASE_TITLES: Dict[str, str] = {
     "L0-010": "医保三大目录对照与限价",
@@ -4116,6 +4194,8 @@ def supported_cases() -> List[str]:
 
 def run(selected: List[str], gateway: str, admin_token: str,
         progress=None) -> List[LoopResult]:
+    from ...core.preconditions import precondition_manager
+    precondition_manager.reset_run()
     ctx = Ctx(gateway, admin_token)
     out: List[LoopResult] = []
     for i, cid in enumerate(selected, 1):
@@ -4144,17 +4224,12 @@ def run(selected: List[str], gateway: str, admin_token: str,
             except Exception:
                 pass
 
-            # 前置门禁检查：
-            # 1. 若命制造数闸门（L6-001 / L6-009 / L6-012 且未开启 FS_ALLOW_CREATE_PATIENT），
-            #    正常调用 flow，流程内部依据造数闸门直接返回「跳过」，绝不碰库与网络。
-            # 2. 对于其余用例，检查数据库可用性前置门禁：
-            #    若处于沙盒环境（无法连接 Oracle），前置门禁直接拦截为「未执行」，绝不塞假数据源。
-            is_create_patient_gated = cid in ("L6-001", "L6-009", "L6-012") and not _patient_creation_allowed()
-            from ...core.preconditions import precondition_manager
-            ora_ok, ora_reason = precondition_manager.check_oracle_precondition()
+            t_title = _CASE_TITLES.get(cid, getattr(fn, "__doc__", "").strip().splitlines()[0] if getattr(fn, "__doc__", "") else "")
 
+            # 1. 检查底层数据库连接可用性门禁（沙盒模式拦截）
+            is_create_patient_gated = cid in ("L6-001", "L6-009", "L6-012") and not _patient_creation_allowed()
+            ora_ok, ora_reason = precondition_manager.check_oracle_precondition()
             if not ora_ok and not is_create_patient_gated:
-                t_title = _CASE_TITLES.get(cid, getattr(fn, "__doc__", "").strip().splitlines()[0] if getattr(fn, "__doc__", "") else "")
                 r = LoopResult(
                     case_id=cid,
                     title=t_title,
@@ -4163,7 +4238,18 @@ def run(selected: List[str], gateway: str, admin_token: str,
                     evidence={"env": "sandbox", "gated_by": "precondition_oracle"},
                 )
             else:
-                r = fn(ctx)
+                # 2. 声明式前置条件层执行检查与补齐（开跑前判定，绝不自愈绕过）
+                reqs = getattr(fn, "requires", [])
+                can_run, was_created, fail_res = precondition_manager.ensure_case(
+                    case_id=cid, requires=reqs, ctx=ctx, title=t_title
+                )
+                if not can_run:
+                    r = fail_res
+                else:
+                    r = fn(ctx)
+                    if r.status != "通过":
+                        precondition_manager.used_existing_cases.discard(cid)
+                        precondition_manager.auto_created_cases.discard(cid)
         out.append(r)
         if progress:
             progress(i, len(selected), r)

@@ -124,6 +124,9 @@ def run_closed_loop(
     out_dir = Path(VERIFY_DIR)
     out_dir.mkdir(parents=True, exist_ok=True)
     ts = time.strftime("%Y%m%d_%H%M%S")
+    from .core.preconditions import precondition_manager
+    pre_summary = precondition_manager.summary()
+
     summary = {
         "通过": sum(1 for r in results if r.status == "通过"),
         "失败": sum(1 for r in results if r.status == "失败"),
@@ -131,6 +134,7 @@ def run_closed_loop(
         "跳过": sum(1 for r in results if r.status == "跳过"),
         "未执行": sum(1 for r in results if r.status == "未执行"),
         "总计": len(results),
+        "preconditions": pre_summary,
         "created_data": created_summary,
         "created_text": created_text,
     }
@@ -160,6 +164,11 @@ def run_closed_loop(
     print("\n  ── 闭环校验结果 ──")
     print(f"  ✅ 通过 {summary['通过']}   ❌ 失败 {summary['失败']}   🚫 阻塞 {summary['阻塞']}   ⏭️ 跳过 {summary['跳过']}   ⚪ 未执行 {summary['未执行']}  (总计 {summary['总计']})")
     print(f"  详细报告 : {out_dir / f'closed_loop_{ts}.json'}")
+
+    print("")
+    for line in precondition_manager.format_report_lines():
+        print(f"  {line}")
+
     print(f"\n  [造数审计] {created_text}（记录落盘: {audit_file.name}）")
 
     if env == "real":

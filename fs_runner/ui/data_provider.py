@@ -78,6 +78,7 @@ def get_closed_loop_cases() -> Dict[str, Any]:
         has_ui = cid in ui_covered_cases
         verify_mode = "接口+界面" if has_ui else "接口"
 
+    from ..cases.closed_loop.closed_loop import supported_cases, _CASE_TITLES, _FLOWS
         cases_list.append({
             "case_id": cid,
             "title": title,
@@ -87,6 +88,7 @@ def get_closed_loop_cases() -> Dict[str, Any]:
             "duration_ms": duration_ms,
             "is_create_patient": is_create_patient,
             "verify_mode": verify_mode,
+            "requires": getattr(_FLOWS.get(cid), "requires", []),
         })
 
     ui_covered_count = sum(1 for c in cases_list if c["verify_mode"] == "接口+界面")
@@ -100,6 +102,9 @@ def get_closed_loop_cases() -> Dict[str, Any]:
         "总计": len(cases_list),
     })
     summary["ui_covered_count"] = ui_covered_count
+    if "preconditions" not in summary:
+        from ..core.preconditions import precondition_manager
+        summary["preconditions"] = precondition_manager.summary()
 
     return {
         "cases": cases_list,
