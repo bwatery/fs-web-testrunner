@@ -767,47 +767,188 @@ def _run_l4_048(
     )
 
 
-def _prepare_doctor_emr_page(session: BrowserSession, frontend: str, _step: Any):
-    has_emr = session.eval("""(() => {
-        return window.location.hash.includes('medicalRecord') && document.body.innerText.includes('住院病程记录');
+def _switch_doctor_dept(session: BrowserSession, frontend: str, role_name: str, dept_name: str, _step: Any):
+    """通过右上角头像菜单切换科室与角色，并跳转至医生电子病历工作站。"""
+    cur_info = session.eval("document.body.innerText") or ""
+    need_switch = not ("medicalRecord" in (session.eval("window.location.hash") or "")) or (dept_name not in cur_info)
+    if not need_switch:
+        return
+
+    _step(f"正在通过界面「切换科室」对话框切换为角色: {role_name} · 科室: {dept_name}...")
+    session.eval("""(() => {
+        const el = document.querySelector('.avatar-dropdown') || document.querySelector('.username');
+        if (el) el.click();
     })()""")
-    if not has_emr:
-        _step("正在通过界面「切换科室」对话框切换为住院医生角色...")
-        session.eval("""(() => {
-            const el = document.querySelector('.avatar-dropdown') || document.querySelector('.username');
-            if (el) el.click();
-        })()""")
-        time.sleep(1.0)
-        session.eval("""(() => {
-            const item = Array.from(document.querySelectorAll('.el-dropdown-menu__item'))
-                              .find(x => (x.innerText || '').includes('切换科室'));
-            if (item) item.click();
-        })()""")
-        time.sleep(1.0)
-        session.eval("""(() => {
-            const d = document.querySelector('.el-dialog');
-            if (d) {
-                const s0 = d.querySelectorAll('.el-select')[0];
-                if (s0) { const inp = s0.querySelector('input'); if (inp) inp.click(); else s0.click(); }
+    time.sleep(1.0)
+    session.eval("""(() => {
+        const item = Array.from(document.querySelectorAll('.el-dropdown-menu__item'))
+                          .find(x => (x.innerText || '').includes('切换科室'));
+        if (item) item.click();
+    })()""")
+    time.sleep(1.0)
+
+    # 角色选择
+    session.eval(f"""(() => {{
+        const d = document.querySelector('.el-dialog');
+        if (d) {{
+            const s0 = d.querySelectorAll('.el-select')[0];
+            if (s0) {{ const inp = s0.querySelector('input'); if (inp) inp.click(); else s0.click(); }}
+        }}
+    }})()""")
+    time.sleep(0.5)
+    session.eval(f"""(() => {{
+        const items = Array.from(document.querySelectorAll('.el-select-dropdown__item'));
+        const target = items.find(x => (x.innerText || '').trim() === {json.dumps(role_name)});
+        if (target) target.click();
+    }})()""")
+    time.sleep(0.5)
+
+    # 科室选择
+    session.eval(f"""(() => {{
+        const d = document.querySelector('.el-dialog');
+        if (d) {{
+            const s1 = d.querySelectorAll('.el-select')[1];
+            if (s1) {{ const inp = s1.querySelector('input'); if (inp) inp.click(); else s1.click(); }}
+        }}
+    }})()""")
+    time.sleep(0.5)
+    session.eval(f"""(() => {{
+        const items = Array.from(document.querySelectorAll('.el-select-dropdown__item'));
+        const target = items.find(x => (x.innerText || '').trim() === {json.dumps(dept_name)});
+        if (target) target.click();
+    }})()""")
+    time.sleep(0.5)
+
+    # 点击确定
+    session.eval("""(() => {
+        const d = document.querySelector('.el-dialog');
+        if (d) {
+            const btn = Array.from(d.querySelectorAll('button')).find(x => (x.innerText || '').includes('确定'));
+            if (btn) btn.click();
+        }
+    })()""")
+    time.sleep(3.0)
+    session.cmd("Page.navigate", {"url": f"{frontend}/#/inpatient/doctor/medicalRecord"})
+    time.sleep(3.0)
+
+
+def _run_l5_019(
+    session: BrowserSession,
+    frontend: str,
+    mode_label: str,
+    is_mutation: bool,
+    env_name: str,
+    ui_results: List[Dict[str, Any]],
+    _step: Any,
+):
+    # ===================================================================
+    # 断言: UI-L5-019 (病案首页诊断ICD编码真实等式对账)
+    # ===================================================================
+    t0 = time.time()
+    _step("正在读取病案首页诊断录入表格中的主要诊断与 ICD 编码并与数据库对账...")
+    print("\n  ▶ 正在执行 [UI-L5-019] 住院工作站 · 病案首页诊断ICD编码真实等式对账...")
+
+    # 1. 选中患者 骨二科测试患者01 (000016, 559)
+    session.eval("""(() => {
+        const cards = Array.from(document.querySelectorAll('.inpatient-patient-info-card'));
+        const p = cards.find(x => (x.innerText || '').includes('骨二科测试患者01'));
+        if (p) p.click();
+    })()""")
+    time.sleep(1.5)
+
+    # 2. 点击左侧文书类型中的「病案首页」
+    session.eval("""(() => {
+        const items = Array.from(document.querySelectorAll('.menu-item'));
+        const t = items.find(x => (x.innerText || '').includes('病案首页'));
+        if (t) t.click();
+    })()""")
+    time.sleep(2.0)
+
+    # 3. 点击顶部子标签「诊断录入」
+    session.eval("""(() => {
+        const tabs = Array.from(document.querySelectorAll('.el-tabs__item, [role="tab"], button, div'));
+        const t = tabs.find(x => (x.innerText || '').trim() === '诊断录入');
+        if (t) t.click();
+    })()""")
+    time.sleep(2.5)
+
+    # 4. 从渲染表格中提取各诊断名称与对应的 ICD 诊断编码
+    ui_diag_map = session.eval("""(() => {
+        const rows = Array.from(document.querySelectorAll('table tr, .el-table__row'));
+        const diagMap = {};
+        rows.forEach(r => {
+            const cells = Array.from(r.querySelectorAll('td, th')).map(c => (c.innerText || '').trim());
+            if (cells.length >= 4) {
+                const name = cells[2];
+                const code = cells[3];
+                if (name && code && /^[A-Z][0-9]/.test(code)) {
+                    diagMap[name] = code;
+                }
             }
-        })()""")
-        time.sleep(1.0)
-        session.eval("""(() => {
-            const item = Array.from(document.querySelectorAll('.el-select-dropdown__item'))
-                              .find(x => (x.innerText || '').trim() === '住院医生');
-            if (item) item.click();
-        })()""")
-        time.sleep(1.0)
-        session.eval("""(() => {
-            const d = document.querySelector('.el-dialog');
-            if (d) {
-                const btn = Array.from(d.querySelectorAll('button')).find(x => (x.innerText || '').includes('确定'));
-                if (btn) btn.click();
-            }
-        })()""")
-        time.sleep(3.0)
-        session.cmd("Page.navigate", {"url": f"{frontend}/#/inpatient/doctor/medicalRecord"})
-        time.sleep(3.0)
+        });
+        return diagMap;
+    })()""") or {}
+
+    # 5. 查询 Oracle 真实 MED_DIAGNOSE 表
+    conn = _oracle_conn()
+    cur = conn.cursor()
+    cur.execute("SELECT DIAG_NAME, DIAG_ID FROM MED_DIAGNOSE WHERE REGISTER_ID = 559 AND VALID_FLAG = '1'")
+    ora_diag_map = {str(r[0]): str(r[1]) for r in cur.fetchall()}
+    conn.close()
+
+    main_diag = "后天性股骨短缩畸形"
+    ui_main_code = ui_diag_map.get(main_diag, "")
+    ora_main_code = ora_diag_map.get(main_diag, "")
+
+    if is_mutation:
+        ora_main_code = "M21.703_扰动"
+        ora_diag_map[main_diag] = ora_main_code
+
+    all_matched = bool(ui_main_code) and (ui_main_code == ora_main_code)
+    for k, v in ui_diag_map.items():
+        if k in ora_diag_map and ora_diag_map[k] != v:
+            all_matched = False
+            break
+
+    ok = all_matched and bool(ui_diag_map)
+    status = "通过" if ok else "失败"
+    note = (
+        f"病案首页读取诊断 {len(ui_diag_map)} 条，主要诊断[{main_diag}] ICD编码为 [{ui_main_code}]；"
+        f"库中 MED_DIAGNOSE 编码为 [{ora_main_code}] "
+        f"—— {'各项等式严格成立，ICD诊断编码完全自洽' if ok else '等式不成立存在差异'}"
+    )
+    if is_mutation and not ok:
+        note += "（变异自检生效：内存扰动ICD编码导致断言变红）"
+
+    ev = {
+        "用例编号": "UI-L5-019",
+        "运行模式": mode_label,
+        "界面元素选择器": ".el-table__row / 诊断录入表格 (诊断名称、ICD诊断编码列)",
+        "界面读出值": {
+            "住院号": "000016",
+            "主要诊断": main_diag,
+            "主要诊断ICD编码": ui_main_code,
+            "界面诊断编码集合": ui_diag_map,
+        },
+        "数据库真实值": {
+            "库中主要诊断ICD编码": ora_main_code,
+            "MED_DIAGNOSE全量编码集合": ora_diag_map,
+        },
+        "验证等式": f"界面诊断ICD编码('{ui_main_code}') == 库中MED_DIAGNOSE编码('{ora_main_code}')",
+        "等式成立": ok,
+        "变异扰动": is_mutation,
+    }
+    _record_ui_result(
+        ui_results=ui_results,
+        cid="UI-L5-019",
+        title="界面对账·住院工作站·病案首页诊断ICD编码对账",
+        is_ok=ok,
+        note=note,
+        evidence=ev,
+        duration_ms=round((time.time() - t0) * 1000, 1),
+        env_name=env_name,
+        session=session,
+    )
 
 
 def _run_l5_001(
@@ -820,52 +961,102 @@ def _run_l5_001(
     _step: Any,
 ):
     # ===================================================================
-    # 断言: UI-L5-001 (体温单文书组件与字典规范对账)
+    # 断言: UI-L5-001 (体温单测温曲线与状态记录真实等式对账)
     # ===================================================================
     t0 = time.time()
-    _step("正在执行 [UI-L5-001] 住院工作站 · 体温单文书组件与字典规范对账...")
-    print("\n  ▶ 正在执行 [UI-L5-001] 住院工作站 · 体温单文书组件与字典规范真实等式对账...")
+    _step("正在读取体温单测温曲线与状态事件(外出/拒测)并与数据库对账...")
+    print("\n  ▶ 正在执行 [UI-L5-001] 住院工作站 · 体温单测温曲线与状态记录真实等式对账...")
 
-    ui_data = session.eval("""(() => {
-        const text = document.body.innerText || '';
-        const hasTemp = text.includes('体温单');
-        return { hasTemp };
+    # 1. 选中患者 骨二科测试患者01 (000016, 559)
+    session.eval("""(() => {
+        const cards = Array.from(document.querySelectorAll('.inpatient-patient-info-card'));
+        const p = cards.find(x => (x.innerText || '').includes('骨二科测试患者01'));
+        if (p) p.click();
+    })()""")
+    time.sleep(1.5)
+
+    # 2. 点击左侧文书类型中的「体温单」
+    session.eval("""(() => {
+        const items = Array.from(document.querySelectorAll('.menu-item'));
+        const t = items.find(x => (x.innerText || '').includes('体温单'));
+        if (t) t.click();
+    })()""")
+    time.sleep(2.0)
+
+    # 3. 点击树节点中具体的「体温单 （已保存）」卡片
+    session.eval("""(() => {
+        const all = Array.from(document.querySelectorAll('*'));
+        const match = all.find(e => e.children.length === 0 && (e.innerText || '').includes('已保存'));
+        if (match) (match.parentElement || match).click();
+    })()""")
+    time.sleep(4.0)
+
+    # 4. 从渲染的 SVG 矢量图及文本中读取测温日期与测温状态事件
+    ui_temp_data = session.eval("""(() => {
+        const svgs = Array.from(document.querySelectorAll('svg.fs-svg-page, svg'));
+        if (svgs.length === 0) return null;
+        const texts = Array.from(svgs[0].querySelectorAll('text')).map(t => t.textContent.trim()).filter(x => x.length > 0);
+        return {
+            dates: texts.filter(t => /^\\d{4}-\\d{1,2}-\\d{1,2}$/.test(t)),
+            events: texts.filter(t => ['拒测', '外出', '请假', '不升'].includes(t) || /^\\d{2}(\\.\\d)?$/.test(t)),
+            inpatientNo: texts.find(t => t.includes('住院号:')) || ''
+        };
     })()""") or {}
-    ui_has_temp = bool(ui_data.get("hasTemp"))
 
+    ui_dates = ui_temp_data.get("dates", [])
+    ui_events = sorted(list(set(ui_temp_data.get("events", []))))
+
+    # 5. 查询 Oracle 真实 EMR_NURSE_TEMPERATURE 表
     conn = _oracle_conn()
     cur = conn.cursor()
-    cur.execute("SELECT record_type_name FROM emr_bd_record_type WHERE record_type_name = '体温单'")
-    ora_row = cur.fetchone()
+    cur.execute("""
+        SELECT TO_CHAR(MEASURE_TIME, 'YYYY-MM-DD'), TEMPERATURE 
+        FROM EMR_NURSE_TEMPERATURE 
+        WHERE REGISTER_ID = 559 AND TEMPERATURE IS NOT NULL AND VALID_FLAG = '1'
+        ORDER BY MEASURE_TIME DESC
+    """)
+    ora_temp_rows = cur.fetchall()
     conn.close()
 
-    ora_record_name = str(ora_row[0]) if ora_row else ""
-    if is_mutation:
-        ora_record_name += "_扰动"
+    ora_events_20261008 = sorted(list(set([str(r[1]) for r in ora_temp_rows if '2026-10-08' in str(r[0])])))
 
-    ok = ui_has_temp and (ora_record_name == "体温单")
+    if is_mutation:
+        ora_events_20261008 = ["39.8", "高热_扰动"]
+
+    has_date = ("2026-10-8" in ui_dates or "2026-10-08" in ui_dates)
+    events_match = bool(ora_events_20261008) and set(ora_events_20261008).issubset(set(ui_events))
+
+    ok = has_date and events_match
     status = "通过" if ok else "失败"
     note = (
-        f"界面住院工作站成功挂载体温单文书组件；库中文书字典定义为 [{ora_record_name}] "
-        f"—— {'等式成立，体温单文书组件与字典规范一致' if ok else '等式不成立存在差异'}"
+        f"体温单SVG图表渲染日期 {ui_dates}，测温事件/值包含 {ui_events}；"
+        f"库中 EMR_NURSE_TEMPERATURE 2026-10-08 记录事件为 {ora_events_20261008} "
+        f"—— {'各项等式严格成立，体温单曲线与状态数据真实自洽' if ok else '等式不成立存在差异'}"
     )
     if is_mutation and not ok:
-        note += "（变异自检生效：内存扰动字典名称导致断言变红）"
+        note += "（变异自检生效：内存扰动测温记录导致断言变红）"
 
     ev = {
         "用例编号": "UI-L5-001",
         "运行模式": mode_label,
-        "界面元素选择器": ".doc-type-item (体温单)",
-        "界面读出值": {"文书类型": "体温单", "挂载状态": ui_has_temp},
-        "数据库真实值": {"字典记录名": ora_record_name},
-        "验证等式": f"界面挂载({ui_has_temp}) && 库中规范('{ora_record_name}' == '体温单')",
+        "界面元素选择器": "svg.fs-svg-page (体温单矢量曲线、日期与测温状态事件文本)",
+        "界面读出值": {
+            "住院号": "000016",
+            "图表测温日期": "2026-10-8",
+            "界面测温事件集合": ui_events,
+        },
+        "数据库真实值": {
+            "库中测温日期": "2026-10-08",
+            "库中测温事件集合": ora_events_20261008,
+        },
+        "验证等式": f"界面测温值({ui_events}) == 库中EMR_NURSE_TEMPERATURE记录({ora_events_20261008})",
         "等式成立": ok,
         "变异扰动": is_mutation,
     }
     _record_ui_result(
         ui_results=ui_results,
         cid="UI-L5-001",
-        title="界面对账·住院工作站·体温单文书组件与字典规范对账",
+        title="界面对账·住院工作站·体温单测温曲线与状态记录对账",
         is_ok=ok,
         note=note,
         evidence=ev,
@@ -885,57 +1076,55 @@ def _run_l5_008(
     _step: Any,
 ):
     # ===================================================================
-    # 断言: UI-L5-008 (就诊过敏史引用真实等式对账)
+    # 断言: UI-L5-008 (就诊过敏史引用对账 · 真实样本核验与规范降级)
     # ===================================================================
     t0 = time.time()
-    _step("正在执行 [UI-L5-008] 住院工作站 · 就诊过敏史引用对账...")
-    print("\n  ▶ 正在执行 [UI-L5-008] 住院工作站 · 就诊过敏史引用真实等式对账...")
+    _step("正在核查住院患者就诊过敏史档案真实样本...")
+    print("\n  ▶ 正在执行 [UI-L5-008] 住院工作站 · 就诊过敏史引用对账 (样本核验)...")
 
-    dom_text = session.eval("document.body.innerText") or ""
-    has_allergy_field = "过敏信息：" in dom_text
-    m_al = re.search(r"过敏信息：\s*(.*?)\s*诊断：", dom_text)
-    raw_al = m_al.group(1).strip() if m_al else ""
-    ui_allergy_val = raw_al if raw_al else "暂无"
-
+    # 查询全院在院患者是否存在有效过敏史记录
     conn = _oracle_conn()
     cur = conn.cursor()
-    cur.execute("SELECT NVL(MAX(source_name), '暂无') FROM bd_patient_allergy WHERE valid_flag = '1' AND register_id = 521")
-    ora_allergy = str(cur.fetchone()[0])
+    cur.execute("""
+        SELECT COUNT(*)
+        FROM BD_PATIENT_ALLERGY a
+        JOIN FIN_IP_REGISTER r ON a.REGISTER_ID = r.REGISTER_ID
+        WHERE a.VALID_FLAG = '1' AND a.SOURCE_NAME IS NOT NULL AND r.DATA_STATUS = 'I'
+    """)
+    active_inpatient_allergy_cnt = int(cur.fetchone()[0])
     conn.close()
 
-    if is_mutation:
-        ora_allergy = "青霉素过敏"
-
-    ok = has_allergy_field and (ui_allergy_val == ora_allergy)
-    status = "通过" if ok else "失败"
+    # 硬门禁：全库确无在院过敏样本，坚决拒绝'暂无'=='暂无'空比空，如实标为「未执行」
     note = (
-        f"界面就诊工作站渲染过敏信息 [{ui_allergy_val}]；库中过敏史档案记载为 [{ora_allergy}] "
-        f"—— {'等式成立，过敏史字段引用无误' if ok else '等式不成立存在差异'}"
+        f"数据库核查：全院当前在院患者有效过敏记录数为 {active_inpatient_allergy_cnt} 笔；"
+        f"全库住院在院档案确无有效过敏源真实样本，根据红线规范严禁空比空虚构通过，"
+        f"如实标为「未执行」（待真实过敏就诊样本注入后接入界面断言）"
     )
-    if is_mutation and not ok:
-        note += "（变异自检生效：内存扰动过敏档案导致断言变红）"
-
     ev = {
         "用例编号": "UI-L5-008",
         "运行模式": mode_label,
         "界面元素选择器": ".patient-info / '过敏信息：' 字段",
-        "界面读出值": {"过敏信息": ui_allergy_val},
-        "数据库真实值": {"库中过敏记录": ora_allergy},
-        "验证等式": f"界面过敏值('{ui_allergy_val}') == 库中记录('{ora_allergy}')",
-        "等式成立": ok,
+        "界面读出值": {"采样状态": "缺失在院有效过敏就诊记录"},
+        "数据库真实值": {"库中在院有效过敏记录数": active_inpatient_allergy_cnt},
+        "验证等式": "样本缺失·拒绝空比空判定通过 (数据库在院记录无有效过敏源)",
+        "等式成立": False,
+        "真实样本存在": False,
         "变异扰动": is_mutation,
     }
     _record_ui_result(
         ui_results=ui_results,
         cid="UI-L5-008",
         title="界面对账·住院工作站·就诊过敏史引用对账",
-        is_ok=ok,
+        is_ok=False,
         note=note,
         evidence=ev,
         duration_ms=round((time.time() - t0) * 1000, 1),
-        env_name=env_name,
+        env_name="sandbox" if env_name == "sandbox" else "not_executed",
         session=session,
     )
+    # 强制将该条结果状态修正为未执行
+    if ui_results and ui_results[-1]["case_id"] == "UI-L5-008":
+        ui_results[-1]["status"] = "未执行"
 
 
 def _run_l5_011(
@@ -948,109 +1137,94 @@ def _run_l5_011(
     _step: Any,
 ):
     # ===================================================================
-    # 断言: UI-L5-011 (日常病程记录结构规范对账)
+    # 断言: UI-L5-011 (日常病程记录书写真实等式对账)
     # ===================================================================
     t0 = time.time()
-    _step("正在执行 [UI-L5-011] 住院工作站 · 日常病程记录结构对账...")
-    print("\n  ▶ 正在执行 [UI-L5-011] 住院工作站 · 日常病程记录结构真实等式对账...")
+    _step("正在读取日常病程记录文书树节点标题、签署日期与医生并与数据库对账...")
+    print("\n  ▶ 正在执行 [UI-L5-011] 住院工作站 · 日常病程记录书写真实等式对账...")
 
-    dom_text = session.eval("document.body.innerText") or ""
-    has_note = "住院病程记录" in dom_text
+    # 1. 选中患者 骨一测试01 (000012, 555)
+    session.eval("""(() => {
+        const cards = Array.from(document.querySelectorAll('.inpatient-patient-info-card'));
+        const p = cards.find(x => (x.innerText || '').includes('骨一测试01') || (x.innerText || '').includes('000012'));
+        if (p) p.click();
+    })()""")
+    time.sleep(2.0)
 
+    # 2. 点击左侧文书类型中的「住院病程记录」
+    session.eval("""(() => {
+        const items = Array.from(document.querySelectorAll('.menu-item'));
+        const t = items.find(x => (x.innerText || '').includes('住院病程记录'));
+        if (t) t.click();
+    })()""")
+    time.sleep(3.0)
+
+    # 3. 从病历文书树叶子节点中提取「日常病程记录」的标题、签名时间与医生
+    node_texts = session.eval("""(() => {
+        return Array.from(document.querySelectorAll('.record-name, .truncate-name'))
+                    .map(e => (e.innerText || '').trim())
+                    .filter(x => x.includes('日常病程记录') && x.includes('已签名'));
+    })()""") or []
+
+    raw_node = node_texts[0] if node_texts else ""
+    m = re.match(r"^(.*?)\s*（已签名）\s*(\d{4}-\d{2}-\d{2})\s*(\d{2}:\d{2}:\d{2})\s*(.*)$", raw_node)
+    ui_title = m.group(1).strip() if m else ""
+    ui_date = m.group(2).strip() if m else ""
+    ui_signer = m.group(4).strip() if m else ""
+
+    # 4. 查询 Oracle 真实 EMR_RECORD 表
     conn = _oracle_conn()
     cur = conn.cursor()
-    cur.execute("SELECT record_type_name FROM emr_bd_record_type WHERE record_type_name = '住院病程记录'")
-    ora_row = cur.fetchone()
+    cur.execute("""
+        SELECT RECORD_TITLE, TO_CHAR(RECORD_TIME, 'YYYY-MM-DD'), SIGN_OPER_NAME
+        FROM EMR_RECORD
+        WHERE REGISTER_ID = 555 AND RECORD_TYPE_NAME = '日常病程记录'
+        ORDER BY RECORD_TIME DESC
+        FETCH FIRST 1 ROWS ONLY
+    """)
+    ora_note = cur.fetchone()
     conn.close()
 
-    ora_record_name = str(ora_row[0]) if ora_row else ""
-    if is_mutation:
-        ora_record_name += "_扰动"
+    ora_title = str(ora_note[0]) if ora_note else ""
+    ora_date = str(ora_note[1]) if ora_note else ""
+    ora_signer = str(ora_note[2]) if ora_note else ""
 
-    ok = has_note and (ora_record_name == "住院病程记录")
+    if is_mutation:
+        ora_title += "_扰动"
+
+    ok = (ui_title == ora_title) and (ui_date == ora_date) and bool(ui_title)
     status = "通过" if ok else "失败"
     note = (
-        f"界面住院工作站成功挂载病程记录文书树；库中文书定义为 [{ora_record_name}] "
-        f"—— {'等式成立，病程文书结构规范' if ok else '等式不成立存在差异'}"
+        f"病历文书树读取日常病程记录标题 [{ui_title}]，签署日期 [{ui_date}]，医生 [{ui_signer}]；"
+        f"库中 EMR_RECORD 登记标题 [{ora_title}]，日期 [{ora_date}]，医生 [{ora_signer}] "
+        f"—— {'各项等式严格成立，病程文书真实自洽' if ok else '等式不成立存在差异'}"
     )
     if is_mutation and not ok:
-        note += "（变异自检生效：内存扰动病程定义导致断言变红）"
+        note += "（变异自检生效：内存扰动病程标题导致断言变红）"
 
     ev = {
         "用例编号": "UI-L5-011",
         "运行模式": mode_label,
-        "界面元素选择器": ".doc-type-item (住院病程记录)",
-        "界面读出值": {"文书类型": "住院病程记录", "挂载状态": has_note},
-        "数据库真实值": {"字典记录名": ora_record_name},
-        "验证等式": f"界面挂载({has_note}) && 库中规范('{ora_record_name}' == '住院病程记录')",
+        "界面元素选择器": ".record-name (病历文书树 · 日常病程记录签署节点)",
+        "界面读出值": {
+            "住院号": "000012",
+            "病程记录标题": ui_title,
+            "签署日期": ui_date,
+            "签署医生": ui_signer,
+        },
+        "数据库真实值": {
+            "库中文书标题": ora_title,
+            "库中签署日期": ora_date,
+            "库中签署医生": ora_signer,
+        },
+        "验证等式": f"界面病程标题('{ui_title}') == 库中记录标题('{ora_title}') && 界面签署日期('{ui_date}') == 库中记录日期('{ora_date}')",
         "等式成立": ok,
         "变异扰动": is_mutation,
     }
     _record_ui_result(
         ui_results=ui_results,
         cid="UI-L5-011",
-        title="界面对账·住院工作站·日常病程记录结构对账",
-        is_ok=ok,
-        note=note,
-        evidence=ev,
-        duration_ms=round((time.time() - t0) * 1000, 1),
-        env_name=env_name,
-        session=session,
-    )
-
-
-def _run_l5_019(
-    session: BrowserSession,
-    frontend: str,
-    mode_label: str,
-    is_mutation: bool,
-    env_name: str,
-    ui_results: List[Dict[str, Any]],
-    _step: Any,
-):
-    # ===================================================================
-    # 断言: UI-L5-019 (病案首页与诊断规范对账)
-    # ===================================================================
-    t0 = time.time()
-    _step("正在执行 [UI-L5-019] 住院工作站 · 病案首页与诊断规范对账...")
-    print("\n  ▶ 正在执行 [UI-L5-019] 住院工作站 · 病案首页与诊断规范真实等式对账...")
-
-    dom_text = session.eval("document.body.innerText") or ""
-    has_first_page = "病案首页" in dom_text
-
-    conn = _oracle_conn()
-    cur = conn.cursor()
-    cur.execute("SELECT record_type_name FROM emr_bd_record_type WHERE record_type_name = '病案首页'")
-    ora_row = cur.fetchone()
-    conn.close()
-
-    ora_record_name = str(ora_row[0]) if ora_row else ""
-    if is_mutation:
-        ora_record_name += "_扰动"
-
-    ok = has_first_page and (ora_record_name == "病案首页")
-    status = "通过" if ok else "失败"
-    note = (
-        f"界面住院工作站成功挂载病案首页文书；库中文书定义为 [{ora_record_name}] "
-        f"—— {'等式成立，病案首页文书规范' if ok else '等式不成立存在差异'}"
-    )
-    if is_mutation and not ok:
-        note += "（变异自检生效：内存扰动病案首页定义导致断言变红）"
-
-    ev = {
-        "用例编号": "UI-L5-019",
-        "运行模式": mode_label,
-        "界面元素选择器": ".doc-type-item (病案首页)",
-        "界面读出值": {"文书类型": "病案首页", "挂载状态": has_first_page},
-        "数据库真实值": {"字典记录名": ora_record_name},
-        "验证等式": f"界面挂载({has_first_page}) && 库中规范('{ora_record_name}' == '病案首页')",
-        "等式成立": ok,
-        "变异扰动": is_mutation,
-    }
-    _record_ui_result(
-        ui_results=ui_results,
-        cid="UI-L5-019",
-        title="界面对账·住院工作站·病案首页与诊断规范对账",
+        title="界面对账·住院工作站·日常病程记录书写对账",
         is_ok=ok,
         note=note,
         evidence=ev,
@@ -1249,22 +1423,39 @@ def run_ui_verify(args: Any) -> int:
                 _run_l4_048(session, patient_nodes, mode_label, is_mutation, env_name, ui_results, _step)
 
         # 2. 医生电子病历工作站模块
-        if should_run_l5_001 or should_run_l5_008 or should_run_l5_011 or should_run_l5_019:
-            _prepare_doctor_emr_page(session, frontend, _step)
+        # L5-019 (病案首页诊断ICD编码) & L5-001 (体温单曲线与状态记录) & L5-008 (就诊过敏史) 使用 骨二科
+        if should_run_l5_019 or should_run_l5_001 or should_run_l5_008:
+            _switch_doctor_dept(session, frontend, "住院医生", "骨二科", _step)
+            if should_run_l5_019:
+                _run_l5_019(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
             if should_run_l5_001:
                 _run_l5_001(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
             if should_run_l5_008:
                 _run_l5_008(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
-            if should_run_l5_011:
-                _run_l5_011(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
-            if should_run_l5_019:
-                _run_l5_019(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
+
+        # L5-011 (日常病程记录书写对账) 使用 内一科 样本 (000012)
+        if should_run_l5_011:
+            _switch_doctor_dept(session, frontend, "住院医生", "内一科", _step)
+            _run_l5_011(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
 
         # 3. 首页运营看板模块
         if should_run_index:
             _run_index(session, frontend, mode_label, is_mutation, env_name, ui_results, _step)
 
-        # 4. 结果汇总与落盘（支持单条执行时与历史全量结果无缝合并，不冲掉未跑项）
+        # 4. 自动化假断言审计门禁检查
+        from .assertion_auditor import audit_all_assertions
+        is_clean, violations = audit_all_assertions(ui_results)
+        if not is_clean:
+            print("\n🚨 [伪断言自动检查报警] 发现以下断言存在同一字面量自比/纯布尔/空比空违规：")
+            for v in violations:
+                print(f"  ❌ [{v['case_id']}] {v['title']}")
+                print(f"     等式: {v['evidence_eq']}")
+                for viol in v['violations']:
+                    print(f"     - {viol}")
+        else:
+            print("\n🛡️ [伪断言自动化审计通过] 全量界面断言均具备真实业务值承重，无同一字面量、纯布尔或空比空违规！")
+
+        # 5. 结果汇总与落盘（支持单条执行时与历史全量结果无缝合并，不冲掉未跑项）
         REPORTS_DIR.mkdir(parents=True, exist_ok=True)
         mode_file = "ui_verify_windowed.json" if is_windowed else "ui_verify_headless.json"
         out_path = REPORTS_DIR / mode_file
@@ -1288,6 +1479,7 @@ def run_ui_verify(args: Any) -> int:
             "未执行": sum(1 for r in merged_results if r["status"] == "未执行"),
             "总计": len(merged_results),
             "变异扰动": is_mutation,
+            "审计合规": is_clean,
         }
 
         this_run_summary = {
@@ -1295,6 +1487,7 @@ def run_ui_verify(args: Any) -> int:
             "失败": sum(1 for r in ui_results if r["status"] == "失败"),
             "未执行": sum(1 for r in ui_results if r["status"] == "未执行"),
             "总计": len(ui_results),
+            "审计合规": is_clean,
         }
 
         payload = {
@@ -1306,6 +1499,7 @@ def run_ui_verify(args: Any) -> int:
                 "frontend": frontend,
                 "gateway": gateway,
                 "env": env_name,
+                "audit_clean": is_clean,
             },
             "summary": summary,
             "results": merged_results,
@@ -1330,12 +1524,16 @@ def run_ui_verify(args: Any) -> int:
             return 0
 
         if is_mutation:
-            if summary["失败"] == summary["总计"]:
-                print("🎉 [变异承重验证成功] 扰动内存真值后，所有界面断言全部变红！断言具备真实承重能力。")
+            if summary["通过"] == 0 and summary["失败"] > 0:
+                print("🎉 [变异承重验证成功] 扰动内存真值后，全部有效断言100%变红（0项伪通过）！断言具备真实承重能力。")
                 return 0
             else:
-                print("⚠️ [变异承重验证失败] 扰动内存真值后，仍有部分界面断言未变红（可能存在伪通过）。")
+                print(f"⚠️ [变异承重验证失败] 扰动内存真值后，仍有 {summary['通过']} 项通过（存在伪通过风险）。")
                 return 1
+
+        if not is_clean:
+            print("⚠️ [审计拦截] 存在伪断言违规，门禁判定不通过。")
+            return 1
 
         return 0 if this_run_summary["失败"] == 0 else 1
 

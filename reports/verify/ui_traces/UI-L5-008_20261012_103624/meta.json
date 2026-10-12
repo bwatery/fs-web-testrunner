@@ -1,0 +1,39 @@
+{
+  "case_id": "UI-L5-008",
+  "timestamp": "2026-10-12 10:36:25",
+  "note": "界面就诊工作站渲染过敏信息 [暂无]；库中过敏史档案记载为 [青霉素过敏] —— 等式不成立存在差异（变异自检生效：内存扰动过敏档案导致断言变红）",
+  "route": {
+    "href": "http://192.168.1.198:8088/#/inpatient/doctor/medicalRecord",
+    "origin": "http://192.168.1.198:8088",
+    "pathname": "/",
+    "hash": "#/inpatient/doctor/medicalRecord",
+    "title": "住院工作站 - HIOP",
+    "readyState": "complete"
+  },
+  "screenshot_saved": true,
+  "dom_bytes": 725593,
+  "console_entries_count": 35,
+  "network_requests_count": 591,
+  "evidence": {
+    "用例编号": "UI-L5-008",
+    "运行模式": "[界面·无头]",
+    "界面元素选择器": ".patient-info / '过敏信息：' 字段",
+    "界面读出值": {
+      "过敏信息": "暂无"
+    },
+    "数据库真实值": {
+      "库中过敏记录": "青霉素过敏"
+    },
+    "验证等式": "界面过敏值('暂无') == 库中记录('青霉素过敏')",
+    "等式成立": false,
+    "变异扰动": true
+  },
+  "files": [
+    "meta.json",
+    "dom.html",
+    "route.json",
+    "console.json",
+    "network.json",
+    "screenshot.png"
+  ]
+}

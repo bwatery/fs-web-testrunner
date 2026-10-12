@@ -46,11 +46,14 @@ def get_closed_loop_cases() -> Dict[str, Any]:
         try:
             ui_data = json.loads(ui_latest_file.read_text(encoding="utf-8"))
             for ur in ui_data.get("results", []):
+                # 只有真实执行且具备有效断言的用例才算覆盖（排除未执行/虚构用例）
+                if ur.get("status") == "未执行":
+                    continue
                 ucid = ur.get("case_id", "")
                 m = re.match(r"^UI-(L\d+-\d+)", ucid)
                 if m:
                     ui_covered_cases.add(m.group(1))
-                elif ucid:
+                elif ucid and not ucid.startswith("UI-INDEX"):
                     ui_covered_cases.add(ucid)
         except Exception:
             pass

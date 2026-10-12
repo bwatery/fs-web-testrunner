@@ -1,0 +1,39 @@
+{
+  "case_id": "UI-L5-008",
+  "timestamp": "2026-10-12 10:27:59",
+  "note": "界面就诊工作站渲染过敏信息 [诊断：]；库中过敏史档案记载为 [暂无] —— 等式不成立存在差异",
+  "route": {
+    "href": "http://192.168.1.198:8088/#/inpatient/doctor/medicalRecord",
+    "origin": "http://192.168.1.198:8088",
+    "pathname": "/",
+    "hash": "#/inpatient/doctor/medicalRecord",
+    "title": "住院工作站 - HIOP",
+    "readyState": "complete"
+  },
+  "screenshot_saved": true,
+  "dom_bytes": 725593,
+  "console_entries_count": 33,
+  "network_requests_count": 591,
+  "evidence": {
+    "用例编号": "UI-L5-008",
+    "运行模式": "[界面·无头]",
+    "界面元素选择器": ".patient-info / '过敏信息：' 字段",
+    "界面读出值": {
+      "过敏信息": "诊断："
+    },
+    "数据库真实值": {
+      "库中过敏记录": "暂无"
+    },
+    "验证等式": "界面过敏值('诊断：') == 库中记录('暂无')",
+    "等式成立": false,
+    "变异扰动": false
+  },
+  "files": [
+    "meta.json",
+    "dom.html",
+    "route.json",
+    "console.json",
+    "network.json",
+    "screenshot.png"
+  ]
+}

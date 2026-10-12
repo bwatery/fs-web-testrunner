@@ -1,0 +1,40 @@
+{
+  "case_id": "UI-L5-001",
+  "timestamp": "2026-10-12 10:29:39",
+  "note": "界面住院工作站成功挂载体温单文书组件；库中文书字典定义为 [体温单_扰动] —— 等式不成立存在差异（变异自检生效：内存扰动字典名称导致断言变红）",
+  "route": {
+    "href": "http://192.168.1.198:8088/#/inpatient/doctor/medicalRecord",
+    "origin": "http://192.168.1.198:8088",
+    "pathname": "/",
+    "hash": "#/inpatient/doctor/medicalRecord",
+    "title": "住院工作站 - HIOP",
+    "readyState": "complete"
+  },
+  "screenshot_saved": true,
+  "dom_bytes": 725593,
+  "console_entries_count": 31,
+  "network_requests_count": 591,
+  "evidence": {
+    "用例编号": "UI-L5-001",
+    "运行模式": "[界面·无头]",
+    "界面元素选择器": ".doc-type-item (体温单)",
+    "界面读出值": {
+      "文书类型": "体温单",
+      "挂载状态": true
+    },
+    "数据库真实值": {
+      "字典记录名": "体温单_扰动"
+    },
+    "验证等式": "界面挂载(True) && 库中规范('体温单_扰动' == '体温单')",
+    "等式成立": false,
+    "变异扰动": true
+  },
+  "files": [
+    "meta.json",
+    "dom.html",
+    "route.json",
+    "console.json",
+    "network.json",
+    "screenshot.png"
+  ]
+}

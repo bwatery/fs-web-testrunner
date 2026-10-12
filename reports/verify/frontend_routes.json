@@ -1,0 +1,138 @@
+[
+  {
+    "path": "/inpatient/finance/syntheticfquery",
+    "name": "Syntheticfquery"
+  },
+  {
+    "path": "/inpatient/doctor/medicalRecord",
+    "name": "InpatientMedicalRecord"
+  },
+  {
+    "path": "/inpatient/nurse/theRoomManagement",
+    "name": "TheRoomManagement"
+  },
+  {
+    "path": "/inpatient/nurse/labelprint",
+    "name": "Labelprint"
+  },
+  {
+    "path": "/inpatient/nurse/feecollection",
+    "name": "Feecollection"
+  },
+  {
+    "path": "/inpatient/nurse/returnpremium",
+    "name": "Returnpremium"
+  },
+  {
+    "path": "/inpatient/nurse/orderExecutionQuery",
+    "name": "inpatientNurseOrderExecutionQuery"
+  },
+  {
+    "path": "/inpatient/nurse/confirmPatient",
+    "name": "ConfirmPatient"
+  },
+  {
+    "path": "/inpatient/nurse/requisitionDep",
+    "name": "RequisitionDep"
+  },
+  {
+    "path": "/inpatient/nurse/wardWorkLog",
+    "name": "inpatientNurseWardWorkLog"
+  },
+  {
+    "path": "/inpatient/nurse/requisition",
+    "name": "Requisition"
+  },
+  {
+    "path": "/inpatient/nurse/crisisValueReminder",
+    "name": "CrisisValueReminder"
+  },
+  {
+    "path": "/inpatient/nurse/surgicalScheduling",
+    "name": "SurgicalScheduling"
+  },
+  {
+    "path": "/inpatient/nurse/daylist",
+    "name": "Daylist"
+  },
+  {
+    "path": "/inpatient/nurse/disoensingcheck",
+    "name": "Disoensingcheck"
+  },
+  {
+    "path": "/iframe/iframeView",
+    "name": "IframeView"
+  },
+  {
+    "path": "/other/deptPackageMaintain",
+    "name": "DeptPackageMaintain"
+  },
+  {
+    "path": "/other/deptCommonItem",
+    "name": "DeptCommonItem"
+  },
+  {
+    "path": "/other/warningLine",
+    "name": "WarningLine"
+  },
+  {
+    "path": "/other/execBillMaintenance",
+    "name": "ExecBillMaintenance"
+  },
+  {
+    "path": "/inpatient/finance",
+    "name": "InpatientFinance"
+  },
+  {
+    "path": "/inpatient/doctor",
+    "name": "InpatientDoctor"
+  },
+  {
+    "path": "/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E4%BD%8F%E9%99%A2%2F%E5%87%BA%E9%99%A2%E7%97%85%E4%BA%BA%E9%87%91%E9%A2%9D%E7%BB%9F%E8%AE%A1.cpt&title=%E5%87%BA%E9%99%A2%E7%97%85%E4%BA%BA%E9%87%91%E9%A2%9D%E7%BB%9F%E8%AE%A1",
+    "name": "http://117.72.115.37:9019/webroot/decision/view/report?op=view&viewlet=HIS/报表/住院/出院病人金额统计.cpt"
+  },
+  {
+    "path": "/iframe/iframeView?url=http%3A%2F%2F117.72.115.37%3A9019%2Fwebroot%2Fdecision%2Fview%2Freport%3Fop%3Dview%26viewlet%3DHIS%2F%E6%8A%A5%E8%A1%A8%2F%E4%BD%8F%E9%99%A2%2F%E5%B7%B2%E7%BB%93%E7%AE%97%E7%97%85%E4%BA%BA%E5%88%97%E8%A1%A8.cpt&title=%E5%B7%B2%E7%BB%93%E7%AE%97%E7%97%85%E4%BA%BA%E5%88%97%E8%A1%A8",
+    "name": "http://117.72.115.37:9019/webroot/decision/view/report?op=view&viewlet=HIS/报表/住院/已结算病人列表.cpt"
+  },
+  {
+    "path": "/inpatient/nurse",
+    "name": "InpatientNurse"
+  },
+  {
+    "path": "/login",
+    "name": "Login"
+  },
+  {
+    "path": "/redirect",
+    "name": "Redirect"
+  },
+  {
+    "path": "/403",
+    "name": "403"
+  },
+  {
+    "path": "/404",
+    "name": "404"
+  },
+  {
+    "path": "/iframe",
+    "name": "Iframe"
+  },
+  {
+    "path": "/index",
+    "name": "Index"
+  },
+  {
+    "path": "/",
+    "name": "Root"
+  },
+  {
+    "path": "/other",
+    "name": "PharmacyDrug"
+  },
+  {
+    "path": "/:pathMatch(.*)*",
+    "name": "NotFound"
+  }
+]
