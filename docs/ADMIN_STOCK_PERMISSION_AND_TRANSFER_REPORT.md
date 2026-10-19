@@ -1,62 +1,56 @@
-# 管理员物资仓库与全病区权限配置及库存流转验收报告
+# 专属【物资仓库】角色创建与全病区流转权限验收报告
 
-## 1. 远程代码合并与推送回执
+## 1. 架构调整与角色设计
 
-- **当前分支与合并**：
-  - 本地重构与端到端药学自动化套件开发分支 `refactor/fs-runner` 已顺利合并入主分支 `main`（Fast-forward）。
-  - 核心新增内容：
-    - `tools/generate_ui_clinical_pharmacy_data.py`（纯 UI 临床药学端到端全流程自动造数工具）
-    - `docs/UNIVERSAL_PHARMACY_E2E_WORKFLOW.md`（通用规范 SOP 文档）
-    - 安全配置护栏（`.gitignore` 强化保护 `data/db_config.json` 绝不外泄）
-- **远程推送状态**：
-  - 执行 `git push origin main` 成功推送到 GitHub 远程仓库：
-  - 远程引用：`05fcbff..565d2e7  main -> main`（35 commits 完整同步）。
+根据业务规划，物资/耗材体系与药品体系彻底解耦，不再复用“药库管理”，而是建立专门的独立角色：
+
+```mermaid
+flowchart TD
+    subgraph 角色体系解耦 [角色与库房权责矩阵]
+        ROLE_PHA["药库管理角色 (ROLE_ID=39)<br/>专司药学总库<br/>- 中药库 (910128)<br/>- 西药库 (910129)"]
+        ROLE_WZ["【新增】物资仓库角色 (ROLE_ID=72, KEY=WZCK)<br/>专司耗材物资与病区调拨<br/>- 物资仓库 / 卫材库 (910057)<br/>- 全部 6 大住院病区 (910130..910135)"]
+    end
+```
 
 ---
 
-## 2. 物资仓库与全病区权限配置清单
+## 2. 数据库配置与赋权实施清单
 
-针对管理员（`admin`, `USER_ID = 1`），完成了**物资仓库（卫材库 910057）**与**全部 6 大病区**的完整库房属性与操作权限赋予：
-
-| 配置维度 | 关联数据表 | 变更明细 | 业务意义 |
+| 配置环节 | 目标数据表 | 变更明细 | 业务效用 |
 | :--- | :--- | :--- | :--- |
-| **库房属性定义** | `SYS_DEPT` | 将 6 大病区（`910130..910135`）的 `STOCK_FLAG` 更新为 `'1'` | 使得前端库房选择器能将各病区作为独立二级库/病区库识别 |
-| **科室归属赋权** | `SYS_USER_ROLE_DEPT` | 插入 21 条记录（覆盖角色 39 药库管理、角色 37 住院药房、角色 1 系统管理员在 卫材库 及 6 大病区的归属） | 赋予管理员切换到卫材库及任意病区的工作权限 |
-| **转入转出权限** | `SYS_USER_ROLE_DEPT_PERMISSION` | 插入 266 条操作权限记录（权限项包含 `101, 10001..10020`） | 赋予调拨入库（`10004`）、调拨出库（`10015`）、领药出库（`10014`）、科室领用（`10017`）、直接出入库等全套动作权限 |
-| **耗材类别准入** | `PHA_BD_STOCK_TYPE` | 插入 14 条记录（卫材库 + 6大病区在业务类型 `I` 及 `O` 下开放 `DRUG_TYPE = 'M'` 耗材类目） | 允许各库房管理、调配与核算耗材（M）物资 |
-| **调拨供应链路** | `PHA_BD_STOCK_DEPT` | 插入 6 条调拨记录（`STORAGE_DEPT_ID = 910057` 卫材库 $\rightarrow$ `APPLY_DEPT_ID` 6 大病区，`DRUG_TYPE = 'M'`） | 建立卫材库向各病区供应、调拨耗材的合法业务通道 |
+| **专属角色定义** | `SYS_ROLE` | 插入记录 `ROLE_ID = 72`，`ROLE_NAME = '物资仓库'`，`ROLE_KEY = 'WZCK'` | 建立一级专属业务角色，支持后续独立定制菜单 |
+| **菜单功能继承** | `SYS_ROLE_MENU` | 从 `ROLE_ID = 39`（药库管理）复制全部 32 个功能菜单（`/storage`、`drugInStorage`、`drugOutStorage`、`storageInfo` 等） | 现阶段完全继承药库管理全部出入转调界面功能 |
+| **人员角色绑定** | `SYS_USER_ROLE` | 为管理员 `USER_ID = 1` 分配 `ROLE_ID = 72`（物资仓库） | 使管理员具备以物资仓库角色登录与操作资格 |
+| **管辖库房分配** | `SYS_USER_ROLE_DEPT` | 插入 7 条科室关联（卫材库 `910057` + 6 大病区 `910130..910135`） | 管理员在物资仓库角色下可自由切换卫材库与各病区 |
+| **转入转出业务权限** | `SYS_USER_ROLE_DEPT_PERMISSION` | 为 7 个科室各插入 19 项业务权限（共 133 条，含调拨出库 `10015`、调拨入库 `10004`、领药/领用出库 `10014`/`10017` 等） | 赋予全套物资入库、出库、调拨、退库、报损等动作权限 |
+| **药库角色纯净化** | `SYS_USER_ROLE_DEPT` | 从【药库管理】（Role 39）清理掉卫材库与病区关联，恢复其中药库、西药库专属职能 | 彻底消除权限重叠，使药学体系与物资体系严格隔离 |
 
 ---
 
-## 3. 前端 UI 真实交互验证
+## 3. 前端真实 UI 验证与结果
 
-### 3.1 管理员切换【药库管理】与【卫材库】
-登录 `admin` 后点击右上角头像呼出【切换科室】，药库管理角色下已完整展现全部目标科室：
-- **可选科室集**：`卫材库`、`中药库`、`西药库`、`骨二科病区`、`内一科病区`、`康复科病区`、`内二科病区`、`骨一科病区`、`骨三科病区`。
-![管理员切换至卫材库](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/admin_switched_to_wz.png)
+自动化脚本通过真实 CDP 浏览器会话模拟完整操作：
 
-### 3.2 药品/物资出库工作台（转出）
-路由：`#/storage/drugOutStorage`
-- **支持的转出模式**：
-  - `直接出库`
-  - `退库`
-  - `领药出库`
-  - `调拨出库`（支持从卫材库调拨转出至各病区库）
-  - `科室领用出库`（支持病区科室直接申领出库）
-  - `盘亏出库 / 报损报废 / 其它出库`
-![出库工作台](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/drug_out_storage_page.png)
+### 3.1 管理员切换【物资仓库】专属角色与科室
+- 管理员登录后打开右上角头像 -> 点击【切换科室】。
+- 角色下拉框精准列出【**物资仓库**】。
+- 选中【物资仓库】后，科室下拉框仅展示物资专属管辖科室：
+  - **`卫材库`**（总库）
+  - **`骨二科病区`**、**`内一科病区`**、**`康复科病区`**、**`内二科病区`**、**`骨一科病区`**、**`骨三科病区`**（二级分库/病区库）
+![物资仓库角色切换弹窗](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/wzck_role_switch_dialog.png)
 
-### 3.3 药品/物资入库工作台（转入）
-路由：`#/storage/drugInStorage`
-- **支持的转入模式**：
-  - `入库`（外部供应商采购入库）
-  - `调拨入库`（接收总库或其他库房调入的物资）
-  - `内部退库 / 外部退库`
-  - `随入即出`
-  - `盘盈入库 / 其它入库`
-![入库工作台](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/drug_in_storage_page.png)
+### 3.2 切换至【物资仓库 + 卫材库】后左侧菜单渲染
+- 页面路由正常，左侧侧边栏完整挂载继承自药库管理的 24+ 项功能菜单（包含库存管理、药品入库、药品出库、采购管理、药品调价、药品盘点等）：
+![物资仓库首页菜单](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/wzck_home_menus.png)
 
-### 3.4 库存管理台（实时库存盘点与台账）
-路由：`#/storage/storageInfo`
-- 具备实时台账查询、明细下钻、出入库流水核对功能。
-![库存总览](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/storage_info_page.png)
+### 3.3 出库工作台（转出）功能校验
+- 访问路由：`#/storage/drugOutStorage`
+- 状态：渲染成功，零 404 拦截。
+- 包含子选项卡：`直接出库`、`退库`、`领药出库`、**`调拨出库`**（向各病区调拨）、**`科室领用出库`**（病区直接领用）、`盘亏出库`、`报损报废` 等。
+![物资仓库出库工作台](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/wzck_drug_out_storage.png)
+
+### 3.4 入库工作台（转入）功能校验
+- 访问路由：`#/storage/drugInStorage`
+- 状态：渲染成功，零 404 拦截。
+- 包含子选项卡：`入库`（外部采购）、`随入即出`、`外部退库`、**`调拨入库`**（接收转入）、`内部退库`、`盘盈入库` 等。
+![物资仓库入库工作台](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/wzck_drug_in_storage.png)
