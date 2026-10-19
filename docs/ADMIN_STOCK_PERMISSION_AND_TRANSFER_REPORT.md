@@ -37,20 +37,20 @@ flowchart TD
 - 选中【物资仓库】后，科室下拉框仅展示物资专属管辖科室：
   - **`卫材库`**（总库）
   - **`骨二科病区`**、**`内一科病区`**、**`康复科病区`**、**`内二科病区`**、**`骨一科病区`**、**`骨三科病区`**（二级分库/病区库）
-![物资仓库角色切换弹窗](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/wzck_role_switch_dialog.png)
+![物资仓库角色切换弹窗](./assets/images/wzck_role_switch_dialog.png)
 
 ### 3.2 切换至【物资仓库 + 卫材库】后左侧菜单渲染
 - 页面路由正常，左侧侧边栏完整挂载继承自药库管理的 24+ 项功能菜单（包含库存管理、药品入库、药品出库、采购管理、药品调价、药品盘点等）：
-![物资仓库首页菜单](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/wzck_home_menus.png)
+![物资仓库首页菜单](./assets/images/wzck_home_menus.png)
 
 ### 3.3 出库工作台（转出）功能校验
 - 访问路由：`#/storage/drugOutStorage`
 - 状态：渲染成功，零 404 拦截。
 - 包含子选项卡：`直接出库`、`退库`、`领药出库`、**`调拨出库`**（向各病区调拨）、**`科室领用出库`**（病区直接领用）、`盘亏出库`、`报损报废` 等。
-![物资仓库出库工作台](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/wzck_drug_out_storage.png)
+![物资仓库出库工作台](./assets/images/wzck_drug_out_storage.png)
 
 ### 3.4 入库工作台（转入）功能校验
 - 访问路由：`#/storage/drugInStorage`
 - 状态：渲染成功，零 404 拦截。
 - 包含子选项卡：`入库`（外部采购）、`随入即出`、`外部退库`、**`调拨入库`**（接收转入）、`内部退库`、`盘盈入库` 等。
-![物资仓库入库工作台](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/wzck_drug_in_storage.png)
+![物资仓库入库工作台](./assets/images/wzck_drug_in_storage.png)

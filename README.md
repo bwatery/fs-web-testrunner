@@ -26,6 +26,29 @@ python -I fsrun.py <command> [options]
 
 ---
 
+## 项目工程结构
+
+```text
+fs_web_testrunner/
+├── fs_runner/             # 核心测试执行器框架 (CDP浏览器驱动、契约测试、断言引擎、Web控制台)
+├── verify/                # 业务闭环与验证套件 (closed_loop, api_surface, workstation_check, ui_walk)
+├── tools/                 # 数据造数、报表导出、台账同步工具
+├── rules/                 # 业务规则库定义 (YAML) 与 AST 绑定
+├── data/                  # 基础配置与脱敏参考数据 (包含 db_config.json 模板)
+├── docs/                  # 核心架构与业务工作流文档
+│   ├── assets/images/     # 核心文档截图证据
+│   └── archive/           # 历史多轮迭代回执与产出归档
+├── reports/               # 运行时测试报告与输出目录 (Git 忽略临时生成物，仅保留基线与定义)
+├── baseline_66.json       # 66 条业务闭环基线测试集
+├── fsrun.py               # 统一命令行执行入口
+├── run_verify.py          # 兼容历史调用的测试入口
+├── config.py              # 全局配置入口
+├── requirements.txt       # Python 依赖清单
+└── *.bat                  # Windows 快速启动脚本
+```
+
+---
+
 ## 真实环境 vs 离线沙盒防伪保证
 
 平台严格贯彻「**真实必留痕、沙盒绝不判通过**」的防伪准则：

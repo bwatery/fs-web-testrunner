@@ -12,11 +12,31 @@ __pycache__/
 
 # Temporary test logs & scratch dumps
 *.log
+*.err
 scratch/
-reports/test_run_*.json
-reports/screenshots/*.png
+scratch_probe*.py
 data/db_config.json
 *db_config*.json
+
+# Reports runtime artifacts & screenshots
+reports/**/*.png
+reports/*.png
+reports/screenshots/
+reports/verify/screenshots/
+reports/verify/ui_traces/
+reports/verify/_*
+reports/verify/*_2026*.json
+reports/test_run_*.json
+reports/excel_headless_*.json
+reports/verify/p0_*.txt
+reports/verify/pending_*.txt
+reports/*.html
+reports/*.gz
+
+# Temporary scratch notes in root
+bq.txt
+sw.txt
+plus1.txt
 
 # OS generated files
 Thumbs.db
@@ -28,9 +48,3 @@ ehthumbs.db
 .vscode/
 *.sublime-project
 *.sublime-workspace
-
-reports/verify/screenshots/*.png
-!reports/verify/screenshots/universal_inpatient_pharmacy_verified.png
-!reports/verify/screenshots/universal_outpatient_pharmacy_verified.png
-reports/verify/*.err
-scratch_probe*.py

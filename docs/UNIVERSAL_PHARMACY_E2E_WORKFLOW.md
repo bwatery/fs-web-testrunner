@@ -94,5 +94,5 @@ python tools/generate_ui_clinical_pharmacy_data.py --mode all --head --inpatient
 
 ## 6. 自动化验证证据与结果
 
-- 住院药房工作台截图证据：[`reports/verify/screenshots/universal_inpatient_pharmacy_verified.png`](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/universal_inpatient_pharmacy_verified.png)
-- 门诊药房配药台截图证据：[`reports/verify/screenshots/universal_outpatient_pharmacy_verified.png`](file:///d:/CSsoft/AI/googleAntiGravity/cliProject/fs_web_testrunner/reports/verify/screenshots/universal_outpatient_pharmacy_verified.png)
+- 住院药房工作台截图证据：![住院药房验证](./assets/images/universal_inpatient_pharmacy_verified.png)
+- 门诊药房配药台截图证据：![门诊药房验证](./assets/images/universal_outpatient_pharmacy_verified.png)
